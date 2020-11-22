@@ -41,7 +41,7 @@ output "vm_ids" {
   }
 }
 
-output "vm_ipds" {
+output "vm_ips" {
   value = {
     for server in hcloud_server.main :
     server.name => server.ipv4_address

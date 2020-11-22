@@ -30,8 +30,21 @@ variable "instances" {
 
 variable "server_type" {
   default = "cx11"
+  description = "server type to get. Refer to https://www.hetzner.com/cloud for more information about server types."
+  # cx11: 1vCPU, 2GM RAM, 20GB Disc
 }
 
 variable "os_type" {
   default = "ubuntu-20.04"
+  description = "image to use to build the vm. Use standard or custom image."
+  # standard images are:
+  #  - ubuntu-16.04
+  #  - debian-9
+  #  - centos-7
+  #  - ubuntu-18.04
+  #  - debian-10
+  #  - centos-8
+  #  - ubuntu-20.04
+  #  - fedora-32
+  #  - fedora-33
 }
