@@ -1,22 +1,27 @@
 variable "hcloud_token" {
-  # default = <YOUR_TOKEN>
+  default = null
 }
 
 variable "pub_ssh_path" {
   default = "~/.ssh/id_rsa.pub"
 }
 
+variable "enable_floating_ip" {
+  type        = bool
+  default     = false
+}
+
+variable "enable_volume" {
+  type        = bool
+  default     = false
+}
+
+variable "volume_size"{
+    default = 100
+}
 
 variable "location" {
   default = "nbg1"
-}
-
-variable "http_protocol" {
-  default = "http"
-}
-
-variable "http_port" {
-  default = "80"
 }
 
 variable "instances" {
@@ -29,12 +34,4 @@ variable "server_type" {
 
 variable "os_type" {
   default = "ubuntu-20.04"
-}
-
-variable "disk_size" {
-  default = "20"
-} 
-
-variable "ip_range" {
-  default = "10.0.1.0/24"
 }
