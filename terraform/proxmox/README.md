@@ -23,7 +23,7 @@ and when running `terraform init` the provider should get automatically download
 #### Create a template
 Unlike other providers, there are no predefined images for the virtual machines. We have to create our own templates of the images, that we want do deploy afterwards via Terraform.
 The easiest way is to adopt the debian openstack image, as it is ready for e.g. the configuration via cloud init.
-Just follow the instructions from the "Creating a template" section of [this source](https://yetiops.net/posts/proxmox-terraform-cloudinit-saltstack-prometheus/#what-about-other-distributions) or create it via the GUI of proxmox.
+Just follow the instructions from the "Creating a template" section of https://yetiops.net/posts/proxmox-terraform-cloudinit-saltstack-prometheus/#what-about-other-distributions or create it via the GUI of proxmox.
 #### Terraform configuration
 If we have our template we can clone it to create virtual machines. Be aware that a lot of the examples from https://github.com/Telmate/terraform-provider-proxmox/blob/master/examples/ and nearly all other sources i found are not working correctly out of the box. It seems as there where a few changes recently to this provider.
 

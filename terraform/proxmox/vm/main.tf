@@ -11,7 +11,7 @@ terraform {
 
 provider "proxmox" {
     pm_api_url = "https://${var.proxmox_server_address}:${var.proxmox_server_port}/api2/json"
-    pm_user = "terraform@pve"
+    pm_user = var.proxmox_api_user
     pm_tls_insecure = "true"
     pm_password = var.proxmox_api_password
 }
