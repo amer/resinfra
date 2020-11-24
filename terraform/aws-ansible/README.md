@@ -1,7 +1,7 @@
 # Terraform and Ansible nginx setup on AWS
 
 Setup an AWS ec2 instance using `terraform`. This instance is then going to be 
-provisioned by `ansible` using a `playbook` to run an `nginx` docker container.  
+provisioned by `ansible` using a `playbook` to run an `nginx` docker container. 
 It will run via `http` and thus is accessible via port `80`.
 
 ## Prerequisites
@@ -16,7 +16,8 @@ correctly.
 To pass your AWS credentials to `terraform` in a safer way than hard coding it 
 and distributing it to VCS, it is easier and more secure to use env variables.
 
-Set the following variables and terraform will pick them up:
+Set the following environment variables and terraform will pick them up 
+automatically:
 
 ```
 export AWS_ACCESS_KEY_ID="your_access_key_id"
@@ -71,13 +72,13 @@ more details are explained in the next section.
 Ansible should be configured using the `ansible.cfg` file. There are only a few 
 variables that we need to declare.
 
-| VARIABLE          | STATUS   | DESCRIPTION                                                                                                                                                                                                        |
-|-------------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| remote_user       | optional | User for SSH connection. On this image on `aws`, root ssh is disabled and we use `ubuntu` instead. Declared as *optional*, as terraform is already passing the remote user when it is running the playbook for us.
-| private_key_file  | optional | Specify private key for ansible to use.  Declared as optional, as in our example terraform is automatically passing this vaule.
-| host_key_checking | required | When connecting for the first time, ssh will prompt if we want to continue connecting even though authenticity of host can't be established. For automating this process, we need to disable that prompt.
-| become            | required | Set to true to enable privilege escalation (required for ansible e.g.  to install software). You can read more [here](https://docs.ansible.com/ansible/latest/user_guide/become.html)                              |
-| become_method     | required | method to use for root access. We use sudo here.
+| VARIABLE          | STATUS   | VALUE           | DESCRIPTION                                                                                                                                                                                                        |
+|-------------------|----------|-----------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| remote_user       | optional | `ubuntu`        | User for SSH connection. On this image on `aws`, root ssh is disabled and we use `ubuntu` instead. Declared as *optional*, as terraform is already passing the remote user when it is running the playbook for us.
+| private_key_file  | optional | `/path/to/key/` | Specify private key for ansible to use.  Declared as *optional*, as in our example terraform is automatically passing this vaule.
+| host_key_checking | required | `False`         | When connecting for the first time, ssh will prompt if we want to continue connecting even though authenticity of host can't be established. For automating this process, we need to disable that prompt.
+| become            | required | `True`          | Set to true to enable privilege escalation (required for ansible e.g.  to install software). You can read more [here](https://docs.ansible.com/ansible/latest/user_guide/become.html)
+| become_method     | required | `sudo`          | Method to use for privilege escalation.
 
 I explicitly listed all variables here in `ansible.cfg` although for this 
 example it is not required due to automatically passing variables from terraform 
