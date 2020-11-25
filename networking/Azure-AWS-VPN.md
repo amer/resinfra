@@ -93,6 +93,7 @@ In no particular order:
 - Which data centers should we choose to optimize latency and / or throughput?
   - How do they compare vs. an un-tunneled connection?
 - Amazon recommends using two tunnels in parallel for redundancy. They even send you a nice e-mail about its benefits if you use only one tunnel. How can we configure this on the Azure side?
+- For the VPN service, [Azure guarantees 99,9 or 99,95% availability](https://azure.microsoft.com/en-us/support/legal/sla/vpn-gateway/v1_4/), [AWS guarantees 99,95%](https://aws.amazon.com/de/vpn/site-to-site-vpn-sla/). What are the implications on the SLA we can offer?
 - IKEv1 with a PSK is pretty cumbersome. How can we automate the key exchange? Can we use certificates?
 - How to automate all this?
 
