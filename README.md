@@ -5,7 +5,7 @@
 1. Is there anything blocking you from moving forward?
 
 ## 25.11.2020
-### Julian 
+### Julian
 1. The last time, i solved change request
 2. Today, I will plan some stories for the next week and have a look into a more asychronious communication.
 3. Nearly no work is done but no one came up with issues or questions. So i am not sure if they are done and simply not finished documenting or if they dont fulfill our submission policy. Because i dont know their expercience and the results of the research task, I am not sure how to proceed with storie creation.
@@ -20,6 +20,13 @@
 1. I have read up on the topic of network configuration in AWS
 2. I created a terraform script to deploy a fully configured vm in AWS with a VPC, a subnet, a public IP address, an internet gateway and security groups
 3. I wrote a small piece of documentation for the terraform script
+
+
+### Tim
+1. Yesterday I created an `ansible playbook` that sets up an nginx web server
+   using docker containers.
+2. Today, I'll work on automatically running the playbook once the machines/ssh
+   are ready. Also I'll finish my documentation for both terraform and ansible.
 
 ## 23.11.2020
 ### Johann
@@ -41,6 +48,13 @@
 1. I have set up and initialized my AWS student account
 2. I developed a basic terraform script which deploys a ubuntu vm to AWS EC2
 
+### Tim
+1. Yesterday I created a terraform script that deploys a VM
+2. Today I'll look into `ansible` as an easy deployment tool to deploy an
+   application as defined in
+   [#77](https://app.clubhouse.io/thinkdeep/story/77/use-an-easy-deployment-tool-to-deploy-an-application-via-docker-on-the-vms)
+
+
 ## 21.11.2020
 ### Julian
 1. The last time, i did planing for the next sprint.
@@ -50,9 +64,14 @@
 ### Roland
 1. I have read the documentation of terraform in order to get a basic understanding of the tool
 
+### Tim
+1. Familiarized myself with `terraform` by reading documentation and setting it up
+2. Today I'll try and setup an `aws ec2` machine using `terraform`
+3. No blocking points thus far.
+
 ## 18.11.2020
 ### Amer
-1. Yesterday, I did... 
+1. Yesterday, I did...
 1. today, I'll do...
 1. I can't do story8 until story4 and story9 are done, because... any idea what I can do?
 
