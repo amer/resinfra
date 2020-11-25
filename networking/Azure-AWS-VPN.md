@@ -10,7 +10,7 @@ _TL;DR_: We should use the managed VPN services offered by Azure / AWS.
 
 BIRD is a daemon for dynamic internet routing. [Source](https://bird.network.cz/?get_doc&v=16&f=bird-1.html)
 
-We don't actually need dynamic routing. In the planning meeting, we decided that there should be one subnet per cloud provider, as in the [initial graphic](https://media.clubhouse.io/api/attachments/files/clubhouse-assets/5faee1ab-b9ba-4839-9191-1494224bf19b/5fb816ac-5391-4385-9d2f-3690b66cb47f/Build%20a%20more%20resilient%20infrastructure%20by%20spanning%20clouds%20-%20New%20frame.jpg). Thus, we should be able to use a static routing table, even on Proxmox.
+The scope of this story was to have one subnet per cloud, as shown in the [initial graphic](https://media.clubhouse.io/api/attachments/files/clubhouse-assets/5faee1ab-b9ba-4839-9191-1494224bf19b/5fb816ac-5391-4385-9d2f-3690b66cb47f/Build%20a%20more%20resilient%20infrastructure%20by%20spanning%20clouds%20-%20New%20frame.jpg). Therefore, we need no dynamic routing to connect the networks. A static route table will work just fine for now.
 
 ### Wireguard
 
