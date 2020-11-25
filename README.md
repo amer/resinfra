@@ -16,6 +16,11 @@
 2. Jan mention an interesting idea about making the whole system event-driven (possibly based on Kafka). I will look into this today
 3. Since Consul use gossip communication for its service discovery, it can be too chatty if there are a lot of events going on.
 
+### Roland
+1. I have read up on the topic of network configuration in AWS
+2. I created a terraform script to deploy a fully configured vm in AWS with a VPC, a subnet, a public IP address, an internet gateway and security groups
+3. I wrote a small piece of documentation for the terraform script
+
 ## 23.11.2020
 ### Johann
 1. Yesterday, I did nothing.
@@ -32,11 +37,18 @@
 2. Today I will look further into Consul, which was the main suggestion during the meeting.
 3. Not really at the moment, since this is just an exploratory phase now.
 
+### Roland
+1. I have set up and initialized my AWS student account
+2. I developed a basic terraform script which deploys a ubuntu vm to AWS EC2
+
 ## 21.11.2020
 ### Julian
 1. The last time, i did planing for the next sprint.
 2. Today, I'will use terraform to create a VM on an proxmox server.
 3. Currently i am not aware anything blocking me.
+
+### Roland
+1. I have read the documentation of terraform in order to get a basic understanding of the tool
 
 ## 18.11.2020
 ### Amer
