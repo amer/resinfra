@@ -11,6 +11,12 @@
 2. Today, I'll follow up with the planned stories and pickup stories to work on.
 3. No blockers.
 
+### Julian
+
+1. The last two days I was doing the async sprint planning and preparation
+2. Today, I will have a meeting with hundertserver
+3. Currently some research stroies are blocking me from planning further ahead
+
 ## 25.11.2020
 ### Amer
 1. On 25.11.2020, I finished [#73](https://app.clubhouse.io/thinkdeep/story/73/use-terraform-to-create-a-virtual-machine-on-azure-in-an-configured-vpc) and [#80](https://app.clubhouse.io/thinkdeep/story/80/use-terraform-to-create-a-vm-and-a-suitable-network-configuration-for-azure) and merged into `main`.
