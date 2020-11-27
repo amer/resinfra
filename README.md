@@ -5,6 +5,8 @@
 1. Is there anything blocking you from moving forward?
 
 ## 27.11.2020
+
+### Amer
 1. The last two days I was busy at work. Sorry, I couldn't join the Scrum poker
 2. Today, I'll follow up with the planned stories and pickup stories to work on.
 3. No blockers.
