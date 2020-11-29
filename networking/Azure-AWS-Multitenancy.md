@@ -4,11 +4,11 @@ This is the report on item [#146](https://app.clubhouse.io/thinkdeep/story/146/i
 
 Multiple tenants can be isolated either using seperate VPCs for each tenant...
 
-![](https://media.clubhouse.io/api/attachments/files/clubhouse-assets/5faee1ab-b9ba-4839-9191-1494224bf19b/5fbea150-8c65-4521-857c-106b59170757/Build%20a%20more%20resilient%20infrastructure%20by%20spanning%20clouds%20-%20New%20frame%20(2).jpg)
+![](img/per-tenant-vpc.jpg)
 
 ...or by using a single global VPC for all tenants and putting each tenant in their own subnet:
 
-![](https://media.clubhouse.io/api/attachments/files/clubhouse-assets/5faee1ab-b9ba-4839-9191-1494224bf19b/5fbea151-4a65-4125-b046-47a2c361b793/Build%20a%20more%20resilient%20infrastructure%20by%20spanning%20clouds%20-%20New%20frame%20(1).jpg)
+![](img/global-vpc.jpg)
 
 ## Per-Tenant VPC
 
