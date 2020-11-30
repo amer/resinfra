@@ -16,31 +16,8 @@ For this approach, the steps described in the [previous report](Azure-AWS-VPN.md
 
 ### Cost Estimation
 
-Three services costing actual money would be replicated for each tenant: The VPN gateways, and the public IP address for Azure. Depending on the amount of inter-cloud traffic, this might become neglible compared to the cost of outbound traffic.
-
-#### On Azure Germany West Central
-
-| Service                | Sizing   | Price      |
-| ---------------------- | -------- | ---------- |
-| [VPN Gateway][1]       | 100 Mb/s | 0,04 \$/h  |
-| [Public IP Address][2] | Static   | 0,0036 $/h |
-| [Outbound Traffic][1]  | any      | 0,035 $/GB |
-
-#### On AWS Europe (Frankfurt)
-
-| Service               | Sizing | Price     |
-| --------------------- | ------ | --------- |
-| [VPN][3]              | any    | 0,05 $/h  |
-| [Outbound Traffic][4] | <10 TB | 0,09 $/GB |
+Three services costing actual money would be replicated for each tenant: The VPN gateways, and the public IP address for Azure. Depending on the amount of inter-cloud traffic, this might become neglible compared to the cost of outbound traffic. The figures stated in the previous report remain valid.
 
 ## Global VPC with subnet-level tenant separation
 
-We could use one common VPN gateway each on Azure and AWS. Would we then be able to use static route tables and security groups to fully separate tenants at the network level, or would we need more feature-rich soultions such as BIRD + Wireguard?
-
-## DIY?
-
-
-[1]: https://azure.microsoft.com/en-us/pricing/details/vpn-gateway/
-[2]: https://azure.microsoft.com/en-us/pricing/details/ip-addresses/
-[3]: https://aws.amazon.com/de/vpn/pricing/
-[4]: https://aws.amazon.com/de/ec2/pricing/on-demand/
+We could use one common VPN gateway each on Azure and AWS. But really, we should not do that, because we would basically be re-implementing VPCs, just worse.
