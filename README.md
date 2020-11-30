@@ -16,6 +16,12 @@
 2. Today, i will create a script that combine our current terraform configs, so that it can create VMs on different providers.
 3. No hard blocks but it would be nice if i could include the resulsts from story 79 and 87 in my current task.
 
+### Tim
+1. Familiarized myself with `packer` a bit.
+2. Today, I will work on creating an image with packer on `aws` and look into
+   options of how to ensure that machines will behave the same among cloud
+   providers. Specify options in document.
+
 ## 27.11.2020
 
 ### Amer
@@ -28,6 +34,15 @@
 1. The last two days I was doing the async sprint planning and preparation
 2. Today, I will have a meeting with hundertserver
 3. Currently some research stroies are blocking me from planning further ahead
+
+### Tim
+1. We had our first asynchronous planning poker via slack and clubhouse.
+2. Today, I'll look into the [PR 7](https://github.com/amer/resinfra/pull/7) and
+   see how to best combine it with my previous work.
+3. Not really blocking point, but as I want to work on
+   [#87](https://app.clubhouse.io/thinkdeep/story/87/find-a-way-to-deploy-or-configure-virtual-machines-in-a-way-that-all-vms-on-the-different-providers-will-work-and-look-the)
+   I need to familiarize myself with e.g. `packer` which I did not use
+   previously.
 
 ## 25.11.2020
 ### Amer
@@ -42,11 +57,17 @@
 3. Nearly no work is done but no one came up with issues or questions. So i am not sure if they are done and simply not finished documenting or if they don't fulfill our submission policy. Because i don't know their experience and the results of the research task, I am not sure how to proceed with story creation.
 
 ### Amer
-1. Yesterday, 
+1. Yesterday,
 	- Reviewed story [#82](https://app.clubhouse.io/thinkdeep/story/82/investigate-and-demonstrate-a-solution-for-monitoring-a-vm)
 	- Read about virtual networking and service meshes.
 2. Today, I'll work on [#73](https://app.clubhouse.io/thinkdeep/story/73/use-terraform-to-create-a-virtual-machine-on-azure-in-an-configured-vpc) and [#80](https://app.clubhouse.io/thinkdeep/story/80/use-terraform-to-create-a-vm-and-a-suitable-network-configuration-for-azure)
 3. No blockers.
+
+### Tim
+1. Yesterday, I found a way to automatically run the ansible playbook once the
+   machines/ssh are ready. Created the script and documentation.
+2. Today, we'll have our weekly meeting. Also want to improve upon
+   documentation.
 
 
 ## 24.11.2020
