@@ -4,6 +4,13 @@
 1. What did you do today?
 1. Is there anything blocking you from moving forward?
 
+## 30.11.2020
+
+### Julian
+1. The last time i had a meeting with hundertserver.
+2. Today, i will create a script that combine our current terraform configs, so that it can create VMs on different providers.
+3. No hard blocks but it would be nice if i could include the resulsts from story 79 and 87 in my current task.
+
 ## 27.11.2020
 
 ### Amer
