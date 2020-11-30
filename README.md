@@ -6,6 +6,11 @@
 
 ## 30.11.2020
 
+### Johann
+1. Yesterday, I began writing the documentation for a multi-tenant network across Azure & AWS.
+2. Today, I will try to setup such a network using a single VPN gateway on each side instead of one per tenant.
+3. no blockers
+
 ### Julian
 1. The last time i had a meeting with hundertserver.
 2. Today, i will create a script that combine our current terraform configs, so that it can create VMs on different providers.
