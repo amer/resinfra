@@ -4,6 +4,13 @@
 1. What did you do today?
 1. Is there anything blocking you from moving forward?
 
+## 02.12.2020
+
+### Jan
+1. Yesterday, I looked into the different approaches to store the current state of the infrastructure and elaborated on that with Amar. I also talked to Nitho about what other storage requirements we have in order to be able to build the dashboards that we need. I also put some thoughts into how (or even if) we want to store logs.
+2. Today, I want to move forward on getting a better understanding of the entire architecture together with the team.
+3. I am still not entirely sure to what extend we need to run analytics on top of our monitoring solution and if our current design decisions could cope with such a requirement.
+
 ## 01.12.2020
 
 ### Johann
@@ -15,6 +22,10 @@
 1. Yesterday, I created a script to deploy vms on all our cloud providers and on a proxmox server
 2. Today, I will try to finish the script and start with the sprint planning for the next sprint.
 3. The aws ansible deployment is currenty not working correctly and i am not able to get the public ip after the deployment on some providers. For the next sprint planning i need some of the current progress and problems that may lead to new stories, but currently there is nearly no information on what is done and what are the problems encountered. 
+
+### Jan
+1. Yesterday, I started the research on the storage solutions. 
+2. Today I want to get a better understanding of the requirements of that storage solution and its role in the tooling.
 
 ## 30.11.2020
 
@@ -66,6 +77,10 @@
 2. I looked into how to integrate my terraform script with the already existing one [PR 7](https://github.com/amer/resinfra/pull/7)
 3. I tested the newly integrated terraform script to ensure compatibility
 
+### Jan
+1. I looked and commented on the open PRs and finalized by reserach on the monitoring solutions.
+2. Today, I want to get an understanding of what needs to be done for the following sprint.
+
 ## 25.11.2020
 ### Amer
 1. On 25.11.2020, I finished [#73](https://app.clubhouse.io/thinkdeep/story/73/use-terraform-to-create-a-virtual-machine-on-azure-in-an-configured-vpc) and [#80](https://app.clubhouse.io/thinkdeep/story/80/use-terraform-to-create-a-vm-and-a-suitable-network-configuration-for-azure) and merged into `main`.
@@ -90,8 +105,7 @@
    machines/ssh are ready. Created the script and documentation.
 2. Today, we'll have our weekly meeting. Also want to improve upon
    documentation.
-
-
+ 
 ## 24.11.2020
 ### Nitho
 1. Yesterday I looked into how Consul handle multi-datacenter implementation
@@ -136,6 +150,9 @@
    application as defined in
    [#77](https://app.clubhouse.io/thinkdeep/story/77/use-an-easy-deployment-tool-to-deploy-an-application-via-docker-on-the-vms)
 
+### Jan
+1. Yesterday, I finalized my Hetzner terraform script. I added the functionality to also deploy a floating ip as well as mounting a volume to the VM. 
+2. Today, I want to take a look at the work from my teammates.
 
 ## 21.11.2020
 ### Julian
@@ -150,6 +167,10 @@
 1. Familiarized myself with `terraform` by reading documentation and setting it up
 2. Today I'll try and setup an `aws ec2` machine using `terraform`
 3. No blocking points thus far.
+
+### Jan
+1. Getting strated on working with terraform and hetzner. Looking into some old projets in order to find useful ressources. 
+2. Today I want to have a first running version of my terraform script.
 
 ## 19.11.2020
 ### Amer
