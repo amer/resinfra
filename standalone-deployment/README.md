@@ -16,7 +16,7 @@ And follow the instructions on the command line.
  
 # Prerequisites
 ## Authentication Data
-In order to deploy machines, this script needs access to your cloud accounts. Therefore, an Account on Google Cloud, AWS and Hetzner Cloud is needed, as well as the login information for a Proxmox user that has the needed rights. In the most cases you have to create a specific access token. Please use the specific cloud provider documentation on how to create these.
+In order to deploy machines, this script needs access to your cloud accounts. Therefore, an Account on AWS, Azure and Hetzner Cloud is needed, as well as the login information for a Proxmox user that has the needed rights. In the most cases you have to create a specific access token. Please use the specific cloud provider documentation on how to create these.
  
 Populate the `secret.tfvars` with your credentials. See the `secret.tfvars.example` files as examples.
  
