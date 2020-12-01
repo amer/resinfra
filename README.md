@@ -11,6 +11,11 @@
 2. Today, I will be setting up a VPN client + server on Hetzner to connect to AWS. 
 3. no blockers
 
+### Julian
+1. Yesterday, I created a script to deploy vms on all our cloud providers and on a proxmox server
+2. Today, I will try to finish the script and start with the sprint planning for the next sprint.
+3. The aws ansible deployment is currenty not working correctly and i am not able to get the public ip after the deployment on some providers. For the next sprint planning i need some of the current progress and problems that may lead to new stories, but currently there is nearly no information on what is done and what are the problems encountered. 
+
 ## 30.11.2020
 
 ### Johann
