@@ -1,6 +1,6 @@
 # Connecting VMs across different cloud providers, AWS and Azure, in a MT-compatible way
 
-This is the report on item [#146](https://app.clubhouse.io/thinkdeep/story/146/investigate-and-design-an-architecture-to-connect-the-vms-across-different-cloud-providers-revisited). It is an extension of the [previous report](Azure-AWS-VPN.md). Again, we can use either a DIY VPN solution using open source tools (BIRD and Wireguard were mentioned during planning), or managed services offered by the cloud providers.
+This is part of the report on item [#146](https://app.clubhouse.io/thinkdeep/story/146/investigate-and-design-an-architecture-to-connect-the-vms-across-different-cloud-providers-revisited). It is an extension of the [previous report](Azure-AWS-VPN.md). Again, we can use either a DIY VPN solution using open source tools (BIRD and Wireguard were mentioned during planning), or managed services offered by the cloud providers.
 
 Multiple tenants can be isolated either using seperate VPCs for each tenant...
 

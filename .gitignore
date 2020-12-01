@@ -139,3 +139,7 @@ terraform.rc
 /az/terraform/env.sh
 /az/terraform/draft/
 .idea/
+
+# cert stuff
+*.p12
+*.pem
