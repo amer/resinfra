@@ -22,6 +22,11 @@
    options of how to ensure that machines will behave the same among cloud
    providers. Specify options in document.
 
+### Roland
+1. I merged my terraform script for AWS in the already existing terraform script in order to accommodate the new functionality [PR 7](https://github.com/amer/resinfra/pull/7)
+2. I familiarized myself with the possible solutions for a VPN connection between two or more different virtual machines on different cloud providers in order to integrate one of the approaches into the existing terraform script for AWS
+3. I read some articles and documentation about network configurations and VPN solutions in AWS and Azure
+
 ## 27.11.2020
 
 ### Amer
@@ -43,6 +48,11 @@
    [#87](https://app.clubhouse.io/thinkdeep/story/87/find-a-way-to-deploy-or-configure-virtual-machines-in-a-way-that-all-vms-on-the-different-providers-will-work-and-look-the)
    I need to familiarize myself with e.g. `packer` which I did not use
    previously.
+
+### Roland
+1. I familiarized myself with the new user stories and participated in the asynchronous sprint planning afterwards
+2. I looked into how to integrate my terraform script with the already existing one [PR 7](https://github.com/amer/resinfra/pull/7)
+3. I tested the newly integrated terraform script to ensure compatibility
 
 ## 25.11.2020
 ### Amer
