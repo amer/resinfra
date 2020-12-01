@@ -61,7 +61,7 @@ $ terraform state list
 
 ### Save and apply a plan example
 ``` 
-$ terraform plan -out=MyplanfileName
+$ terraform plan -var-file="secret.tfvars" -out=MyplanfileName
 $ terraform apply "MyplanfileName"
 ```
 

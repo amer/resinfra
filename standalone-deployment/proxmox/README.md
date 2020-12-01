@@ -98,7 +98,7 @@ I tried a few examples I found on the internet but all configurations led to the
  
 ## Running the deployment
 Enter the directory where the `variable.tf` and `main.tf` files are located. 
-Change the `variables.tf` according to your setup. Initialize Terraform: 
+Change the `proxmox_server.tfvars` according to your setup. Initialize Terraform: 
 ``` 
 terraform init 
 ```
@@ -106,13 +106,13 @@ terraform init
 Then plan the terraform run with
  
 ```
-terraform plan
+terraform plan -var-file="proxmox_server.tfvars" -var-file="proxmox_large.tfvars" -var-file="secret.tfvars" -out "plan"
 ```
  
 and run it with 
  
 ```
-terraform apply
+terraform apply "plan"
 ```
  
 Connect to the deployed VMs via 
@@ -127,7 +127,7 @@ ssh root@192.168.2.201 -i ~/.ssh/id_rsa
 Afterwards you can destroy all deployed resources with 
  
 ```
-terraform destroy
+terraform destroy -var-file="secret.tfvars"
 ```
  
 ## Debugging

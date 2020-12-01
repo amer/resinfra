@@ -34,7 +34,7 @@ terraform init
 To apply, run 
 
 ```
-terraform apply -var='hcloud_token=<YOUR-API-TOKEN-HERE>'
+terraform apply -var-file="secret.tfvars"
 ```
 
 The output should provide with the ip and id of the vm(s) as well as the ip of the floating ip and the directory onto which volumes have been mounted.
@@ -42,7 +42,7 @@ The output should provide with the ip and id of the vm(s) as well as the ip of t
 To destroy, run
 
 ```
-terraform destroy -var='hcloud_token=<YOUR-API-TOKEN-HERE>'
+terraform destroy -var-file="secret.tfvars"
 ```
 
 ## Test

@@ -97,7 +97,7 @@ terraform init
 To apply, run
 
 ```
-terraform apply
+terraform apply -var-file="secret.tfvars"
 ```
 
 If you did not use the `terraform.tfvars` method, you should pass variables 
