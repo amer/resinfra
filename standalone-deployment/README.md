@@ -33,7 +33,8 @@ You have to install the following dependencies:
 * Currently there is no support for creating more than one VM per provider.
 * Currently there is no support for further management of the created VMs.
 * Currently there is no support for further configuration through the script. Have a look at the Terraform configuration files to change things.
+* The Proxmox VM is not accessible via a public ip afterwards because limitations by the provider
 
 # Know Bugs
 * Some IP outputs dont work correctly
-* When deploying AWS VMs the Ansible run crashes 
+* When deploying AWS VMs the Ansible run crashes
