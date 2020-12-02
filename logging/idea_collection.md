@@ -9,6 +9,8 @@ Looking for a storage solution for logs.
 
 ## Idea 1: ELK (preferred)
 - Elasticsearc + Logstash + Kibana 
+- Elasticsearch (ES) is a NoSQL open-source database
+- Kibana is a dashboarding tool, developed from the same people. It integrates pretty easily with elasticsearch.
 - Data can be fed into ES with [beats](https://www.elastic.co/de/beats/). These are agents installed on the targets that collect  data (logs). 
 - Data can be pre processed with [logstash](https://www.elastic.co/de/logstash). You define a set of rules that will be applied to incomming logs. Example (from [here](https://github.com/enowars/EnoELK/blob/master/config-dir/enologmessage.conf)):
 
