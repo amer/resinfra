@@ -11,6 +11,15 @@
 2. Today, I want to move forward on getting a better understanding of the entire architecture together with the team.
 3. I am still not entirely sure to what extend we need to run analytics on top of our monitoring solution and if our current design decisions could cope with such a requirement.
 
+### Tim
+1. Yesterday, I had a call with Julian and we fixed his ansible problem. Also I 
+   created machines with the most recent debian image on aws and azure. 
+2. Today, I'll continue with the most recent image for hcloud, and combine the 
+   three into my branch. Also add documentation to it.
+3. No blocker, but we could talk about using one playbook to ensure that 
+   versions of specific software are the same. Depends on if we need that 
+   granular control.
+
 ## 01.12.2020
 
 ### Johann
@@ -26,6 +35,19 @@
 ### Jan
 1. Yesterday, I started the research on the storage solutions. 
 2. Today I want to get a better understanding of the requirements of that storage solution and its role in the tooling.
+
+### Tim
+1. Yesterday, I worked on creating an image with packer on aws. I further looked 
+   into the topic and figured that it might be an overkill to create images for 
+   all cloud providres, as we also have to pay e.g. for the storage of the 
+   images. As story 
+   [#87](https://app.clubhouse.io/thinkdeep/story/87/find-a-way-to-deploy-or-configure-virtual-machines-in-a-way-that-all-vms-on-the-different-providers-will-work-and-look-the) 
+   only requires they work/look the same, using a debian 10 image among all 
+   might suffice.
+2. Today, I'll have a call with Julian to help him fix the problem he is having 
+   with ansible. I'll also look into how to use the most recent debian image 
+   automatically on aws and maybe other providers.
+3. No blocker
 
 ## 30.11.2020
 
