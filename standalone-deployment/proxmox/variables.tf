@@ -19,7 +19,7 @@ variable "proxmox_server_port" {
 }
 
 variable "proxmox_server_address" {
-  decription = "The Proxmox server address"
+  description = "The Proxmox server address"
 }
 
 variable "proxmox_target_node" {
