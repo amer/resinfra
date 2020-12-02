@@ -6,6 +6,11 @@
 
 ## 02.12.2020
 
+### Johann
+1. Yesterday, I tried and failed to setup a VPN connection between HCloud and AWS using StrongSWAN on the HCloud side.
+2. I will be reading the StrongSWAN documentation to try and understand what's happening.
+3. no blockers
+
 ### Jan
 1. Yesterday, I looked into the different approaches to store the current state of the infrastructure and elaborated on that with Amar. I also talked to Nitho about what other storage requirements we have in order to be able to build the dashboards that we need. I also put some thoughts into how (or even if) we want to store logs.
 2. Today, I want to move forward on getting a better understanding of the entire architecture together with the team.
