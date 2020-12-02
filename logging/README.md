@@ -36,10 +36,10 @@ For the sake of this poc, we will enable the `system` module.
 $ logstash modules enable system
 ```
 
-For further configuration, check the logstash config file. For the sake of this poc no furhter configuration is required. 
-To find the configuratoin directoy according to your installation refer to [the docs](https://www.elastic.co/guide/en/beats/filebeat/current/directory-layout.html).
+For further configuration, check the logstash config file. For the sake of this poc no further configuration is required. 
+To find the configuration directory according to your installation refer to [the docs](https://www.elastic.co/guide/en/beats/filebeat/current/directory-layout.html).
 
-Setup filebeat. This will create among other an index in your ES cluster (this might take a minute or two). The index will be called in the likes of `filebeat-7.10.0-yyyy.mm.dd-000001`.
+Setup filebeat. This will create among others an index in your ES cluster (this might take a minute or two). The index will be called in the likes of `filebeat-7.10.0-yyyy.mm.dd-000001`.
 
 ```
 $ filebeat setup -e
