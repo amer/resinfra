@@ -1,5 +1,5 @@
 # POC: Logging with ELK
-The following will demonstrate how to use the Elasticsearch - Logstash - Kibana (ELK) stack to collect, process and visualize logs. We will use filebeat to push systemd logs to the ELK. There is a number of [other beats available](https://www.elastic.co/de/beats/). 
+The following will demonstrate how to use the Elasticsearch - Logstash - Kibana (ELK) stack to collect, process and visualize logs. We will use filebeat to push system logs to the ELK. There is a number of [other beats available](https://www.elastic.co/de/beats/). 
 
 *Caveats*:
 For ease of use we will have the ELK run in docker as a single node cluster. To keep things simple, we will also not define any logstash pipelines. Pipelines could be defined in a `config-dir` and then mounted to the container. For further information on how to configure Logstash for docker see [here](https://www.elastic.co/guide/en/logstash/current/docker-config.html).
@@ -15,7 +15,7 @@ Start the docker containers
 $ docker-compose up -d
 ```
 
-Kibana should now be running on port 5601. Elasticsearch will be exposed to the host on port 9200.
+Kibana should now be exposed to port 5601 of the host. Elasticsearch will be exposed to the host on port 9200.
 
 ### Install filebeat
 We will install filebeat manually on the same host as we are running the ELK containers.
