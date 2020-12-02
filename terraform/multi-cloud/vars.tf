@@ -19,6 +19,9 @@ variable "prefix" {
 variable resinfra_subscription_id {}
 
 # AWS
+variable aws_access_key {}
+variable aws_secret_key {}
+
 variable "region" {
   type        = string
   description = "AWS region for resources to be created"
