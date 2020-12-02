@@ -45,7 +45,7 @@ Setup filebeat. This will create among others an index in your ES cluster (this 
 $ filebeat setup -e
 ```
 
-Filebeat might try to set up dashobards in Kibana. For the default config and the current docker setup this will fail. However, this is not relevant for the sake of this poc. 
+Filebeat might try to set up dashboards in Kibana. For the default config and the current docker setup this will fail. However, this is not relevant for the sake of this poc. 
 
 Once the setup has completed sucessfully, start filebeat.
 
@@ -59,7 +59,7 @@ You can verify that logs are arriving in your ES cluster either by checking dire
 
 In Kibana, filebeat should have already set up a `filebeat.*` index pattern that you can use to query the respective ES indices. 
 
-If you want to query ES direclty (from the host where your containers are running), list all available indices first.
+If you want to query ES directly (from the host where your containers are running), list all available indices first.
 
 ```
 $ curl localhost:9200/_cat/indices
