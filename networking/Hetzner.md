@@ -5,8 +5,6 @@ This is part of the report on item [#146](https://app.clubhouse.io/thinkdeep/sto
 - There is no concept of a VPC. Instead, separation can be achieved through separate projects or networks within a single project.
 - There is no managed VPN service.
 
-## Singletenancy
-
 We are going for a setup similar to this, except that instead of a dedicated system, we have another cloud service, and instead of a VSwitch, we have a VPN server and a client on both sides.
 
 ![HCloud connection to dedicated servers](https://docs.hetzner.com/static/73e1767e4179912c3a273676d50e5391/1320e/details-coupled-configuration.png)
@@ -42,7 +40,3 @@ traceroute to 10.0.1.2 (10.0.1.2), 30 hops max, 60 byte packets
 
 - Investigate what's wrong with the routing
 - Try OpenSWAN
-
-## Multitenancy
-
-*tbd depending on outcome of singletenancy*, best case scenario: we can use only a single SWAN instance as a VPN gateway for all tenants on Hetzner / Proxmox and route packages so that tenant separation is maintaned.
