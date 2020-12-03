@@ -4,6 +4,16 @@
 1. What did you do today?
 1. Is there anything blocking you from moving forward?
 
+## 03.12.2020
+
+### Tim
+1. Yesterday I completed the work with hcloud, now able to deploy similar debian 
+   machines among all providers. Worked with `cloud-init` to check for soultions 
+   regarding the different username problem.
+2. Today, I'll finish my work with `cloud-init`, update the documentation and 
+   submit my pull request.
+3. none
+
 ## 02.12.2020
 
 ### Johann
