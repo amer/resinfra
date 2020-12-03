@@ -74,8 +74,3 @@ variable "server_type" {
   description = "server type to get. Refer to https://www.hetzner.com/cloud for more information about server types."
   # cx11: 1vCPU, 2GM RAM, 20GB Disc
 }
-
-variable "os_type" {
-  default = "ubuntu-20.04"
-  description = "image to use to build the vm. Use standard or custom image."
-}
