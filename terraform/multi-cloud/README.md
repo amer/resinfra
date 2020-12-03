@@ -10,7 +10,7 @@ There are two approaches that came to mind:
 2. create custom images by using [packer](https://packer.io) and deploy them to 
    the cloud providers
 
-## 1. Use same OS and cloud-init
+## 1. Use same OS and cloud-init (preferred)
 Currently we use `Debian` as our OS for the VMs. They provide `cloud-images`
 which are the official Debian images customized for cloud deployment. They are
 also always available as image choices at `AWS`, `Microsoft
