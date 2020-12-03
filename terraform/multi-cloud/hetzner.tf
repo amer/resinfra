@@ -3,6 +3,15 @@ provider "hcloud" {
   token   = var.hcloud_token
 }
 
+# data "template_file" "user_data" { 
+#   template = file("./preconf.yml")
+#   
+#   vars = {
+#     username = "tim"
+#     public_key = file(var.public_key_path)
+#   }
+# }
+
 resource "hcloud_ssh_key" "default" {
   name       = "${var.prefix}-hetzner_key"
   public_key = file(var.public_key_path)
@@ -20,6 +29,7 @@ resource "hcloud_server" "main" {
   server_type = var.server_type
   location    = var.location
   ssh_keys    = [hcloud_ssh_key.default.id]
+  user_data = data.template_file.user_data.rendered
 }
 
 resource "hcloud_floating_ip" "main" {

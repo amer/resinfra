@@ -9,6 +9,11 @@ variable "private_key_path" {
   default     = "~/.ssh/id_rsa"
 }
 
+variable "username" {
+  description = "username to be used among ALL providers. Don't choose admin or root."
+  default = "tim"
+}
+
 variable "prefix" {
   default = "resinfra"
 }

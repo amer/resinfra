@@ -12,6 +12,10 @@ terraform {
       source = "hashicorp/azurerm"
       version = "~> 2.37.0"
     }
+    template = {
+      source = "hashicorp/template"
+      version = "~> 2.2.0"
+    }
   }
   required_version = ">=0.12"
 }

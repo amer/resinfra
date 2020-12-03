@@ -74,6 +74,17 @@ resource "azurerm_public_ip" "main" {
   allocation_method            = "Dynamic"
 }
 
+data "template_cloudinit_config" "config" {
+  gzip          = true
+  base64_encode = true
+
+  part {
+    filename     = "cloud-init"
+    content_type = "text/cloud-config"
+    content      = data.template_file.user_data.rendered
+  }
+}
+
 # Create a virtual machine
 resource "azurerm_linux_virtual_machine" "main" {
   name                = "${var.prefix}-vm"
@@ -84,6 +95,8 @@ resource "azurerm_linux_virtual_machine" "main" {
   network_interface_ids = [
     azurerm_network_interface.main.id,
   ]
+  custom_data = data.template_cloudinit_config.config.rendered
+
 
   admin_ssh_key {
     username   = "adminuser"

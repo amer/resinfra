@@ -93,6 +93,7 @@ resource "aws_instance" "web" {
     aws_security_group.allow_inbound_traffic.id,
     aws_security_group.allow_outbound_traffic.id,
   ]
+  user_data = data.template_file.user_data.rendered
 
 #  provisioner "remote-exec" {
 #    inline = ["echo 'SSH is now ready!'"]
