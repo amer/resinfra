@@ -11,7 +11,6 @@ variable "private_key_path" {
 
 variable "username" {
   description = "username to be used among ALL providers. Don't choose admin or root."
-  default = "tim"
 }
 
 variable "prefix" {
