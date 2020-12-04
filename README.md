@@ -4,6 +4,12 @@
 1. What did you do today?
 1. Is there anything blocking you from moving forward?
 
+## 04.12.2020
+### Julian
+1. The last time I had the team meeting and also a meeting with hundertserver. 
+2. Today I will work on the review comments for the standalone deployment script and start with the async planning process
+3. My second story is blocked untill we have a first working prometheus deployment.
+
 ## 03.12.2020
 
 ### Tim
@@ -34,6 +40,11 @@
 3. No blocker, but we could talk about using one playbook to ensure that 
    versions of specific software are the same. Depends on if we need that 
    granular control.
+   
+### Julian
+1. Yesterday, I finished the standalone deployment tool.
+2. Today, I had some meetings and we have to discuss some management topics.
+3. My second story is blocked untill we have a first working prometheus deployment.
 
 ## 01.12.2020
 
