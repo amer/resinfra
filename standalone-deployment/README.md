@@ -25,7 +25,7 @@ You have to install the following dependencies:
 * [go](https://linuxize.com/post/how-to-install-go-on-debian-10/)
 * [terraform](https://learn.hashicorp.com/tutorials/terraform/install-cli)
 * [azure cli](https://docs.microsoft.com/de-de/cli/azure/install-azure-cli-apt)
-* [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) (On Debian 10: `apt install ansible -y`)
+* [ansible >= 2.10](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
  
 # Limitations
 * Currently there is no support to destroy the created resources. Use `terraform destroy -var-file="secret.tfvars"` in the provider subdirectory to destroy the resources.
