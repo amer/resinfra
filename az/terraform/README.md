@@ -8,7 +8,7 @@ Use `terraform output fqdn` to get the fqdn.
 The manifest will copy the public key in `~/.ssh/id_rsa.pub` to the target virtual machine.
 
 To ssh to the virtual machine use:
-```
+```bash
 $ ssh adminuser@fqdn
 ```
 
@@ -18,13 +18,13 @@ $ ssh adminuser@fqdn
 Make sure you have Azure CLI tool and Terraform installed. 
 
 #### To install on Mac OS
-```
+```bash
 $ brew install azure-cli terraform
 ```
 
 ### Login
 This command will take you to the browser to login.
-```
+```bash
 $ az login
 ```
 
@@ -38,7 +38,7 @@ $ az ad sp create-for-rbac --name YourServicePrincipalName --role="Contributor" 
 ```
 
 The output should look something like this. Use these values to populate env.sh and variables.tfvars.
-```
+```json
 {
   "appId": "00000000-0000-0000-0000-000000000000",
   "displayName": "YourServicePrincipalName",
@@ -60,14 +60,14 @@ $ terraform state list
 ```
 
 ### Save and apply a plan example
-``` 
+```bash
 $ terraform plan -out=MyplanfileName
 $ terraform apply "MyplanfileName"
 ```
 
 ### Show output example
 
-```
+```bash
 $ terraform output public_ip_address
 ```
 
