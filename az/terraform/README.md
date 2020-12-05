@@ -12,6 +12,11 @@ To ssh to the virtual machine use:
 $ ssh adminuser@<fqdn>
 ```
 
+To get the public IP in the output, use:
+```bash
+$ terraform refresh
+```
+
 ## Quick start
 
 ### Requirements
