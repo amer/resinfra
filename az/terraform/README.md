@@ -9,7 +9,7 @@ The manifest will copy the public key in `~/.ssh/id_rsa.pub` to the target virtu
 
 To ssh to the virtual machine use:
 ```bash
-$ ssh adminuser@fqdn
+$ ssh adminuser@<fqdn>
 ```
 
 ## Quick start
