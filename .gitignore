@@ -139,3 +139,4 @@ terraform.rc
 /az/terraform/env.sh
 /az/terraform/draft/
 .idea/
+/az/terraform/.terraform.lock.hcl
