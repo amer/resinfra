@@ -131,14 +131,33 @@ resource "azurerm_linux_virtual_machine" "main" {
   }
 }
 
-resource "azurerm_dns_zone" "azure" {
+resource "azurerm_dns_zone" "azure_zone" {
   name                = "azure.amer.berlin"
   resource_group_name = azurerm_resource_group.main.name
 }
 
+resource "azurerm_dns_ns_record" "ns" {
+  name                = "cloudflare-amer.berlin"
+  zone_name           = azurerm_dns_zone.azure_zone.name
+  resource_group_name = azurerm_resource_group.main.name
+  ttl                 = 50
+
+  records = [
+            "ns1-09.azure-dns.com",
+            "ns2-09.azure-dns.net",
+            "ns3-09.azure-dns.org",
+            "ns4-09.azure-dns.info",
+  ]
+
+  tags = {
+    Environment = "development"
+  }
+}
+
+
 resource "azurerm_dns_a_record" "mv_public" {
   name                = azurerm_linux_virtual_machine.main.name
-  zone_name           = azurerm_dns_zone.azure.name
+  zone_name           = azurerm_dns_zone.azure_zone.name
   resource_group_name = azurerm_resource_group.main.name
   ttl                 = 100
   target_resource_id  = azurerm_public_ip.main.id
