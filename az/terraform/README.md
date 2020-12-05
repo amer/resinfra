@@ -1,15 +1,15 @@
 # What is this?
 This is a terraform manifest which will create and set up a resource group, virtual network, 
-internal subnet, network interface, network security group, public IP, and a Linux virtual machine in Azure cloud.
+internal subnet, network interface, network security group, public IP, and a Linux virtual machine, public DNS zone and DNA 'A' recored in Azure cloud.
 
 After running the manifest, you can ssh to the virtual machine using the public IP address. 
-Use `terraform output public_ip_address` to get the IP address.
+Use `terraform output fqdn` to get the fqdn.
 
 The manifest will copy the public key in `~/.ssh/id_rsa.pub` to the target virtual machine.
 
 To ssh to the virtual machine use:
 ```
-$ ssh adminuser@public_ip_address
+$ ssh adminuser@fqdn
 ```
 
 ## Quick start
