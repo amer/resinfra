@@ -2,11 +2,20 @@
 
 while [ "$vm_dimension" != "large" ] && [ "$vm_dimension" != "small" ]
         do 
+				echo "-------------------------------------------"
+				echo "Welcome to the standalone deployment tool."
+				echo "-------------------------------------------"
+				echo ""
+				echo "Current available VM dimensions/sizes/performance"
+				echo "small: 1-2 vCPU and 1-3.5 GB RAM"
+				echo "large: 4-8 vCPU and 16-32 GB RAM"
+				echo ""
                 read -p "Choose VM dimension (large/small): " vm_dimension
 done
 
 while [ "$provider" != "aws" ] && [ "$provider" != "azure" ] && [ "$provider" != "hcloud" ] && [ "$provider" != "proxmox" ]
         do 
+				echo ""
                 read -p "Choose one cloud provider for VM deployment (aws/azure/hcloud/proxmox): " provider
 done
 
@@ -31,6 +40,7 @@ fi
 
 if [ "$provider" == "proxmox" ]
 	then
+		echo ""
 		echo "Make sure you have configured your proxmox server correctly and updated the config files in ./proxmox/ acording to your configuration."
 		read -p "Choose the network CIDR of the new VM. Example: 10.1.0.101/24 Warning: There is no conflict checking. Make sure to use only valid IP addresses: " proxmox_vm_cidr
 		read -p "Choose the gateway of the new VM. Example: 10.1.0.1 Warning: Has to be valid: " proxmox_vm_gateway
@@ -95,8 +105,11 @@ fi
 
 # TODO: Error detection
 
-
+echo ""
+echo "-------------------------------------------------------------------"
 echo "Your VM is deployed and the important information are shown below:"
+echo "-------------------------------------------------------------------"
+echo ""
 case "$provider" in 
         "aws")
 		echo "IP: $(terraform output public_ip)"

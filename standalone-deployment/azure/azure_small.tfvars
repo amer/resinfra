@@ -1,1 +1,1 @@
-resinfra_vm_size = "DS1_v2"
+resinfra_vm_size = "Standard_DS1_v2"
