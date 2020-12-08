@@ -4,6 +4,12 @@
 1. What did you do today?
 1. Is there anything blocking you from moving forward?
 
+## 08.12.2020
+### Johann
+1. I read more about StrongSWAN, in particular, how to find and analyze errors that occur when establishing a VPN connection. I also talked to Jan. We agreed on the general technique to use for connecting the clouds (1 gateway node per cloud / VPC, connected to all the other gateway nodes through an IPSec tunnel).
+2. I will continue trying to find the root cause of the failing VPN connection, and sync up with Jan tomorrow.
+3. —
+
 ## 04.12.2020
 ### Julian
 1. The last time I had the team meeting and also a meeting with hundertserver. 
