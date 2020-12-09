@@ -71,7 +71,7 @@ resource "aws_security_group" "allow_outbound_traffic" {
 
 data "aws_ami" "latest-debian" {
   most_recent = true
-  owners = ["679593333241"] # Debian
+  owners = ["136693071363"] # Debian
 
   filter {
       name   = "name"
