@@ -10,11 +10,26 @@
 2. Today I will finish it and create a prerecorded demo for the meeting.
 3. I think i maybe still need help from Amer to create multiple Azure instances.
 
+### Tim
+1. Yesterday I fixed the problem with `Debian` on `aws`. The problem was that 
+   you need to subscribe to the image on marketplace **once** before using it.
+2. Today I'll update the owner of the aws image in the terraform script 
+   accordingly to use the new 10.7 release (was released on 7th Dec)
+3. -- 
+
 ## 08.12.2020
 ### Johann
 1. I read more about StrongSWAN, in particular, how to find and analyze errors that occur when establishing a VPN connection. I also talked to Jan. We agreed on the general technique to use for connecting the clouds (1 gateway node per cloud / VPC, connected to all the other gateway nodes through an IPSec tunnel).
 2. I will continue trying to find the root cause of the failing VPN connection, and sync up with Jan tomorrow.
 3. —
+
+### Tim
+1. I looked at the stories and assigned myself to [story 
+   #177](https://app.clubhouse.io/thinkdeep/story/177/change-ids-and-names-in-the-deployment-processes-to-unique-values-so-that-no-naming-conflict-occurs)
+2. Julian encountered a problem while using the `Debian` image with terraform on 
+   `AWS`. Will look into this today. It is probably due to the fact that it is 
+   available via `aws-marketplace`.
+3. --
 
 ### Julian
 1. The last days i worked on the stories for the next sprint and organized the async sprint meeting.
