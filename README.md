@@ -4,11 +4,22 @@
 1. What did you do today?
 1. Is there anything blocking you from moving forward?
 
+## 09.12.2020
+### Julian
+1. Yesterday, I worked on the script to deploy multiple VMs on the different providers.
+2. Today I will finish it and create a prerecorded demo for the meeting.
+3. I think i maybe still need help from Amer to create multiple Azure instances.
+
 ## 08.12.2020
 ### Johann
 1. I read more about StrongSWAN, in particular, how to find and analyze errors that occur when establishing a VPN connection. I also talked to Jan. We agreed on the general technique to use for connecting the clouds (1 gateway node per cloud / VPC, connected to all the other gateway nodes through an IPSec tunnel).
 2. I will continue trying to find the root cause of the failing VPN connection, and sync up with Jan tomorrow.
 3. —
+
+### Julian
+1. The last days i worked on the stories for the next sprint and organized the async sprint meeting.
+2. Today I will work on the deployment script to enable multiple VMs to be created on the different cloud provider.
+3. I noticed that it looks like the azure terraform file is the only one that dont support multiple VMs currently. I maybe have to talk with Amer to help me. 
 
 ## 04.12.2020
 ### Julian
