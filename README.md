@@ -5,6 +5,10 @@
 1. Is there anything blocking you from moving forward?
 
 ## 09.12.2020
+### Johann
+1. Put the VPN connection between AWS and Hetzner aside for now, and finally got it working between Azure and Hetzner with the help of a guide and some tinkering. Synced with Jan.
+2. I will turn the configuration of the VPN daemon on Hetzner into an ansible script for easier deployment & documentation, and look into how to setup the route tables on Hetzner.
+3. —
 ### Julian
 1. Yesterday, I worked on the script to deploy multiple VMs on the different providers.
 2. Today I will finish it and create a prerecorded demo for the meeting.
