@@ -1,12 +1,17 @@
+/*
+--------------------
+    PREPARATION  
+--------------------
+*/
+
+
 variable "prefix" {
   default = "resinfra"
 }
 
-/*
---------------
-    AZURE
---------------
-*/
+provider "hcloud" {
+  token   = var.hetzner_token
+}
 
 provider "azurerm" {
   version = "=2.37.0"
@@ -22,6 +27,10 @@ provider "azurerm" {
   tenant_id       = var.resinfra_tenant_id
 }
 
+resource "hcloud_ssh_key" "default" {
+  name       = "${var.prefix}-key"
+  public_key = file("~/.ssh/id_rsa.pub")
+}
 
 # Create a resource group
 resource "azurerm_resource_group" "main" {
@@ -29,10 +38,20 @@ resource "azurerm_resource_group" "main" {
   location = "West US"
 }
 
+
+/*
+------------------
+    NETWORKS
+-------------------
+*/
+
+
+### AZURE ###
+
 # Create a virtual network
 resource "azurerm_virtual_network" "main" {
   name                = "${var.prefix}-network"
-  address_space       = ["10.1.0.0/16"]
+  address_space       = [var.azure_vpc_cidr]
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 }
@@ -43,7 +62,7 @@ resource "azurerm_subnet" "vms" {
   name                 = "internal"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = ["10.1.1.0/24"]
+  address_prefixes     = [var.azure_vm_subnet_cidr]
 }
 
 # Create a second subnet as GatewaySubnet
@@ -52,7 +71,7 @@ resource "azurerm_subnet" "gateway" {
   name                 = "GatewaySubnet"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
-  address_prefixes     = ["10.1.2.0/24"]
+  address_prefixes     = [var.azure_gateway_subnet_cidr]
 }
 
 # Create public IPs
@@ -64,6 +83,70 @@ resource "azurerm_public_ip" "main" {
   allocation_method            = "Dynamic"
 }
 
+### HETZNER ###
+
+# Create a virtual network
+resource "hcloud_network" "main" {
+  name = "${var.prefix}-networkt"
+  ip_range = var.hetzner_vpc_cidr
+}
+
+# Create a subnet for both the gateway and the vms
+resource "hcloud_network_subnet" "main" {
+  network_id = hcloud_network.main.id
+  type = "cloud"
+  network_zone = "eu-central"
+  ip_range   = var.hetzner_subnet_cidr
+}
+
+
+/*
+-----------------------------
+    MANUAL GATEWAY VM(S)
+-----------------------------
+*/
+
+### HETZNER ###
+
+# Create VM that will be the gateway
+resource "hcloud_server" "gateway" {
+  name        = "gateway-vm"
+  image       = "ubuntu-20.04"
+  server_type = "cx11"
+  location    = "nbg1"
+  ssh_keys    = [hcloud_ssh_key.default.id]
+}
+
+# Put that VM into the subnet
+resource "hcloud_server_network" "internal" {
+  server_id = hcloud_server.gateway.id
+  subnet_id = hcloud_network_subnet.main.id
+
+  provisioner "remote-exec" {
+    inline = ["echo 'SSH is now ready!'"]
+
+    connection {
+      type        = "ssh"
+      user        = "root"
+      private_key = file("~/.ssh/id_rsa")
+      host        = hcloud_server.gateway.ipv4_address
+    }
+  }
+
+  provisioner "local-exec" {
+    command = "ansible-playbook -i '${hcloud_server.gateway.ipv4_address},' -u 'root' ../ansible/playbook.yml --extra-vars 'public_gateway_ip='${hcloud_server.gateway.ipv4_address}' local_cidr='${var.hetzner_vpc_cidr}' remote_gateway_ip='${azurerm_public_ip.main.ip_address}' remote_cidr='${var.azure_vpc_cidr}' psk='${var.shared_key}''"
+  }
+}
+
+
+/*
+----------------------------
+    MANAGED GATEWAY(S)
+----------------------------
+*/
+
+### AZURE ###
+
 # Create local network gateway
 #   This is the place where we will store the IP Adresse range of the other network
 #   as well as the ip address of the other gateway.
@@ -72,11 +155,8 @@ resource "azurerm_local_network_gateway" "hetzner_onpremise" {
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-  # !!!
-  # TODO: find a way to store and distribute these properly accross the gateways
-  # !!!
-  gateway_address     = "116.203.220.224"
-  address_space       = ["10.0.1.0/28"]
+  gateway_address     = hcloud_server.gateway.ipv4_address
+  address_space       = [var.hetzner_subnet_cidr]
 }
 
 # Create virtual network gateway
@@ -100,6 +180,13 @@ resource "azurerm_virtual_network_gateway" "main" {
   }
 }
 
+/*
+-------------------------------
+   CONNECTING THE GATEWAYS
+-------------------------------
+*/
+
+
 # Create the connection between the gateways. 
 #   Internally, this is realiszed by connecting the virtual network gateway with 
 #   the local network gateway
@@ -115,9 +202,19 @@ resource "azurerm_virtual_network_gateway_connection" "hetzner_onpremise" {
   # !!!
   # TODO: find a way to store and distribute these properly accross the gateways
   # !!!
-  shared_key = "aksjdcsajhdcinsadicnsdauicnsughuscbhjsdbvszuaedgffzusgczugasdzvgsahjvdahcbhzsgdczgszdv"
+  shared_key = var.shared_key
 }
-  
+
+# create a route in the Hetzner Network for Azure traffic
+resource "hcloud_network_route" "to_gateway" {
+  network_id = hcloud_network.main.id
+  destination = var.azure_vpc_cidr
+  gateway = hcloud_server_network.internal.ip
+}
+
+
+# TODO: outputs
+
 
 /*
 ------------
