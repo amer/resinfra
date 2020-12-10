@@ -10,10 +10,10 @@ conn ipsec-ikev2-vpn
     type=tunnel
     keyexchange=ikev2
     authby=secret
-    left=${my_ip_address}
-    leftsubnet=${local_cidr}
-    right=${remote_ip_address}
-    rightsubnet=${remote_cidr}
+    left=135.181.152.52 #${my_ip_address}
+    leftsubnet=10.0.1.0/24 #${local_cidr}
+    right=40.112.164.128 #${remote_ip_address}
+    rightsubnet=10.1.0.0/16 #${remote_cidr}
     ike=aes256-sha1-modp1024 # tested for azure
     aggressive=no
     keyingtries=%forever
