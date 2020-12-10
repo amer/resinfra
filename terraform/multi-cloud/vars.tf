@@ -73,10 +73,6 @@ variable "location" {
   default = "nbg1"
 }
 
-variable "instances" {
-  default = "1"
-}
-
 variable "server_type" {
   default = "cx11"
   description = "server type to get. Refer to https://www.hetzner.com/cloud for more information about server types."
@@ -112,17 +108,14 @@ variable "proxmox_target_node" {
 
 variable "proxmox_vm_cidr" {
   type = string
-  description = "The CIDR of the new VM. Example: 10.1.0.101/24 Warning: There is no conflict checking. Make sure to use only valid IP addresses."
+  description = "Start of the IP-Address of the new VM. Example: 10.1.0.10 will result int IPs: 10.1.0.101, 10.1.0.102 ...  Warning: There is no conflict checking. Make sure to use only valid IP addresses."
+  default = "10.1.0.10"
 }
 
 variable "proxmox_vm_gateway" {
   type = string
   description = "The gateway of the new VM. Example: 10.1.0.1 Warning: There is no conflict checking. Make sure to use only valid IP addresses."
-}
-
-variable "proxmox_vm_name" {
-  type = string
-  description = "The hostname of the new VM. Has to be unique. Warning: There is no conflict check"
+  default = "10.1.0.1"
 }
 
 variable "proxmox_cpu_cores" {

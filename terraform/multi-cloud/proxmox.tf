@@ -6,11 +6,6 @@ provider "proxmox" {
 }
 
 resource "proxmox_vm_qemu" "proxmox_vm" {
-  ## Wait for the cloud-config file to exist
-  depends_on = [
-    null_resource.user_data
-  ]
-
   count             = var.instances
   name              = "${var.prefix}-vm-${count.index+1}"
   target_node       = var.proxmox_target_node
