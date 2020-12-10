@@ -90,7 +90,7 @@ resource "azurerm_linux_virtual_machine" "main" {
   name                = "${var.prefix}-vm"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
-  size                = "Standard_DS1_v2" # Specs of Standard_DS1_v2 vm: (vCPU: 1, Memory: 3.5 GiB, Storage (SSD): 7 GiB)
+  size                = var.resinfra_vm_size
   admin_username      = "adminuser"
   network_interface_ids = [
     azurerm_network_interface.main.id,

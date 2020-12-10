@@ -16,6 +16,10 @@ terraform {
       source = "hashicorp/template"
       version = "~> 2.2.0"
     }
+     proxmox = {
+      source = "Telmate/proxmox"
+      version = "~> 2.6.5"
+    }
   }
-  required_version = ">=0.12"
+  required_version = ">=0.13.5"
 }
