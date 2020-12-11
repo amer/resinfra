@@ -1,8 +1,15 @@
+terraform {
+  required_providers {
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "=2.37.0"
+    }
+  }
+}
+
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
-  version = "=2.37.0"
   features {}
-
   # More information on the authentication methods supported by
   # the AzureRM Provider can be found here:
   # http://terraform.io/docs/providers/azurerm/index.html
@@ -15,6 +22,10 @@ provider "azurerm" {
 
 variable "prefix" {
   default = "resinfra"
+}
+
+resource "random_id" "mv_random_id" {
+  byte_length = 8
 }
 
 # Create a resource group
@@ -33,7 +44,7 @@ resource "azurerm_virtual_network" "main" {
 
 # Create a subnet
 resource "azurerm_subnet" "internal" {
-  name                 = "internal"
+  name                 = "${var.prefix}-internal"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = ["10.0.2.0/24"]
@@ -83,11 +94,17 @@ resource "azurerm_public_ip" "main" {
   location                     = azurerm_resource_group.main.location
   resource_group_name          = azurerm_resource_group.main.name
   allocation_method            = "Dynamic"
+  idle_timeout_in_minutes      = 30
+  ip_version                   = "IPv4"
+
+  tags = {
+    environment = "development"
+  }
 }
 
 # Create a virtual machine
 resource "azurerm_linux_virtual_machine" "main" {
-  name                = "${var.prefix}-vm"
+  name                = "vm-${var.prefix}-${random_id.mv_random_id.b64_url}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   size                = "Standard_DS1_v2" # Specs of Standard_DS1_v2 vm: (vCPU: 1, Memory: 3.5 GiB, Storage (SSD): 7 GiB)
@@ -114,6 +131,42 @@ resource "azurerm_linux_virtual_machine" "main" {
   }
 }
 
+resource "azurerm_dns_zone" "azure_zone" {
+  name                = "azure.amer.berlin"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_dns_ns_record" "ns" {
+  name                = "cloudflare-amer.berlin"
+  zone_name           = azurerm_dns_zone.azure_zone.name
+  resource_group_name = azurerm_resource_group.main.name
+  ttl                 = 50
+
+  records = [
+            "ns1-09.azure-dns.com",
+            "ns2-09.azure-dns.net",
+            "ns3-09.azure-dns.org",
+            "ns4-09.azure-dns.info",
+  ]
+
+  tags = {
+    Environment = "development"
+  }
+}
+
+
+resource "azurerm_dns_a_record" "mv_public" {
+  name                = azurerm_linux_virtual_machine.main.name
+  zone_name           = azurerm_dns_zone.azure_zone.name
+  resource_group_name = azurerm_resource_group.main.name
+  ttl                 = 100
+  target_resource_id  = azurerm_public_ip.main.id
+}
+
+output "fqdn" {
+  value = azurerm_dns_a_record.mv_public.fqdn
+}
+
 output "public_ip_address" {
-  value = azurerm_public_ip.main.ip_address
+  value = azurerm_public_ip.main.*.ip_address
 }
