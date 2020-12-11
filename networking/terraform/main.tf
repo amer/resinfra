@@ -87,7 +87,7 @@ resource "azurerm_public_ip" "main" {
 
 # Create a virtual network
 resource "hcloud_network" "main" {
-  name = "${var.prefix}-networkt"
+  name = "${var.prefix}-network"
   ip_range = var.hetzner_vpc_cidr
 }
 
