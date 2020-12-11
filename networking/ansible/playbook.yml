@@ -16,9 +16,7 @@
       apt:
         name:
           - strongswan
-          - strongswan-swanctl
           - libcharon-extra-plugins
-          # strongswan-pki
         state: present
         update_cache: yes
 
@@ -36,4 +34,3 @@
 
     - name: apply IPSec changes
       shell: ipsec restart; ipsec status
-    # wait for ipsec status to show ESTABLISHED
