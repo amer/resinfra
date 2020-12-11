@@ -40,4 +40,4 @@
         mode: 400
 
     - name: apply IPSec changes
-      shell: ipsec restart; ipsec status
+      shell: ipsec restart
