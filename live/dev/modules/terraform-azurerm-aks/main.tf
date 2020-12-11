@@ -3,7 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "=2.37.0"
+      version = "2.40.0"
     }
   }
 }
@@ -19,6 +19,28 @@ provider "azurerm" {
   client_id       = var.client_id
   client_secret   = var.client_secret
   tenant_id       = var.tenant_id
+}
+
+resource "azurerm_network_security_group" "wireguard_access" {
+  name                = "acceptanceTestSecurityGroup1"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  security_rule {
+    name                       = "wireguard_access"
+    priority                   = 100
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "UDP"
+    source_port_range          = "*"
+    destination_port_range     = "51820"
+    source_address_prefix      = "*"
+    destination_address_prefixes = azurerm_subnet.main.address_prefixes
+  }
+
+  tags = {
+    environment = "Production"
+  }
 }
 
 resource "azurerm_resource_group" "main" {
@@ -42,17 +64,8 @@ resource "azurerm_subnet" "main" {
   virtual_network_name = azurerm_virtual_network.main.name
   resource_group_name  = azurerm_resource_group.main.name
   address_prefixes     = var.subnet_address_prefixes
-
-
-//  delegation {
-//    name = "aciDelegation"
-//    service_delegation {
-//      name = "Microsoft.ContainerInstance/containerGroups"
-//      actions = [
-//        "Microsoft.Network/virtualNetworks/subnets/action"]
-//    }
-//  }
 }
+
 
 resource "azurerm_log_analytics_workspace" "main" {
   # The WorkSpace name has to be unique across the whole of azure, not just the current subscription/tenant.
@@ -100,7 +113,7 @@ resource "azurerm_kubernetes_cluster" "main" {
     type                = "VirtualMachineScaleSets"
     availability_zones  = ["1", "2", "3"]
     enable_auto_scaling = true
-    min_count           = 3
+    min_count           = 2
     max_count           = 5
     vnet_subnet_id      = azurerm_subnet.main.id
   }
@@ -127,13 +140,13 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   tags = {
-    App = "k8s"
+    App         = "k8s"
     Environment = "Development"
   }
 }
 
 module "install_helm" {
-  source = "../helm"
+  source                 = "../helm"
   host                   = azurerm_kubernetes_cluster.main.kube_config.0.host
   client_certificate     = base64decode(azurerm_kubernetes_cluster.main.kube_config.0.client_certificate)
   client_key             = base64decode(azurerm_kubernetes_cluster.main.kube_config.0.client_key)

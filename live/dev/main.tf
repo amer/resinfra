@@ -1,36 +1,46 @@
-module "azure_aks_eastus" {
+locals {
+  project_name = "ri"
+  siteA = {
+    region = "eastus"
+  }
+  siteB = {
+    region = "eastus2"
+  }
+}
+
+module "azure_aks_siteA" {
   source = "./modules/terraform-azurerm-aks"
   subscription_id               = var.subscription_id
   client_id                     = var.client_id
   client_secret                 = var.client_secret
   tenant_id                     = var.tenant_id
-  prefix                        = "ri-eastus"
-  location                      = "eastus"
-  cluster_name                  = "ri-eastus-k8s-cluster"
-  dns_prefix                    = "ri-eastus-k8s"
+  location                      = local.siteA.region
+  prefix                        = "${local.project_name}-${local.siteA.region}"
+  cluster_name                  = "${local.project_name}-k8s-cluster-${local.siteA.region}"
+  dns_prefix                    = "${local.project_name}-k8s-${local.siteA.region}"
   ssh_public_key                = "~/.ssh/id_rsa.pub"
-  log_analytics_workspace_name  = "ri-eastus-k8s-log-analytics-workspace"
-  agent_count                   = 3
+  log_analytics_workspace_name  = "${local.project_name}-k8s-log-analytics-workspace-${local.siteA.region}"
+  agent_count                   = 2
   virtual_network_address_space = ["10.1.0.0/16"]
   subnet_address_prefixes       = ["10.1.0.0/24"]
 }
 
-module "azure_aks_westus" {
-  source = "./modules/terraform-azurerm-aks"
-  subscription_id               = var.subscription_id
-  client_id                     = var.client_id
-  client_secret                 = var.client_secret
-  tenant_id                     = var.tenant_id
-  prefix                        = "ri-eastus2"
-  location                      = "eastus2"
-  cluster_name                  = "ri-eastus2-k8s-cluster"
-  dns_prefix                    = "ri-eastus2-k8s"
-  ssh_public_key                = "~/.ssh/id_rsa.pub"
-  log_analytics_workspace_name  = "ri-eastus2-k8s-log-analytics-workspace"
-  agent_count                   = 3
-  virtual_network_address_space = ["10.2.0.0/16"]
-  subnet_address_prefixes       = ["10.2.0.0/24"]
-}
+//module "azure_aks_siteB" {
+//  source = "./modules/terraform-azurerm-aks"
+//  subscription_id               = var.subscription_id
+//  client_id                     = var.client_id
+//  client_secret                 = var.client_secret
+//  tenant_id                     = var.tenant_id
+//  location                      = local.siteB.region
+//  prefix                        = "${local.project_name}-${local.siteB.region}"
+//  cluster_name                  = "${local.project_name}-k8s-cluster-${local.siteB.region}"
+//  dns_prefix                    = "${local.project_name}-k8s-${local.siteB.region}"
+//  ssh_public_key                = "~/.ssh/id_rsa.pub"
+//  log_analytics_workspace_name  = "${local.project_name}-k8s-log-analytics-workspace-${local.siteB.region}"
+//  agent_count                   = 2
+//  virtual_network_address_space = ["10.2.0.0/16"]
+//  subnet_address_prefixes       = ["10.2.0.0/24"]
+//}
 
 //module "gcp_project" {
 //  source = "./modules/terraform-gcp-project"
