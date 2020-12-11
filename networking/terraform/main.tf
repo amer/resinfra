@@ -110,7 +110,7 @@ resource "hcloud_network_subnet" "main" {
 
 # Create VM that will be the gateway
 resource "hcloud_server" "gateway" {
-  name        = "gateway-vm"
+  name        = "${var.prefix}-gateway-vm"
   image       = "ubuntu-20.04"
   server_type = "cx11"
   location    = "nbg1"
