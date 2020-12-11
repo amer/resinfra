@@ -4,6 +4,12 @@
 1. What did you do today?
 1. Is there anything blocking you from moving forward?
 
+## 11.12.2020
+### Johann
+1. I finally got the route tables on HCloud configured so that all machines can reach Azure. Jan and I automated the setup w/ TF and Ansible.
+2. I will document the current networking setup. There is also a difference of opinion whether we should use Docker or "bare" VMs to host our VPN gateways. I hope to discuss this with Amer today.
+3. —
+
 ## 09.12.2020
 ### Johann
 1. Put the VPN connection between AWS and Hetzner aside for now, and finally got it working between Azure and Hetzner with the help of a guide and some tinkering. Synced with Jan.
