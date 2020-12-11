@@ -94,3 +94,4 @@ In the end, we chose an approach similar to the one on Azure: Configure the same
 - Proxmox 
 - Think about benefits and drawbacks of a dockerized solution.
 - Assign routing prefixes to each of the four providers consistently.
+- Open questions listed in the [previous report](Azure-AWS-VPN.md)
