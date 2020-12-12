@@ -164,6 +164,23 @@ resource "azurerm_kubernetes_cluster" "main" {
     network_policy     = "calico"
   }
 
+  // TODO copy kube_config to ~/Download/somenamehere
+//  provisioner "local-exec" {
+//    command = <<EOF
+//      az aks get-credentials \
+//      --resource-group ${azurerm_kubernetes_cluster.main.resource_group_name} \
+//      --name ${azurerm_kubernetes_cluster.main.name} \
+//      --overwrite-existing
+//
+//      cp -f /.kube/config ~/Download/kube_confit_${azurerm_kubernetes_cluster.main.name}
+//    EOF
+//  }
+
+
+  provisioner "local-exec" {
+    command = "/bin/bash ${path.root}/scripts/install-kubernetes-dashboard.sh"
+  }
+
   tags = {
     App         = "k8s"
     Environment = "development"
