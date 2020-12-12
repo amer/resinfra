@@ -78,15 +78,6 @@ resource "azurerm_dns_ns_record" "ns" {
   }
 }
 
-//resource "azurerm_dns_a_record" "mv_public" {
-//  name                = azurerm_linux_virtual_machine.main.name
-//  zone_name           = azurerm_dns_zone.azure_zone.name
-//  resource_group_name = azurerm_resource_group.main.name
-//  ttl                 = 200
-//  target_resource_id  = azurerm_public_ip.main.id
-//}
-
-
 resource "azurerm_resource_group" "main" {
   name     = "${var.prefix}-rg"
   location = var.location
@@ -96,19 +87,6 @@ resource "random_id" "log_analytics_workspace_name_suffix" {
   byte_length = 8
 }
 
-//resource "azurerm_virtual_network" "main" {
-//  name                = "${var.prefix}-vnet"
-//  location            = azurerm_resource_group.main.location
-//  resource_group_name = azurerm_resource_group.main.name
-//  address_space       = var.virtual_network_address_space
-//}
-//
-//resource "azurerm_subnet" "main" {
-//  name                 = "${var.prefix}-aks-subnet"
-//  virtual_network_name = azurerm_virtual_network.main.name
-//  resource_group_name  = azurerm_resource_group.main.name
-//  address_prefixes     = var.subnet_address_prefixes
-//}
 
 
 resource "azurerm_log_analytics_workspace" "main" {
@@ -181,7 +159,6 @@ resource "azurerm_kubernetes_cluster" "main" {
   network_profile {
     load_balancer_sku   = "Standard"
     network_plugin      = "azure" # azure == cni
-    #pod_cidr = "10.3.0.0/24" #var.subnet_address_prefixes.0
     dns_service_ip      = var.dns_service_ip
     service_cidr        = var.service_cidr
     docker_bridge_cidr  = "172.17.0.1/16"
