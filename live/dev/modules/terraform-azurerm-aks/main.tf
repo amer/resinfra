@@ -22,26 +22,70 @@ provider "azurerm" {
 }
 
 resource "azurerm_network_security_group" "wireguard_access" {
-  name                = "acceptanceTestSecurityGroup1"
+  name                = "wireguard_sg"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
   security_rule {
-    name                       = "wireguard_access"
+    name                       = "wireguard_udp"
     priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "UDP"
     source_port_range          = "*"
-    destination_port_range     = "51820"
+    destination_port_ranges    = [7946,51820]
     source_address_prefix      = "*"
-    destination_address_prefixes = azurerm_subnet.main.address_prefixes
+    destination_address_prefixes = var.subnet_cidr
+  }
+
+  security_rule {
+    name                       = "wireguard_tcp"
+    priority                   = 101
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "tcp"
+    source_port_range          = "*"
+    destination_port_ranges    = [7946]
+    source_address_prefix      = "*"
+    destination_address_prefixes = var.subnet_cidr
   }
 
   tags = {
-    environment = "Production"
+    environment = "development"
   }
 }
+
+resource "azurerm_dns_zone" "azure_zone" {
+  name                = "azure.amer.berlin"
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+resource "azurerm_dns_ns_record" "ns" {
+  name                = "cloudflare-amer.berlin"
+  zone_name           = azurerm_dns_zone.azure_zone.name
+  resource_group_name = azurerm_resource_group.main.name
+  ttl                 = 50
+
+  records = [
+    "ns1-09.azure-dns.com",
+    "ns2-09.azure-dns.net",
+    "ns3-09.azure-dns.org",
+    "ns4-09.azure-dns.info",
+  ]
+
+  tags = {
+    Environment = "development"
+  }
+}
+
+//resource "azurerm_dns_a_record" "mv_public" {
+//  name                = azurerm_linux_virtual_machine.main.name
+//  zone_name           = azurerm_dns_zone.azure_zone.name
+//  resource_group_name = azurerm_resource_group.main.name
+//  ttl                 = 200
+//  target_resource_id  = azurerm_public_ip.main.id
+//}
+
 
 resource "azurerm_resource_group" "main" {
   name     = "${var.prefix}-rg"
@@ -52,19 +96,19 @@ resource "random_id" "log_analytics_workspace_name_suffix" {
   byte_length = 8
 }
 
-resource "azurerm_virtual_network" "main" {
-  name                = "${var.prefix}-vnet"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  address_space       = var.virtual_network_address_space
-}
-
-resource "azurerm_subnet" "main" {
-  name                 = "${var.prefix}-aks-subnet"
-  virtual_network_name = azurerm_virtual_network.main.name
-  resource_group_name  = azurerm_resource_group.main.name
-  address_prefixes     = var.subnet_address_prefixes
-}
+//resource "azurerm_virtual_network" "main" {
+//  name                = "${var.prefix}-vnet"
+//  location            = azurerm_resource_group.main.location
+//  resource_group_name = azurerm_resource_group.main.name
+//  address_space       = var.virtual_network_address_space
+//}
+//
+//resource "azurerm_subnet" "main" {
+//  name                 = "${var.prefix}-aks-subnet"
+//  virtual_network_name = azurerm_virtual_network.main.name
+//  resource_group_name  = azurerm_resource_group.main.name
+//  address_prefixes     = var.subnet_address_prefixes
+//}
 
 
 resource "azurerm_log_analytics_workspace" "main" {
@@ -115,7 +159,7 @@ resource "azurerm_kubernetes_cluster" "main" {
     enable_auto_scaling = true
     min_count           = 2
     max_count           = 5
-    vnet_subnet_id      = azurerm_subnet.main.id
+    #vnet_subnet_id      = azurerm_kubernetes_cluster.main.network_profile.
   }
 
   service_principal {
@@ -135,13 +179,18 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   network_profile {
-    load_balancer_sku = "Standard"
-    network_plugin    = "kubenet"
+    load_balancer_sku   = "Standard"
+    network_plugin      = "azure" # azure == cni
+    #pod_cidr = "10.3.0.0/24" #var.subnet_address_prefixes.0
+    dns_service_ip      = var.dns_service_ip
+    service_cidr        = var.service_cidr
+    docker_bridge_cidr  = "172.17.0.1/16"
+    network_policy      = "calico"
   }
 
   tags = {
     App         = "k8s"
-    Environment = "Development"
+    Environment = "development"
   }
 }
 
@@ -157,4 +206,3 @@ data "azurerm_kubernetes_cluster" "main" {
   name                = azurerm_kubernetes_cluster.main.name
   resource_group_name = azurerm_kubernetes_cluster.main.resource_group_name
 }
-
