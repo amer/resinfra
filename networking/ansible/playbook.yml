@@ -2,19 +2,26 @@
 - hosts: all # actually only gateway nodes
   tasks:
     # enable kernel packet forwarding
-    - ansible.posix.sysctl:
+    - name: enable ipv4 forwarding
+      ansible.posix.sysctl:
         name: net.ipv4.ip_forward
         value: '1'
         reload: no
-    - ansible.posix.sysctl:
+        
+    - name: enable ipv6 forwarding
+      ansible.posix.sysctl:
         name: net.ipv6.conf.all.forwarding
         value: '1'
         reload: no
-    - ansible.posix.sysctl:
+        
+    - name: disable ipv4 redicrects
+      ansible.posix.sysctl:
         name: net.ipv4.conf.all.accept_redirects
         value: '0'
         reload: no
-    - ansible.posix.sysctl:
+        
+    - name: disable ipv4 send redirects
+      ansible.posix.sysctl:
         name: net.ipv4.conf.all.send_redirects
         value: '0'
         reload: yes
@@ -31,13 +38,13 @@
       template:
         src: ipsec.conf.j2
         dest: /etc/ipsec.conf
-        mode: 400
+        mode: 0400
 
     - name: add PSK
       template:
         src: ipsec.secrets.j2
         dest: /etc/ipsec.secrets
-        mode: 400
+        mode: 0400
 
     - name: apply IPSec changes
       shell: ipsec restart
