@@ -33,9 +33,9 @@ resource "azurerm_network_security_group" "wireguard_access" {
     access                     = "Allow"
     protocol                   = "UDP"
     source_port_range          = "*"
-    destination_port_ranges    = [7946,51820]
+    destination_port_ranges    = [7946, 51820]
     source_address_prefix      = "*"
-    destination_address_prefixes = var.subnet_cidr
+    destination_address_prefix = var.service_cidr
   }
 
   security_rule {
@@ -47,7 +47,7 @@ resource "azurerm_network_security_group" "wireguard_access" {
     source_port_range          = "*"
     destination_port_ranges    = [7946]
     source_address_prefix      = "*"
-    destination_address_prefixes = var.subnet_cidr
+    destination_address_prefix = var.service_cidr
   }
 
   tags = {
@@ -137,7 +137,6 @@ resource "azurerm_kubernetes_cluster" "main" {
     enable_auto_scaling = true
     min_count           = 2
     max_count           = 5
-    #vnet_subnet_id      = azurerm_kubernetes_cluster.main.network_profile.
   }
 
   service_principal {
@@ -157,12 +156,12 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   network_profile {
-    load_balancer_sku   = "Standard"
-    network_plugin      = "azure" # azure == cni
-    dns_service_ip      = var.dns_service_ip
-    service_cidr        = var.service_cidr
-    docker_bridge_cidr  = "172.17.0.1/16"
-    network_policy      = "calico"
+    load_balancer_sku  = "Standard"
+    network_plugin     = "azure" # azure == cni
+    dns_service_ip     = var.dns_service_ip
+    service_cidr       = var.service_cidr
+    docker_bridge_cidr = "172.17.0.1/16"
+    network_policy     = "calico"
   }
 
   tags = {

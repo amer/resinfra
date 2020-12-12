@@ -10,7 +10,6 @@ variable "ssh_public_key" {}
 variable "agent_count" {}
 variable log_analytics_workspace_name {}
 variable service_cidr {}
-variable subnet_cidr {}
 variable dns_service_ip {}
 
 # Refer https://azure.microsoft.com/global-infrastructure/services/?products=monitor

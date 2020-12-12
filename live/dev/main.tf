@@ -21,8 +21,7 @@ module "azure_aks_siteA" {
   ssh_public_key                = "~/.ssh/id_rsa.pub"
   log_analytics_workspace_name  = "${local.project_name}-k8s-log-analytics-workspace-${local.siteA.region}"
   agent_count                   = 2
-  service_cidr                  = ["10.0.0.0/12"]
-  subnet_cidr                   = ["10.1.0.0/16"]
+  service_cidr                  = "10.0.0.0/12"
   dns_service_ip                = "10.0.0.10"
 }
 
