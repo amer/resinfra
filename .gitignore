@@ -140,3 +140,4 @@ terraform.rc
 /az/terraform/draft/
 .idea/
 *.hcl
+/tmp/

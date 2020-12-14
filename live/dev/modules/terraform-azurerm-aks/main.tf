@@ -21,6 +21,8 @@ provider "azurerm" {
   tenant_id       = var.tenant_id
 }
 
+
+
 resource "azurerm_network_security_group" "wireguard_access" {
   name                = "wireguard_sg"
   location            = azurerm_resource_group.main.location
@@ -64,7 +66,7 @@ resource "azurerm_dns_ns_record" "ns" {
   name                = "cloudflare-amer.berlin"
   zone_name           = azurerm_dns_zone.azure_zone.name
   resource_group_name = azurerm_resource_group.main.name
-  ttl                 = 50
+  ttl                 = 300
 
   records = [
     "ns1-09.azure-dns.com",
@@ -78,6 +80,22 @@ resource "azurerm_dns_ns_record" "ns" {
   }
 }
 
+resource "azurerm_public_ip" "den" {
+  name                = "den-public-ip"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  allocation_method   = "Static"
+  ip_version          = "IPv4"
+}
+
+resource "azurerm_dns_a_record" "den" {
+  name                = "den"
+  zone_name           = azurerm_dns_zone.azure_zone.name
+  resource_group_name = azurerm_resource_group.main.name
+  ttl                 = 300
+  target_resource_id  = azurerm_public_ip.den.id
+}
+
 resource "azurerm_resource_group" "main" {
   name     = "${var.prefix}-rg"
   location = var.location
@@ -87,34 +105,33 @@ resource "random_id" "log_analytics_workspace_name_suffix" {
   byte_length = 8
 }
 
+//resource "azurerm_log_analytics_workspace" "main" {
+//  # The WorkSpace name has to be unique across the whole of azure, not just the current subscription/tenant.
+//  name                = "${var.log_analytics_workspace_name}-${random_id.log_analytics_workspace_name_suffix.dec}"
+//  location            = var.log_analytics_workspace_location
+//  resource_group_name = azurerm_resource_group.main.name
+//  sku                 = var.log_analytics_workspace_sku
+//}
 
-
-resource "azurerm_log_analytics_workspace" "main" {
-  # The WorkSpace name has to be unique across the whole of azure, not just the current subscription/tenant.
-  name                = "${var.log_analytics_workspace_name}-${random_id.log_analytics_workspace_name_suffix.dec}"
-  location            = var.log_analytics_workspace_location
-  resource_group_name = azurerm_resource_group.main.name
-  sku                 = var.log_analytics_workspace_sku
-}
-
-resource "azurerm_log_analytics_solution" "test" {
-  solution_name         = "ContainerInsights"
-  location              = azurerm_log_analytics_workspace.main.location
-  resource_group_name   = azurerm_resource_group.main.name
-  workspace_resource_id = azurerm_log_analytics_workspace.main.id
-  workspace_name        = azurerm_log_analytics_workspace.main.name
-
-  plan {
-    publisher = "Microsoft"
-    product   = "OMSGallery/ContainerInsights"
-  }
-}
+//resource "azurerm_log_analytics_solution" "test" {
+//  solution_name         = "ContainerInsights"
+//  location              = azurerm_log_analytics_workspace.main.location
+//  resource_group_name   = azurerm_resource_group.main.name
+//  workspace_resource_id = azurerm_log_analytics_workspace.main.id
+//  workspace_name        = azurerm_log_analytics_workspace.main.name
+//
+//  plan {
+//    publisher = "Microsoft"
+//    product   = "OMSGallery/ContainerInsights"
+//  }
+//}
 
 resource "azurerm_kubernetes_cluster" "main" {
   name                = var.cluster_name
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   dns_prefix          = var.dns_prefix
+  kubernetes_version  = "1.19.3"
 
   role_based_access_control {
     enabled = true
@@ -137,6 +154,7 @@ resource "azurerm_kubernetes_cluster" "main" {
     enable_auto_scaling = true
     min_count           = 2
     max_count           = 5
+    os_disk_size_gb     = 30 # can't be smaller
   }
 
   service_principal {
@@ -144,16 +162,18 @@ resource "azurerm_kubernetes_cluster" "main" {
     client_secret = var.client_secret
   }
 
-  addon_profile {
-    kube_dashboard {
-      enabled = true # TODO change to false in production
-    }
+  # api_server_authorized_ip_ranges = ["0.0.0.0/0"]
 
-    oms_agent {
-      enabled                    = true
-      log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
-    }
-  }
+  //  addon_profile {
+  ////    kube_dashboard {
+  ////      enabled = true # TODO change to false in production
+  ////    }
+  //
+  //    //    oms_agent {
+  //    //      enabled                    = true
+  //    //      log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
+  //    //    }
+  //  }
 
   network_profile {
     load_balancer_sku  = "Standard"
@@ -164,19 +184,19 @@ resource "azurerm_kubernetes_cluster" "main" {
     network_policy     = "calico"
   }
 
-  // TODO copy kube_config to ~/Download/somenamehere
-//  provisioner "local-exec" {
-//    command = <<EOF
-//      az aks get-credentials \
-//      --resource-group ${azurerm_kubernetes_cluster.main.resource_group_name} \
-//      --name ${azurerm_kubernetes_cluster.main.name} \
-//      --overwrite-existing
-//
-//      cp -f /.kube/config ~/Download/kube_confit_${azurerm_kubernetes_cluster.main.name}
-//    EOF
-//  }
+  # TODO copy kube_config to ~/Download/somenamehere
+  provisioner "local-exec" {
+    command = <<EOF
+      az aks get-credentials \
+      --resource-group ${azurerm_kubernetes_cluster.main.resource_group_name} \
+      --name ${azurerm_kubernetes_cluster.main.name} \
+      --overwrite-existing
 
+      # $ cp -f ~/.kube/config ~/Downloadskube_confit_${azurerm_kubernetes_cluster.main.name}
+    EOF
+  }
 
+  # TODO use Helm chart instead of this ugly bash
   provisioner "local-exec" {
     command = "/bin/bash ${path.root}/scripts/install-kubernetes-dashboard.sh"
   }
@@ -186,6 +206,18 @@ resource "azurerm_kubernetes_cluster" "main" {
     Environment = "development"
   }
 }
+
+//resource "azurerm_kubernetes_cluster_node_pool" "public" {
+//  name                  = "public"
+//  kubernetes_cluster_id = azurerm_kubernetes_cluster.main.id
+//  vm_size               = "Standard_DS2_v2"
+//  node_count            = 1
+//  enable_node_public_ip = true
+//
+//  tags = {
+//    Environment = "Production"
+//  }
+//}
 
 module "install_helm" {
   source                 = "../helm"
