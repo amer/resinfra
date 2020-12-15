@@ -36,20 +36,25 @@ resource "helm_release" "nginx-stable" {
     value = true
   }
 
-  set {
-    name = "defaultBackend.nodeSelector"
-    value = ""
-  }
+//  set {
+//    name = "defaultBackend.nodeSelector"
+//    value = ""
+//  }
 
   set {
     name = "controller.replicaCount"
     value = "1"
   }
 
-//  set {
-//    name = "controller.service.loadBalancerIP"
-//    value = ""
-//  }
+  set {
+    name = "prometheus.create"
+    value = true
+  }
+
+  set {
+    name = "enableLatencyMetrics"
+    value = true
+  }
 
   set {
     name = "controller.publishService.enabled"
