@@ -5,6 +5,7 @@ terraform {
     kubernetes = "=1.13.3"
   }
 }
+
 provider "helm" {
   kubernetes {
     load_config_file = "false"
@@ -29,8 +30,32 @@ resource "helm_release" "nginx-stable" {
   repository = "https://helm.nginx.com/stable"
   namespace = "ingress-nginx"
   create_namespace = true
-}
 
+  set {
+    name = "controller.publishService.enabled"
+    value = true
+  }
+
+  set {
+    name = "defaultBackend.nodeSelector"
+    value = ""
+  }
+
+  set {
+    name = "controller.replicaCount"
+    value = "1"
+  }
+
+//  set {
+//    name = "controller.service.loadBalancerIP"
+//    value = ""
+//  }
+
+  set {
+    name = "controller.publishService.enabled"
+    value = true
+  }
+}
 
 # L4 ingress
 resource "helm_release" "haproxytech" {

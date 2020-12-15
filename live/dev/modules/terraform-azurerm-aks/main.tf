@@ -36,7 +36,7 @@ resource "cloudflare_record" "public-zone-ns" {
   type       = "NS"
   ttl        = "120"
   count      = 4
-  value      = element(azurerm_dns_zone.azure_zone.name_servers[*], count.index)
+  value      = trimsuffix(element(azurerm_dns_zone.azure_zone.name_servers[*], count.index),".")
   depends_on = [azurerm_dns_zone.azure_zone]
 }
 
@@ -186,7 +186,6 @@ resource "azurerm_kubernetes_cluster_node_pool" "external" {
   max_count             = 2
   enable_auto_scaling   = true
   enable_node_public_ip = true
-
 
 
   tags = {
