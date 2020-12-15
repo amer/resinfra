@@ -102,21 +102,20 @@ resource "azurerm_dns_zone" "azure_zone" {
 //  }
 //}
 
-resource "azurerm_public_ip" "ri" {
-  name                = "ri-public-ip"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  allocation_method   = "Dynamic"
+resource "azurerm_public_ip" "ingress_pip" {
+  name                = "nginx-ingress-pip"
+  location            = azurerm_kubernetes_cluster.main.location
+  resource_group_name = azurerm_kubernetes_cluster.main.node_resource_group
+  allocation_method   = "Static"
   ip_version          = "IPv4"
 }
 
-resource "azurerm_dns_a_record" "ri" {
-  name                = "ri"
+resource "azurerm_dns_a_record" "ingress_pip" {
+  name                = "*"
   zone_name           = azurerm_dns_zone.azure_zone.name
   resource_group_name = azurerm_resource_group.main.name
+  target_resource_id  = azurerm_public_ip.ingress_pip.id
   ttl                 = 300
-  target_resource_id  = azurerm_public_ip.ri.id
-  depends_on          = [cloudflare_record.public-zone-ns]
 }
 
 resource "azurerm_resource_group" "main" {
@@ -124,9 +123,9 @@ resource "azurerm_resource_group" "main" {
   location = var.location
 }
 
-resource "random_id" "log_analytics_workspace_name_suffix" {
-  byte_length = 8
-}
+//resource "random_id" "log_analytics_workspace_name_suffix" {
+//  byte_length = 8
+//}
 
 //resource "azurerm_log_analytics_workspace" "main" {
 //  # The WorkSpace name has to be unique across the whole of azure, not just the current subscription/tenant.
@@ -164,13 +163,6 @@ resource "random_id" "log_analytics_workspace_name_suffix" {
 //  address_prefixes     = ["10.0.1.0/24"]
 //}
 
-resource "azurerm_public_ip" "nginx_ingress" {
-  name                = "nginx-ingress-pip"
-  location            = azurerm_kubernetes_cluster.main.location
-  resource_group_name = azurerm_kubernetes_cluster.main.node_resource_group
-  allocation_method   = "Static"
-  domain_name_label   = "ri.az.amer.berlin"
-}
 
 
 resource "azurerm_kubernetes_cluster" "main" {
@@ -193,26 +185,23 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   default_node_pool {
-    name                = "agentpool"
-    node_count          = var.agent_count
-    vm_size             = "Standard_D2_v2"
-    type                = "VirtualMachineScaleSets"
-    availability_zones  = ["1", "2", "3"]
-    enable_auto_scaling = true
-    min_count           = 2
-    max_count           = 5
-    os_disk_size_gb     = 30 # can't be smaller
-    enable_node_public_ip = true
+    name                  = "internal"
+    node_count            = var.agent_count
+    vm_size               = "Standard_D2_v2"
+    type                  = "VirtualMachineScaleSets"
+    availability_zones    = ["1", "2", "3"]
+    enable_auto_scaling   = true
+    min_count             = 2
+    max_count             = 5
+    os_disk_size_gb       = 30 # can't be smaller
+    enable_node_public_ip = false
 
     #vnet_subnet_id = azurerm_subnet.main.id
-    #enable_node_public_ip = true
-//    tags = {
-//      zone= "private"
-//    }
+    tags = {
+      Environment = "Production"
+      Zone        = "private"
+    }
   }
-
-
-
 
   service_principal {
     client_id     = var.client_id
@@ -260,22 +249,32 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   tags = {
-    App         = "k8s"
-    Environment = "development"
+    environment = "production"
+    zone        = "private"
   }
 }
 
-//resource "azurerm_kubernetes_cluster_node_pool" "public" {
-//  name                  = "public"
-//  kubernetes_cluster_id = azurerm_kubernetes_cluster.main.id
-//  vm_size               = "Standard_DS2_v2"
-//  node_count            = 1
-//  enable_node_public_ip = true
-//
-//  tags = {
-//    Environment = "Production"
-//  }
-//}
+
+
+resource "azurerm_kubernetes_cluster_node_pool" "external" {
+  name                  = "external"
+  kubernetes_cluster_id = azurerm_kubernetes_cluster.main.id
+  vm_size               = "Standard_DS2_v2"
+  node_count            = 1
+  availability_zones    = ["1", "2", "3"]
+  min_count             = 1
+  max_count             = 2
+  enable_auto_scaling   = true
+  enable_node_public_ip = true
+
+
+
+  tags = {
+    environment = "production"
+    zone        = "public"
+  }
+}
+
 
 module "install_helm" {
   source                 = "../helm"
