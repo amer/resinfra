@@ -11,6 +11,8 @@ variable "agent_count" {}
 variable log_analytics_workspace_name {}
 variable service_cidr {}
 variable dns_service_ip {}
+variable cloudflare_email {}
+variable cloudflare_api_token {}
 
 # Refer https://azure.microsoft.com/global-infrastructure/services/?products=monitor
 # for log analytics available regions

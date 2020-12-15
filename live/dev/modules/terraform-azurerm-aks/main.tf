@@ -5,6 +5,10 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "2.40.0"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "2.14.0"
+    }
   }
 }
 
@@ -21,7 +25,20 @@ provider "azurerm" {
   tenant_id       = var.tenant_id
 }
 
+provider "cloudflare" {
+  email     = var.cloudflare_email
+  api_token = var.cloudflare_api_token
+}
 
+resource "cloudflare_record" "public-zone-ns" {
+  name       = "az.amer.berlin"
+  zone_id    = "955db4eb519d7c5b898a87008882d72d"
+  type       = "NS"
+  ttl        = "120"
+  count      = 4
+  value      = element(azurerm_dns_zone.azure_zone.name_servers[*], count.index)
+  depends_on = [azurerm_dns_zone.azure_zone]
+}
 
 resource "azurerm_network_security_group" "wireguard_access" {
   name                = "wireguard_sg"
@@ -58,42 +75,48 @@ resource "azurerm_network_security_group" "wireguard_access" {
 }
 
 resource "azurerm_dns_zone" "azure_zone" {
-  name                = "azure.amer.berlin"
+  name                = "az.amer.berlin"
   resource_group_name = azurerm_resource_group.main.name
 }
 
-resource "azurerm_dns_ns_record" "ns" {
-  name                = "cloudflare-amer.berlin"
-  zone_name           = azurerm_dns_zone.azure_zone.name
-  resource_group_name = azurerm_resource_group.main.name
-  ttl                 = 300
+//resource "azurerm_dns_ns_record" "ns" {
+//  name                = "cloudflare-amer.berlin"
+//  zone_name           = azurerm_dns_zone.azure_zone.name
+//  resource_group_name = azurerm_resource_group.main.name
+//  ttl                 = 300
+//
+//  lifecycle {
+//    prevent_destroy = false
+//  }
+//
+//
+//  records = [
+//    "ns1-02.azure-dns.com.",
+//    "ns2-02.azure-dns.net.",
+//    "ns3-02.azure-dns.org.",
+//    "ns4-02.azure-dns.info.",
+//  ]
+//
+//  tags = {
+//    Environment = "development"
+//  }
+//}
 
-  records = [
-    "ns1-09.azure-dns.com",
-    "ns2-09.azure-dns.net",
-    "ns3-09.azure-dns.org",
-    "ns4-09.azure-dns.info",
-  ]
-
-  tags = {
-    Environment = "development"
-  }
-}
-
-resource "azurerm_public_ip" "den" {
-  name                = "den-public-ip"
+resource "azurerm_public_ip" "ri" {
+  name                = "ri-public-ip"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
-  allocation_method   = "Static"
+  allocation_method   = "Dynamic"
   ip_version          = "IPv4"
 }
 
-resource "azurerm_dns_a_record" "den" {
-  name                = "den"
+resource "azurerm_dns_a_record" "ri" {
+  name                = "ri"
   zone_name           = azurerm_dns_zone.azure_zone.name
   resource_group_name = azurerm_resource_group.main.name
   ttl                 = 300
-  target_resource_id  = azurerm_public_ip.den.id
+  target_resource_id  = azurerm_public_ip.ri.id
+  depends_on          = [cloudflare_record.public-zone-ns]
 }
 
 resource "azurerm_resource_group" "main" {
@@ -126,6 +149,30 @@ resource "random_id" "log_analytics_workspace_name_suffix" {
 //  }
 //}
 
+
+//resource "azurerm_virtual_network" "main" {
+//  name                = "test-network"
+//  address_space       = [var.service_cidr]
+//  location            = azurerm_resource_group.main.location
+//  resource_group_name = azurerm_resource_group.main.name
+//}
+//
+//resource "azurerm_subnet" "main" {
+//  name                 = "acctsub"
+//  resource_group_name  = azurerm_resource_group.main.name
+//  virtual_network_name = azurerm_virtual_network.main.name
+//  address_prefixes     = ["10.0.1.0/24"]
+//}
+
+resource "azurerm_public_ip" "nginx_ingress" {
+  name                = "nginx-ingress-pip"
+  location            = azurerm_kubernetes_cluster.main.location
+  resource_group_name = azurerm_kubernetes_cluster.main.node_resource_group
+  allocation_method   = "Static"
+  domain_name_label   = "ri.az.amer.berlin"
+}
+
+
 resource "azurerm_kubernetes_cluster" "main" {
   name                = var.cluster_name
   location            = azurerm_resource_group.main.location
@@ -155,7 +202,17 @@ resource "azurerm_kubernetes_cluster" "main" {
     min_count           = 2
     max_count           = 5
     os_disk_size_gb     = 30 # can't be smaller
+    enable_node_public_ip = true
+
+    #vnet_subnet_id = azurerm_subnet.main.id
+    #enable_node_public_ip = true
+//    tags = {
+//      zone= "private"
+//    }
   }
+
+
+
 
   service_principal {
     client_id     = var.client_id
@@ -182,6 +239,7 @@ resource "azurerm_kubernetes_cluster" "main" {
     service_cidr       = var.service_cidr
     docker_bridge_cidr = "172.17.0.1/16"
     network_policy     = "calico"
+    outbound_type      = "loadBalancer"
   }
 
   # TODO copy kube_config to ~/Download/somenamehere
@@ -231,3 +289,4 @@ data "azurerm_kubernetes_cluster" "main" {
   name                = azurerm_kubernetes_cluster.main.name
   resource_group_name = azurerm_kubernetes_cluster.main.resource_group_name
 }
+

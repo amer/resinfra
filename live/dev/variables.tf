@@ -3,6 +3,8 @@ variable client_id {}
 variable client_secret {}
 variable subscription_id {}
 variable tenant_id {}
+variable cloudflare_email {}
+variable cloudflare_api_token {}
 
 # terraform-gcp-project module
 variable gcp_project_id {}
