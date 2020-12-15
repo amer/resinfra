@@ -79,29 +79,6 @@ resource "azurerm_dns_zone" "azure_zone" {
   resource_group_name = azurerm_resource_group.main.name
 }
 
-//resource "azurerm_dns_ns_record" "ns" {
-//  name                = "cloudflare-amer.berlin"
-//  zone_name           = azurerm_dns_zone.azure_zone.name
-//  resource_group_name = azurerm_resource_group.main.name
-//  ttl                 = 300
-//
-//  lifecycle {
-//    prevent_destroy = false
-//  }
-//
-//
-//  records = [
-//    "ns1-02.azure-dns.com.",
-//    "ns2-02.azure-dns.net.",
-//    "ns3-02.azure-dns.org.",
-//    "ns4-02.azure-dns.info.",
-//  ]
-//
-//  tags = {
-//    Environment = "development"
-//  }
-//}
-
 resource "azurerm_public_ip" "ingress_pip" {
   name                = "nginx-ingress-pip"
   location            = azurerm_kubernetes_cluster.main.location
@@ -122,48 +99,6 @@ resource "azurerm_resource_group" "main" {
   name     = "${var.prefix}-rg"
   location = var.location
 }
-
-//resource "random_id" "log_analytics_workspace_name_suffix" {
-//  byte_length = 8
-//}
-
-//resource "azurerm_log_analytics_workspace" "main" {
-//  # The WorkSpace name has to be unique across the whole of azure, not just the current subscription/tenant.
-//  name                = "${var.log_analytics_workspace_name}-${random_id.log_analytics_workspace_name_suffix.dec}"
-//  location            = var.log_analytics_workspace_location
-//  resource_group_name = azurerm_resource_group.main.name
-//  sku                 = var.log_analytics_workspace_sku
-//}
-
-//resource "azurerm_log_analytics_solution" "test" {
-//  solution_name         = "ContainerInsights"
-//  location              = azurerm_log_analytics_workspace.main.location
-//  resource_group_name   = azurerm_resource_group.main.name
-//  workspace_resource_id = azurerm_log_analytics_workspace.main.id
-//  workspace_name        = azurerm_log_analytics_workspace.main.name
-//
-//  plan {
-//    publisher = "Microsoft"
-//    product   = "OMSGallery/ContainerInsights"
-//  }
-//}
-
-
-//resource "azurerm_virtual_network" "main" {
-//  name                = "test-network"
-//  address_space       = [var.service_cidr]
-//  location            = azurerm_resource_group.main.location
-//  resource_group_name = azurerm_resource_group.main.name
-//}
-//
-//resource "azurerm_subnet" "main" {
-//  name                 = "acctsub"
-//  resource_group_name  = azurerm_resource_group.main.name
-//  virtual_network_name = azurerm_virtual_network.main.name
-//  address_prefixes     = ["10.0.1.0/24"]
-//}
-
-
 
 resource "azurerm_kubernetes_cluster" "main" {
   name                = var.cluster_name
@@ -208,19 +143,6 @@ resource "azurerm_kubernetes_cluster" "main" {
     client_secret = var.client_secret
   }
 
-  # api_server_authorized_ip_ranges = ["0.0.0.0/0"]
-
-  //  addon_profile {
-  ////    kube_dashboard {
-  ////      enabled = true # TODO change to false in production
-  ////    }
-  //
-  //    //    oms_agent {
-  //    //      enabled                    = true
-  //    //      log_analytics_workspace_id = azurerm_log_analytics_workspace.main.id
-  //    //    }
-  //  }
-
   network_profile {
     load_balancer_sku  = "Standard"
     network_plugin     = "azure" # azure == cni
@@ -254,8 +176,6 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 }
 
-
-
 resource "azurerm_kubernetes_cluster_node_pool" "external" {
   name                  = "external"
   kubernetes_cluster_id = azurerm_kubernetes_cluster.main.id
@@ -275,7 +195,6 @@ resource "azurerm_kubernetes_cluster_node_pool" "external" {
   }
 }
 
-
 module "install_helm" {
   source                 = "../helm"
   host                   = azurerm_kubernetes_cluster.main.kube_config.0.host
@@ -288,4 +207,3 @@ data "azurerm_kubernetes_cluster" "main" {
   name                = azurerm_kubernetes_cluster.main.name
   resource_group_name = azurerm_kubernetes_cluster.main.resource_group_name
 }
-
