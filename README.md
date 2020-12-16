@@ -4,6 +4,12 @@
 1. What did you do today?
 1. Is there anything blocking you from moving forward?
 
+## 16.12.2020
+### Johann 
+1. Broke the Proxmox host's network configuration.
+2. —
+3. Blocked until we can assign public IP addresses to VMs on Hundertserver's Proxmox server.
+
 ## 11.12.2020
 ### Johann
 1. I finally got the route tables on HCloud configured so that all machines can reach Azure. Jan and I automated the setup w/ TF and Ansible.
