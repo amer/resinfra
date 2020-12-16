@@ -273,6 +273,10 @@ resource "google_compute_vpn_gateway" "main" {
   network = google_compute_network.main.id
 }
 
+# create VPN forwarding routes
+#   these are the default routes created. 
+#   TODO: find out, what they are actually doing / good for.
+
 resource "google_compute_forwarding_rule" "fr_esp" {
   name        = "fr-esp"
   ip_protocol = "ESP"
@@ -394,14 +398,14 @@ resource "google_compute_route" "hetzner-route" {
 ### HETZNER ###
 
 # create a route in the Hetzner Network for Azure traffic
-resource "hcloud_network_route" "azure_to_gateway" {
+resource "hcloud_network_route" "azure_via_gateway" {
   network_id = hcloud_network.main.id
   destination = var.azure_vm_subnet_cidr
   gateway = hcloud_server_network.internal.ip
 }
 
 # create a route in the Hetzner Network for GCP traffic
-resource "hcloud_network_route" "gcp_to_gateway" {
+resource "hcloud_network_route" "gcp_via_gateway" {
   network_id = hcloud_network.main.id
   destination = var.gcp_subnet_cidr
   gateway = hcloud_server_network.internal.ip

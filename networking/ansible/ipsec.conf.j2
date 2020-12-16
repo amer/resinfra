@@ -4,17 +4,13 @@ config setup
     uniqueids=yes
     cachecrls=no
 
-conn hetzner-azure
+conn %default
     auto=start
     compress=no
     type=tunnel
     keyexchange=ikev2
     authby=secret
-    left={{public_gateway_ip}} 
-    leftsubnet={{local_cidr}} 
-    right={{azure_remote_gateway_ip}} 
-    rightsubnet={{azure_remote_cidr}}
-    ike=aes256-sha1-modp1024 # tested for azure
+    ike=aes256-sha1-modp1024 # tested for azure and gcp
     aggressive=no
     keyingtries=%forever
     ikelifetime=28800s
@@ -23,21 +19,14 @@ conn hetzner-azure
     dpdtimeout=120s
     dpdaction=restart
 
+conn hetzner-azure
+    left={{public_gateway_ip}} 
+    leftsubnet={{local_cidr}} 
+    right={{azure_remote_gateway_ip}} 
+    rightsubnet={{azure_remote_cidr}}
+
 conn hetzner-gcp
-    auto=start
-    compress=no
-    type=tunnel
-    keyexchange=ikev2
-    authby=secret
     left={{public_gateway_ip}} 
     leftsubnet={{local_cidr}} 
     right={{gcp_remote_gateway_ip}} 
     rightsubnet={{gcp_remote_cidr}}
-    ike=aes256-sha1-modp1024 # tested for gcp
-    aggressive=no
-    keyingtries=%forever
-    ikelifetime=28800s
-    lifetime=3600s
-    dpddelay=30s
-    dpdtimeout=120s
-    dpdaction=restart
