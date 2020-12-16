@@ -13,6 +13,12 @@ provider "hcloud" {
   token   = var.hetzner_token
 }
 
+provider "google" {
+ credentials = file(var.gcp_service_account_path)
+ project     = var.gcp_project_id
+ region      = var.gcp_region
+}
+
 provider "azurerm" {
   version = "=2.37.0"
   features {}
@@ -83,6 +89,67 @@ resource "azurerm_public_ip" "main" {
   allocation_method            = "Dynamic"
 }
 
+### GCP ###
+
+# Create a virtual network
+resource "google_compute_network" "main" {
+  name = "${var.prefix}-network"
+  auto_create_subnetworks  = false
+}
+
+# Create a subnet
+#   This subnet will be used to place the machines
+resource "google_compute_subnetwork" "vms" {
+  name          = "internal"
+  ip_cidr_range = var.gcp_subnet_cidr
+  region        = var.gcp_region
+  network       = google_compute_network.main.id
+}
+
+# create firewall rule for port 22 (ssh)
+resource "google_compute_firewall" "allow_ssh" {
+  name    = "${var.prefix}-network-internal-allow-ssh"
+  network = google_compute_network.main.name
+
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
+  }
+  source_ranges =["0.0.0.0/0"]
+
+}
+# allow all internal traffic (10.0.0.0/8)
+resource "google_compute_firewall" "allow_internal" {
+  name    = "${var.prefix}-network-internal-allow-internal"
+  network = google_compute_network.main.name
+
+
+  allow {
+    protocol = "tcp"
+  }
+  source_ranges =["10.0.0.0/8"]
+
+}
+# allow icmp
+resource "google_compute_firewall" "allow_icmp" {
+  name    = "${var.prefix}-network-internal-allow-icmp"
+  network = google_compute_network.main.name
+
+
+  allow {
+    protocol = "icmp"
+  }
+  source_ranges =["0.0.0.0/0"]
+
+}
+
+# Create public IPs
+#   public ip for the virtual network gateway
+resource "google_compute_address" "ip_address" {
+  name = "${var.prefix}-vpn-gateway-address"
+}
+
 ### HETZNER ###
 
 # Create a virtual network
@@ -134,10 +201,19 @@ resource "hcloud_server_network" "internal" {
   }
 
   provisioner "local-exec" {
-    command = "ansible-playbook -i '${hcloud_server.gateway.ipv4_address},' -u 'root' ../ansible/playbook.yml --extra-vars 'public_gateway_ip='${hcloud_server.gateway.ipv4_address}' local_cidr='${var.hetzner_vpc_cidr}' remote_gateway_ip='${azurerm_public_ip.main.ip_address}' remote_cidr='${var.azure_vpc_cidr}' psk='${var.shared_key}''"
+    command = <<EOF
+        ansible-playbook -i '${hcloud_server.gateway.ipv4_address},'  \
+            -u 'root' ../ansible/playbook.yml \
+            --extra-vars 'public_gateway_ip='${hcloud_server.gateway.ipv4_address}' \
+                          local_cidr='${var.hetzner_vpc_cidr}' \
+                          azure_remote_gateway_ip='${azurerm_public_ip.main.ip_address}' \
+                          azure_remote_cidr='${var.azure_vpc_cidr}'
+                          gcp_remote_gateway_ip='${google_compute_address.ip_address.address}' \ 
+                          gcp_remote_cidr='${var.gcp_subnet_cidr}' \
+                          psk='${var.shared_key}''
+  EOF
   }
 }
-
 
 /*
 ----------------------------
@@ -157,6 +233,15 @@ resource "azurerm_local_network_gateway" "hetzner_onpremise" {
 
   gateway_address     = hcloud_server.gateway.ipv4_address
   address_space       = [var.hetzner_subnet_cidr]
+}
+
+resource "azurerm_local_network_gateway" "gcp" {
+  name                = "gcp"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  gateway_address     = google_compute_address.ip_address.address
+  address_space       = [var.gcp_subnet_cidr]
 }
 
 # Create virtual network gateway
@@ -180,12 +265,46 @@ resource "azurerm_virtual_network_gateway" "main" {
   }
 }
 
+### GCP ###
+
+# Create classic VPN
+resource "google_compute_vpn_gateway" "main" {
+  name    = "${var.prefix}-vpn"
+  network = google_compute_network.main.id
+}
+
+resource "google_compute_forwarding_rule" "fr_esp" {
+  name        = "fr-esp"
+  ip_protocol = "ESP"
+  ip_address  = google_compute_address.ip_address.address
+  target      = google_compute_vpn_gateway.main.id
+}
+
+resource "google_compute_forwarding_rule" "fr_udp500" {
+  name        = "fr-udp500"
+  ip_protocol = "UDP"
+  port_range  = "500"
+  ip_address  = google_compute_address.ip_address.address
+  target      = google_compute_vpn_gateway.main.id
+}
+
+resource "google_compute_forwarding_rule" "fr_udp4500" {
+  name        = "fr-udp4500"
+  ip_protocol = "UDP"
+  port_range  = "4500"
+  ip_address  = google_compute_address.ip_address.address
+  target      = google_compute_vpn_gateway.main.id
+}
+
+
+
 /*
 -------------------------------
    CONNECTING THE GATEWAYS
 -------------------------------
 */
 
+### AZURE ###
 
 # Create the connection between the gateways. 
 #   Internally, this is realiszed by connecting the virtual network gateway with 
@@ -205,10 +324,86 @@ resource "azurerm_virtual_network_gateway_connection" "hetzner_onpremise" {
   shared_key = var.shared_key
 }
 
+
+resource "azurerm_virtual_network_gateway_connection" "gcp" {
+  name                = "gcp-connection"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  type                       = "IPsec"
+  virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
+  local_network_gateway_id   = azurerm_local_network_gateway.gcp.id
+
+  # !!!
+  # TODO: find a way to store and distribute these properly accross the gateways
+  # !!!
+  shared_key = var.shared_key
+}
+
+### GCP ###
+
+# Create the tunnel & route trafic to remote networks through tunnel 
+#   for azure
+resource "google_compute_vpn_tunnel" "azure_tunnel" {
+  name          = "${var.prefix}-azure-tunnel"
+  peer_ip       = azurerm_public_ip.main.ip_address
+  shared_secret = var.shared_key
+
+  target_vpn_gateway = google_compute_vpn_gateway.main.id
+  local_traffic_selector = [var.gcp_subnet_cidr]
+  remote_traffic_selector = [var.azure_vm_subnet_cidr]
+
+   depends_on = [
+    google_compute_forwarding_rule.fr_esp,
+    google_compute_forwarding_rule.fr_udp500,
+    google_compute_forwarding_rule.fr_udp4500,
+  ]
+}
+resource "google_compute_route" "azure-route" {
+  name       = "${var.prefix}-azure-route"
+  network    = google_compute_network.main.name
+  dest_range = var.azure_vm_subnet_cidr
+
+  next_hop_vpn_tunnel = google_compute_vpn_tunnel.azure_tunnel.id
+}
+
+# Create the tunnel & route trafic to remote networks through tunnel 
+#   for hetzner
+resource "google_compute_vpn_tunnel" "hetzner_tunnel" {
+  name          = "${var.prefix}-hetzner-tunnel"
+  peer_ip       = hcloud_server.gateway.ipv4_address
+  shared_secret = var.shared_key
+
+  target_vpn_gateway = google_compute_vpn_gateway.main.id
+  local_traffic_selector = [var.gcp_subnet_cidr]
+  remote_traffic_selector = [var.hetzner_subnet_cidr]
+
+   depends_on = [
+    google_compute_forwarding_rule.fr_esp,
+    google_compute_forwarding_rule.fr_udp500,
+    google_compute_forwarding_rule.fr_udp4500,
+  ]
+}
+resource "google_compute_route" "hetzner-route" {
+  name       = "${var.prefix}-hetzner-route"
+  network    = google_compute_network.main.name
+  dest_range = var.hetzner_subnet_cidr
+
+  next_hop_vpn_tunnel = google_compute_vpn_tunnel.hetzner_tunnel.id
+}
+### HETZNER ###
+
 # create a route in the Hetzner Network for Azure traffic
-resource "hcloud_network_route" "to_gateway" {
+resource "hcloud_network_route" "azure_to_gateway" {
   network_id = hcloud_network.main.id
-  destination = var.azure_vpc_cidr
+  destination = var.azure_vm_subnet_cidr
+  gateway = hcloud_server_network.internal.ip
+}
+
+# create a route in the Hetzner Network for GCP traffic
+resource "hcloud_network_route" "gcp_to_gateway" {
+  network_id = hcloud_network.main.id
+  destination = var.gcp_subnet_cidr
   gateway = hcloud_server_network.internal.ip
 }
 
