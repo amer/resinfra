@@ -1,6 +1,7 @@
 # Tools we will use
 * Terraform
 * Prometheus
+* CockroachDB
 
 
 In the following, we want to evaluate a range of tools for a given task and explain the final choice.
