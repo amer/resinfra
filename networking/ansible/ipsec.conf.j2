@@ -4,17 +4,13 @@ config setup
     uniqueids=yes
     cachecrls=no
 
-conn ipsec-ikev2-vpn
+conn %default
     auto=start
     compress=no
     type=tunnel
     keyexchange=ikev2
     authby=secret
-    left={{public_gateway_ip}} 
-    leftsubnet={{local_cidr}} 
-    right={{remote_gateway_ip}} 
-    rightsubnet={{remote_cidr}}
-    ike=aes256-sha1-modp1024 # tested for azure
+    ike=aes256-sha1-modp1024 # tested for azure and gcp
     aggressive=no
     keyingtries=%forever
     ikelifetime=28800s
@@ -22,3 +18,15 @@ conn ipsec-ikev2-vpn
     dpddelay=30s
     dpdtimeout=120s
     dpdaction=restart
+
+conn hetzner-azure
+    left={{public_gateway_ip}} 
+    leftsubnet={{local_cidr}} 
+    right={{azure_remote_gateway_ip}} 
+    rightsubnet={{azure_remote_cidr}}
+
+conn hetzner-gcp
+    left={{public_gateway_ip}} 
+    leftsubnet={{local_cidr}} 
+    right={{gcp_remote_gateway_ip}} 
+    rightsubnet={{gcp_remote_cidr}}
