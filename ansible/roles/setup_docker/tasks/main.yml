@@ -1,35 +1,101 @@
-- name: make sure docker prerequisites are installed
-  apt: 
-    name:
-      - apt-transport-https
-      - ca-certificates
-      - curl
-      - gnupg-agent
-      - software-properties-common
-      - python3-pip
-      - python3-setuptools
-    state: present
-    update_cache: yes
+- name: "Gather installed package facts"
+  package_facts:
+    manager: "auto"
 
-- name: add docker official gpg key to apt
-  apt_key:
-    url: https://download.docker.com/linux/debian/gpg
-    id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
-    state: present
+- name: "get system infos"
+  block:
+    - name: Get OS name
+      command: uname -s
+      register: os_name
+      changed_when: false
 
-- name: add docker repo
-  apt_repository:
-    repo: deb https://download.docker.com/linux/debian buster stable
-    state: present
+    - name: ensure that the remote is a linux system
+      assert: 
+        that: "os_name.stdout == 'Linux'" 
 
-- name: update apt and install docker
+    - name: Get release name
+      command: lsb_release -cs
+      register: os_release
+      changed_when: false
+
+    - name: Get OS arch
+      command: uname -m
+      register: os_arch
+      changed_when: false
+
+    - name: Get OS flavor
+      command: lsb_release -is
+      register: os_flavor
+      changed_when: false
+
+  when: "'docker-ce' not in ansible_facts.packages"
+
+- name: install docker
+  block:
+  - name: Install docker dependencies
+    apt: 
+      name: ["apt-transport-https", "ca-certificates", "gnupg-agent", "software-properties-common"]
+      state: present
+      update_cache: yes
+
+  - name: Add Docker GPG apt Key
+    apt_key:
+      url: https://download.docker.com/{{ os_name.stdout|lower }}/{{ os_flavor.stdout|lower }}/gpg
+      state: present
+
+  - name: Add docker repository
+    apt_repository: 
+      repo: deb https://download.docker.com/{{ os_name.stdout|lower }}/{{ os_flavor.stdout|lower }} {{ os_release.stdout }} stable
+      state: present
+
+  - name: Update and install docker
+    apt: 
+      name: docker-ce
+      state: present 
+      update_cache: yes
+
+  when: "'docker-ce' not in ansible_facts.packages"
+
+- name: install python3-pip
   apt:
-    update_cache: yes
-    name:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
+    name: ["python3-pip", "python3-setuptools"]
     state: present
+    update_cache: yes
+  when: "'python3-pip' not in ansible_facts.packages"
+
+
+# - name: make sure docker prerequisites are installed
+#   apt: 
+#     name:
+#       - apt-transport-https
+#       - ca-certificates
+#       - curl
+#       - gnupg-agent
+#       - software-properties-common
+#       - python3-pip
+#       - python3-setuptools
+#     state: present
+#     update_cache: yes
+
+# - name: add docker official gpg key to apt
+#   apt_key:
+#     url: https://download.docker.com/linux/debian/gpg
+#     id: 9DC858229FC7DD38854AE2D88D81803C0EBFCD88
+#     state: present
+
+# - name: add docker repo
+#   apt_repository:
+#     repo: deb https://download.docker.com/linux/debian buster stable
+#     state: present
+
+# - name: update apt and install docker
+#   apt:
+#     update_cache: yes
+#     name:
+#       - docker-ce
+#       - docker-ce-cli
+#       - containerd.io
+#     state: present
 
 - name: install pip docker module to control docker
   pip:
