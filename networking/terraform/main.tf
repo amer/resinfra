@@ -203,7 +203,7 @@ resource "hcloud_server_network" "internal" {
   provisioner "local-exec" {
     command = <<EOF
         ansible-playbook -i '${hcloud_server.gateway.ipv4_address},'  \
-            -u 'root' ../ansible/playbook.yml \
+            -u 'root' ../../ansible/strongswan_playbook.yml \
             --extra-vars 'public_gateway_ip='${hcloud_server.gateway.ipv4_address}' \
                           local_cidr='${var.hetzner_vpc_cidr}' \
                           azure_remote_gateway_ip='${azurerm_public_ip.main.ip_address}' \
