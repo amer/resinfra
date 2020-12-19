@@ -3,3 +3,9 @@
   become: true
   roles:
     - setup_docker
+- hosts: cockroach-main-servers
+  roles:
+    - install_cockroachdb
+- hosts: cockroach-cluster-initializer
+  roles:
+    - init_cockroachdb
