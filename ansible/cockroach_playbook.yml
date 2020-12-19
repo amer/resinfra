@@ -4,10 +4,10 @@
   roles:
     - setup_docker
   
-- hosts: cockroach-main-servers
+- hosts: cockroach_main_servers
   roles:
     - install_cockroachdb
 
-- hosts: cockroach-cluster-initializer
+- hosts: cockroach_cluster_initializer
   roles:
     - init_cockroachdb
