@@ -15,6 +15,12 @@ variable "username" {
   description = "username to be used among ALL providers. Don't choose admin or root."
 }
 
+# AWS
 variable aws_access_key {}
 variable aws_secret_key {}
 variable aws_region {}
+
+
+# Hetzner
+variable "hcloud_token" {}
+
