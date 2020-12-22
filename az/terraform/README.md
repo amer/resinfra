@@ -1,15 +1,20 @@
 # What is this?
 This is a terraform manifest which will create and set up a resource group, virtual network, 
-internal subnet, network interface, network security group, public IP, and a Linux virtual machine in Azure cloud.
+internal subnet, network interface, network security group, public IP, and a Linux virtual machine, public DNS zone and DNA 'A' recored in Azure cloud.
 
 After running the manifest, you can ssh to the virtual machine using the public IP address. 
-Use `terraform output public_ip_address` to get the IP address.
+Use `terraform output fqdn` to get the fqdn.
 
 The manifest will copy the public key in `~/.ssh/id_rsa.pub` to the target virtual machine.
 
 To ssh to the virtual machine use:
+```bash
+$ ssh adminuser@<fqdn>
 ```
-$ ssh adminuser@public_ip_address
+
+To get the public IP in the output, use:
+```bash
+$ terraform refresh
 ```
 
 ## Quick start
@@ -18,13 +23,13 @@ $ ssh adminuser@public_ip_address
 Make sure you have Azure CLI tool and Terraform installed. 
 
 #### To install on Mac OS
-```
+```bash
 $ brew install azure-cli terraform
 ```
 
 ### Login
 This command will take you to the browser to login.
-```
+```bash
 $ az login
 ```
 
@@ -38,7 +43,7 @@ $ az ad sp create-for-rbac --name YourServicePrincipalName --role="Contributor" 
 ```
 
 The output should look something like this. Use these values to populate env.sh and variables.tfvars.
-```
+```json
 {
   "appId": "00000000-0000-0000-0000-000000000000",
   "displayName": "YourServicePrincipalName",
@@ -60,14 +65,14 @@ $ terraform state list
 ```
 
 ### Save and apply a plan example
-``` 
+```bash
 $ terraform plan -out=MyplanfileName
 $ terraform apply "MyplanfileName"
 ```
 
 ### Show output example
 
-```
+```bash
 $ terraform output public_ip_address
 ```
 
