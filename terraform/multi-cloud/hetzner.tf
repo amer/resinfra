@@ -3,17 +3,8 @@ provider "hcloud" {
   token   = var.hcloud_token
 }
 
-# data "template_file" "user_data" { 
-#   template = file("./preconf.yml")
-#   
-#   vars = {
-#     username = "tim"
-#     public_key = file(var.public_key_path)
-#   }
-# }
-
 resource "hcloud_ssh_key" "default" {
-  name       = "${var.prefix}-hetzner_key"
+  name       = "${var.prefix}-hetzner-key-${random_id.id.hex}"
   public_key = file(var.public_key_path)
 }
 
@@ -24,7 +15,7 @@ data "hcloud_image" "latest-debian" {
 
 resource "hcloud_server" "main" {
   count       = var.instances
-  name        = "${var.prefix}-vm-${count.index+1}"
+  name        = "${var.prefix}-vm-${count.index+1}-${random_id.id.hex}"
   image       = data.hcloud_image.latest-debian.name
   server_type = var.server_type
   location    = var.location
@@ -34,7 +25,7 @@ resource "hcloud_server" "main" {
 
 resource "hcloud_floating_ip" "main" {
   count         = var.enable_floating_ip ? var.instances : 0
-  name          = "${var.prefix}-floating_ip-${count.index+1}"
+  name          = "${var.prefix}-floating_ip-${count.index+1}-${random_id.id.hex}"
   type          = "ipv4"
   home_location = var.location
   server_id     = hcloud_server.main.*.id[count.index]
@@ -42,7 +33,7 @@ resource "hcloud_floating_ip" "main" {
 
 resource "hcloud_volume" "main" {
   count         = var.enable_volume ? var.instances : 0
-  name          = "${var.prefix}-volume-${count.index+1}"
+  name          = "${var.prefix}-volume-${count.index+1}-${random_id.id.hex}"
   size          = var.volume_size
   server_id     = hcloud_server.main.*.id[count.index]
   automount     = "true"
