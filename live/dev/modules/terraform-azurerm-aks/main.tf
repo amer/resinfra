@@ -1,5 +1,5 @@
 terraform {
-  required_version = "=0.14.2"
+  required_version = "=0.14.3"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -31,68 +31,18 @@ provider "cloudflare" {
 }
 
 resource "cloudflare_record" "public-zone-ns" {
-  name       = "az.amer.berlin"
-  zone_id    = "955db4eb519d7c5b898a87008882d72d"
+  name       = var.domain_name
+  zone_id    = var.cloudflare_zone_id
   type       = "NS"
   ttl        = "120"
   count      = 4
-  value      = trimsuffix(element(azurerm_dns_zone.azure_zone.name_servers[*], count.index),".")
+  value      = trimsuffix(element(azurerm_dns_zone.azure_zone.name_servers[*], count.index), ".")
   depends_on = [azurerm_dns_zone.azure_zone]
 }
 
-resource "azurerm_network_security_group" "wireguard_access" {
-  name                = "wireguard_sg"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-
-  security_rule {
-    name                       = "wireguard_udp"
-    priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "UDP"
-    source_port_range          = "*"
-    destination_port_ranges    = [7946, 51820]
-    source_address_prefix      = "*"
-    destination_address_prefix = var.service_cidr
-  }
-
-  security_rule {
-    name                       = "wireguard_tcp"
-    priority                   = 101
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "tcp"
-    source_port_range          = "*"
-    destination_port_ranges    = [7946]
-    source_address_prefix      = "*"
-    destination_address_prefix = var.service_cidr
-  }
-
-  tags = {
-    environment = "development"
-  }
-}
-
 resource "azurerm_dns_zone" "azure_zone" {
-  name                = "az.amer.berlin"
+  name                = var.domain_name
   resource_group_name = azurerm_resource_group.main.name
-}
-
-resource "azurerm_public_ip" "ingress_pip" {
-  name                = "nginx-ingress-pip"
-  location            = azurerm_kubernetes_cluster.main.location
-  resource_group_name = azurerm_kubernetes_cluster.main.node_resource_group
-  allocation_method   = "Static"
-  ip_version          = "IPv4"
-}
-
-resource "azurerm_dns_a_record" "ingress_pip" {
-  name                = "*"
-  zone_name           = azurerm_dns_zone.azure_zone.name
-  resource_group_name = azurerm_resource_group.main.name
-  target_resource_id  = azurerm_public_ip.ingress_pip.id
-  ttl                 = 300
 }
 
 resource "azurerm_resource_group" "main" {
@@ -122,16 +72,15 @@ resource "azurerm_kubernetes_cluster" "main" {
   default_node_pool {
     name                  = "internal"
     node_count            = var.agent_count
-    vm_size               = "Standard_D2_v2"
+    vm_size               = var.vm_size
     type                  = "VirtualMachineScaleSets"
     availability_zones    = ["1", "2", "3"]
     enable_auto_scaling   = true
     min_count             = 2
     max_count             = 5
     os_disk_size_gb       = 30 # can't be smaller
-    enable_node_public_ip = false
+    enable_node_public_ip = true
 
-    #vnet_subnet_id = azurerm_subnet.main.id
     tags = {
       Environment = "Production"
       Zone        = "private"
@@ -160,8 +109,6 @@ resource "azurerm_kubernetes_cluster" "main" {
       --resource-group ${azurerm_kubernetes_cluster.main.resource_group_name} \
       --name ${azurerm_kubernetes_cluster.main.name} \
       --overwrite-existing
-
-      # $ cp -f ~/.kube/config ~/Downloadskube_confit_${azurerm_kubernetes_cluster.main.name}
     EOF
   }
 
@@ -173,24 +120,6 @@ resource "azurerm_kubernetes_cluster" "main" {
   tags = {
     environment = "production"
     zone        = "private"
-  }
-}
-
-resource "azurerm_kubernetes_cluster_node_pool" "external" {
-  name                  = "external"
-  kubernetes_cluster_id = azurerm_kubernetes_cluster.main.id
-  vm_size               = "Standard_DS2_v2"
-  node_count            = 1
-  availability_zones    = ["1", "2", "3"]
-  min_count             = 1
-  max_count             = 2
-  enable_auto_scaling   = true
-  enable_node_public_ip = true
-
-
-  tags = {
-    environment = "production"
-    zone        = "public"
   }
 }
 

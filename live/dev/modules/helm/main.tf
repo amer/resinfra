@@ -1,77 +1,49 @@
 terraform {
-  required_version = "=0.14.2"
+  required_version = "=0.14.3"
   required_providers {
-    helm = "=1.3.2"
+    helm       = "=1.3.2"
     kubernetes = "=1.13.3"
   }
 }
 
 provider "helm" {
   kubernetes {
-    load_config_file = "false"
-    host = var.host
-    client_certificate = var.client_certificate
-    client_key = var.client_key
+    load_config_file       = "false"
+    host                   = var.host
+    client_certificate     = var.client_certificate
+    client_key             = var.client_key
     cluster_ca_certificate = var.cluster_ca_certificate
   }
 }
 
-resource "helm_release" "prometheus" {
-  name = "ri-prometheus"
-  chart = "kube-prometheus-stack"
-  repository = "https://prometheus-community.github.io/helm-charts"
-  namespace = "monitoring"
-  create_namespace = true
+module "ingress-nginx" {
+  source = "../ingress-nginx"
 }
 
-resource "helm_release" "nginx-stable" {
-  name = "ri-ingress-nginx"
-  chart = "nginx-ingress"
-  repository = "https://helm.nginx.com/stable"
-  namespace = "ingress-nginx"
-  create_namespace = true
+module "prometheus" {
+  source = "../prometheus"
+}
 
-  set {
-    name = "controller.publishService.enabled"
-    value = true
-  }
+//resource "helm_release" "kubeapps" {
+//  chart = "kubeapps"
+//  name = "kubeapps"
+//  repository = "https://charts.bitnami.com/bitnami"
+//  namespace = "kubeapps"
+//  create_namespace = true
+//}
 
+//resource "helm_release" "postgresql" {
+//  chart = "postgresql"
+//  name = "den-postgresql"
+//  repository = "https://charts.bitnami.com/bitnami"
+//
 //  set {
-//    name = "defaultBackend.nodeSelector"
-//    value = ""
+//    name = "postgresqlDatabase"
+//    value = "orchardcore_database"
 //  }
-
-  set {
-    name = "controller.replicaCount"
-    value = "1"
-  }
-
-  set {
-    name = "prometheus.create"
-    value = true
-  }
-
-  set {
-    name = "enableLatencyMetrics"
-    value = true
-  }
-
-  set {
-    name = "controller.publishService.enabled"
-    value = true
-  }
-}
-
-# L4 ingress
-resource "helm_release" "haproxytech" {
-  name = "ri-ingress-haproxy"
-  chart = "kubernetes-ingress"
-  repository = "https://haproxytech.github.io/helm-charts"
-  namespace = "ingress-haproxy"
-  create_namespace = true
-
-  set {
-    name = "controller.service.type"
-    value = "LoadBalancer"
-  }
-}
+//
+//  set {
+//    name = "postgresqlPassword"
+//    value = "PrmcEy71kg"
+//  }
+//}

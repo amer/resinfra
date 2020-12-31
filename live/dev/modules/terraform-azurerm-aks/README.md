@@ -2,5 +2,5 @@
 
 ## Kube context 
 ```shell
-$ az aks get-credentials --name resinfra-k8s-cluster --resource-group resinfra-resources
+$ az aks get-credentials --name <cluster name> --resource-group <resource-group name>
 ```
