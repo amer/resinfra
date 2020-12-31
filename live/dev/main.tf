@@ -15,7 +15,7 @@ locals {
 }
 
 module "azure_aks_siteA" {
-  source                       = "./modules/terraform-azurerm-aks"
+  source                       = "modules/terraform-azurerm-aks"
   subscription_id              = var.subscription_id
   client_id                    = var.client_id
   client_secret                = var.client_secret
@@ -37,7 +37,7 @@ module "azure_aks_siteA" {
 }
 
 module "azure_aks_siteB" {
-  source                       = "./modules/terraform-azurerm-aks"
+  source                       = "modules/terraform-azurerm-aks"
   subscription_id              = var.subscription_id
   client_id                    = var.client_id
   client_secret                = var.client_secret
