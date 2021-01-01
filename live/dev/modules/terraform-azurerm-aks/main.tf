@@ -34,10 +34,18 @@ resource "cloudflare_record" "public-zone-ns" {
   name       = var.domain_name
   zone_id    = var.cloudflare_zone_id
   type       = "NS"
-  ttl        = "120"
+  ttl        = 1
   count      = 4
   value      = trimsuffix(element(azurerm_dns_zone.azure_zone.name_servers[*], count.index), ".")
   depends_on = [azurerm_dns_zone.azure_zone]
+}
+
+resource "cloudflare_record" "cluster_cname" {
+  name       = "c${var.domain_name}"
+  zone_id    = var.cloudflare_zone_id
+  type       = "CNAME"
+  ttl        = 1
+  value      = azurerm_kubernetes_cluster.main.fqdn
 }
 
 resource "azurerm_dns_zone" "azure_zone" {
@@ -133,10 +141,12 @@ module "install_helm" {
 
 module "ingress-nginx" {
   source = "../ingress-nginx"
+  depends_on = [azurerm_kubernetes_cluster.main]
 }
 
 module "prometheus" {
   source = "../prometheus"
+  depends_on = [azurerm_kubernetes_cluster.main]
 }
 
 data "azurerm_kubernetes_cluster" "main" {

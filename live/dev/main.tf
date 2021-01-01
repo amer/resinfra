@@ -15,7 +15,7 @@ locals {
 }
 
 module "azure_aks_siteA" {
-  source                       = "modules/terraform-azurerm-aks"
+  source                       = "./modules/terraform-azurerm-aks"
   subscription_id              = var.subscription_id
   client_id                    = var.client_id
   client_secret                = var.client_secret
@@ -33,11 +33,11 @@ module "azure_aks_siteA" {
   service_cidr                 = local.siteA.service_cidr
   dns_service_ip               = local.siteA.dns_service_ip
   domain_name                  = local.siteA.domain_name
-  vm_size                      = "Standard_B2s" # Standard_D2s_v3, Standard_B2s | For more info https://azureprice.net/
+  vm_size                      = "Standard_D2s_v3" # Standard_D2s_v3, Standard_B2s | For more info https://azureprice.net/
 }
 
 module "azure_aks_siteB" {
-  source                       = "modules/terraform-azurerm-aks"
+  source                       = "./modules/terraform-azurerm-aks"
   subscription_id              = var.subscription_id
   client_id                    = var.client_id
   client_secret                = var.client_secret
@@ -55,5 +55,5 @@ module "azure_aks_siteB" {
   service_cidr                 = local.siteB.service_cidr
   dns_service_ip               = local.siteB.dns_service_ip
   domain_name                  = local.siteB.domain_name
-  vm_size                      = "Standard_B2s" # Standard_D2s_v3, Standard_B2s | For more info https://azureprice.net/
+  vm_size                      = "Standard_D2s_v3" # Standard_D2s_v3, Standard_B2s | For more info https://azureprice.net/
 }
