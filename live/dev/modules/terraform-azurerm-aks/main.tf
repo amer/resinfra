@@ -140,12 +140,12 @@ module "install_helm" {
 }
 
 module "ingress-nginx" {
-  source = "../ingress-nginx"
+  source = "../app-ingress-nginx"
   depends_on = [azurerm_kubernetes_cluster.main]
 }
 
 module "prometheus" {
-  source = "../prometheus"
+  source = "../app-prometheus"
   depends_on = [azurerm_kubernetes_cluster.main]
 }
 
