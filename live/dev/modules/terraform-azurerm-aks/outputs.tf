@@ -17,3 +17,7 @@ output cluster_name {
 output cluster_fqdn {
   value = azurerm_kubernetes_cluster.main.fqdn
 }
+
+output cluster_cname {
+  value = cloudflare_record.cluster_cname.name
+}
