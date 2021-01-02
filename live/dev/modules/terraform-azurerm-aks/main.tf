@@ -86,6 +86,20 @@ resource "azurerm_subnet" "private" {
   address_prefixes = [cidrsubnet(var.vnet_cidr, 8, 1 * 2 + 2)]
 }
 
+resource "azurerm_network_security_rule" "all-nodeports" {
+  name                        = "all-nodeports"
+  resource_group_name         = local.generated_rg
+  network_security_group_name = local.aks_nsg_name
+  priority                    = 100
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "*"
+  source_port_range           = "*"
+  destination_port_range      = "*" # "30000-32767"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+}
+
 resource "azurerm_kubernetes_cluster" "main" {
   name                = var.cluster_name
   location            = azurerm_resource_group.main.location
@@ -178,6 +192,12 @@ resource "azurerm_kubernetes_cluster_node_pool" "public-pool" {
   }
 }
 
+//data "azurerm_virtual_machine_scale_set" "public-scale-set" {
+//  name = "public-scale-set"
+//  resource_group_name = azurerm_resource_group.main.name
+//}
+
+
 module "install_helm" {
   source                 = "../terraform-helm"
   host                   = azurerm_kubernetes_cluster.main.kube_config.0.host
@@ -201,53 +221,17 @@ data "azurerm_kubernetes_cluster" "main" {
   resource_group_name = azurerm_kubernetes_cluster.main.resource_group_name
 }
 
-//resource "azurerm_firewall_policy" "main" {
-//  name                = "test-fwpolicy"
-//  resource_group_name = azurerm_resource_group.main.name
-//  location            = azurerm_resource_group.main.location
-//}
-//
-//
-//resource "azurerm_firewall_nat_rule_collection" "example" {
-//  name                = "test-collection"
-//  azure_firewall_name = azurerm_firewall.
-//  resource_group_name = azurerm_resource_group.main.name
-//  priority            = 150
-//  action              = "Dnat"
-//
-//  rule {
-//    name = "testrule"
-//
-//    source_addresses  = "0.0.0.0/0"
-//    translated_address    = var.service_cidr
-//    translated_port   = 55101
-//
-//    destination_addresses = "0.0.0.0/0"
-//    destination_ports = 55101
-//
-//    protocols = [
-//      "TCP",
-//      "UDP",
-//    ]
-//  }
-//}
+locals {
+  generated_rg = "MC_${azurerm_resource_group.main.name}_${azurerm_kubernetes_cluster.main.name}_${azurerm_resource_group.main.location}"
+  aks_nsg_name = trim(data.external.aks_nsg_name.result.output, "\\\"")
+}
 
-//
-//resource "azurerm_firewall_policy_rule_collection_group" "main" {
-//  name               = "example-fwpolicy-rcg"
-//  firewall_policy_id = azurerm_firewall_policy.main.id
-//  priority           = 500
-//
-//  network_rule_collection {
-//    name     = "network_rule_collection1"
-//    priority = 400
-//    action   = "Allow" # Allow or Deny
-//    rule {
-//      name                  = "network_rule_collection1_rule1"
-//      protocols             = ["Any"] # ["Any","TCP","UDP","ICMP"]
-//      source_addresses      = ["0.0.0.0/0"]
-//      destination_addresses = ["0.0.0.0/0"]
-//      destination_ports     = ["0-64000"] # ["80", "1000-2000"]
-//    }
-//  }
-//}
+data "external" "aks_nsg_name" {
+  program = [
+    "/bin/bash",
+    "${path.root}/scripts/get_aks_nsg_name.sh",
+    local.generated_rg
+  ]
+
+  depends_on = [azurerm_resource_group.main]
+}
