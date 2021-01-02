@@ -21,3 +21,11 @@ output cluster_fqdn {
 output cluster_cname {
   value = cloudflare_record.cluster_cname.name
 }
+
+output resource_group {
+  value = azurerm_kubernetes_cluster.main.resource_group_name
+}
+
+output name {
+  value = azurerm_kubernetes_cluster.main.name
+}

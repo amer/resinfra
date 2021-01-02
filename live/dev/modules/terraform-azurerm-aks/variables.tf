@@ -9,13 +9,12 @@ variable dns_prefix {}
 variable ssh_public_key {}
 variable agent_count {}
 variable log_analytics_workspace_name {}
-variable service_cidr {}
-variable dns_service_ip {}
 variable cloudflare_email {}
 variable cloudflare_api_token {}
 variable cloudflare_zone_id {}
 variable domain_name {}
 variable vm_size {}
+variable vnet_cidr {}
 
 # Refer https://azure.microsoft.com/global-infrastructure/services/?products=monitor
 # for log analytics available regions

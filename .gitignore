@@ -134,6 +134,7 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+!live/dev/terraform.example.tfvars
 
 # env
 /az/terraform/env.sh
