@@ -232,5 +232,5 @@ data "external" "aks_nsg_name" {
 
 locals {
   aks_generated_rg = "MC_${azurerm_resource_group.main.name}_${azurerm_kubernetes_cluster.main.name}_${azurerm_resource_group.main.location}"
-  aks_nsg_name = trim(data.external.aks_nsg_name.result.output, "\\\"")
+  aks_nsg_name     = trim(data.external.aks_nsg_name.result.output, "\\\"")
 }
