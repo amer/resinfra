@@ -88,7 +88,7 @@ resource "azurerm_subnet" "private" {
 
 resource "azurerm_network_security_rule" "all-nodeports" {
   name                        = "all-nodeports"
-  resource_group_name         = local.generated_rg
+  resource_group_name         = local.aks_generated_rg
   network_security_group_name = local.aks_nsg_name
   priority                    = 100
   direction                   = "Inbound"
@@ -221,17 +221,16 @@ data "azurerm_kubernetes_cluster" "main" {
   resource_group_name = azurerm_kubernetes_cluster.main.resource_group_name
 }
 
-locals {
-  generated_rg = "MC_${azurerm_resource_group.main.name}_${azurerm_kubernetes_cluster.main.name}_${azurerm_resource_group.main.location}"
-  aks_nsg_name = trim(data.external.aks_nsg_name.result.output, "\\\"")
-}
-
 data "external" "aks_nsg_name" {
   program = [
     "/bin/bash",
     "${path.root}/scripts/get_aks_nsg_name.sh",
-    local.generated_rg
+    local.aks_generated_rg
   ]
-
   depends_on = [azurerm_resource_group.main]
+}
+
+locals {
+  aks_generated_rg = "MC_${azurerm_resource_group.main.name}_${azurerm_kubernetes_cluster.main.name}_${azurerm_resource_group.main.location}"
+  aks_nsg_name = trim(data.external.aks_nsg_name.result.output, "\\\"")
 }

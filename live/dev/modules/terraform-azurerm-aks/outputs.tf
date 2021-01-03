@@ -29,3 +29,11 @@ output resource_group {
 output name {
   value = azurerm_kubernetes_cluster.main.name
 }
+
+output aks_generated_rg_name {
+  value = local.aks_generated_rg
+}
+
+output public_pool_network_security_group_name {
+  value = local.aks_nsg_name
+}
