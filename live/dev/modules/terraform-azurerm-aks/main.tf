@@ -174,9 +174,9 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 }
 
-resource "azurerm_kubernetes_cluster_node_pool" "public-pool" {
+resource "azurerm_kubernetes_cluster_node_pool" "public" {
   kubernetes_cluster_id = azurerm_kubernetes_cluster.main.id
-  name                  = "publicpool"
+  name                  = "public"
   node_count            = 2
   vm_size               = "Standard_B2s"
   availability_zones    = ["1", "2", "3"]
