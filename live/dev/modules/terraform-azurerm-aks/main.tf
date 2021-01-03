@@ -227,10 +227,35 @@ data "external" "aks_nsg_name" {
     "${path.root}/scripts/get_aks_nsg_name.sh",
     local.aks_generated_rg
   ]
-  depends_on = [azurerm_resource_group.main]
+  depends_on = [azurerm_kubernetes_cluster_node_pool.public]
+}
+
+data "external" "aks_vmss_name" {
+  program = [
+    "/bin/bash",
+    "${path.root}/scripts/get_virtual_machine_scale_set.sh",
+    local.aks_generated_rg
+  ]
+  depends_on = [azurerm_kubernetes_cluster_node_pool.public]
+}
+
+data "external" "public_node_ips" {
+  program = [
+    "/bin/bash",
+    "${path.root}/scripts/get_public_node_ips.sh",
+    local.aks_generated_rg,
+    local.aks_vmss_name
+  ]
+  depends_on = [azurerm_kubernetes_cluster_node_pool.public]
 }
 
 locals {
   aks_generated_rg = "MC_${azurerm_resource_group.main.name}_${azurerm_kubernetes_cluster.main.name}_${azurerm_resource_group.main.location}"
-  aks_nsg_name     = trim(data.external.aks_nsg_name.result.output, "\\\"")
+  aks_nsg_name     = data.external.aks_nsg_name.result.output
+  aks_vmss_name    = data.external.aks_vmss_name.result.output
+  public_node_ips  = split(",",data.external.public_node_ips.result.output)
+}
+
+output "public_node_ips" {
+  value = local.public_node_ips
 }
