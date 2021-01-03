@@ -37,3 +37,11 @@ output "public_pool_network_security_group_name" {
 output "public_get_virtual_machine_scale_set_name" {
   value = local.aks_vmss_name
 }
+
+output "public_node_ips" {
+  value = local.public_node_ips
+}
+
+output "public_nodes_fqdn" {
+  value = cloudflare_record.public_nodes.0.name
+}

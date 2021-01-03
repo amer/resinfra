@@ -256,6 +256,12 @@ locals {
   public_node_ips  = split(",",data.external.public_node_ips.result.output)
 }
 
-output "public_node_ips" {
-  value = local.public_node_ips
+resource "cloudflare_record" "public_nodes" {
+  name       = "nodes.${cloudflare_record.cluster_cname.name}"
+  zone_id    = var.cloudflare_zone_id
+  type       = "A"
+  ttl        = 1
+  count      = length(local.public_node_ips)
+  value      = element(local.public_node_ips[*], count.index)
+  depends_on = [data.external.public_node_ips]
 }
