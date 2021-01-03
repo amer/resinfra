@@ -1,39 +1,39 @@
-output client_certificate {
+output "client_certificate" {
   value = azurerm_kubernetes_cluster.main.kube_config.0.client_certificate
 }
 
-output kube_config {
+output "kube_config" {
   value = azurerm_kubernetes_cluster.main.kube_config_raw
 }
 
-output aks_location {
+output "aks_location" {
   value = azurerm_kubernetes_cluster.main.location
 }
 
-output cluster_name {
+output "cluster_name" {
   value = azurerm_kubernetes_cluster.main.name
 }
 
-output cluster_fqdn {
+output "cluster_fqdn" {
   value = azurerm_kubernetes_cluster.main.fqdn
 }
 
-output cluster_cname {
+output "cluster_cname" {
   value = cloudflare_record.cluster_cname.name
 }
 
-output resource_group {
+output "resource_group" {
   value = azurerm_kubernetes_cluster.main.resource_group_name
 }
 
-output name {
+output "name" {
   value = azurerm_kubernetes_cluster.main.name
 }
 
-output aks_generated_rg_name {
+output "aks_generated_rg_name" {
   value = local.aks_generated_rg
 }
 
-output public_pool_network_security_group_name {
+output "public_pool_network_security_group_name" {
   value = local.aks_nsg_name
 }

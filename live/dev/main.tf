@@ -2,15 +2,15 @@ locals {
   project_name = "ri"
   siteA = {
     cluster_name = "ca"
-    region = "eastus"
-    vnet_cidr = "10.1.0.0/16" # cidrsubnet("10.1.0.0/16", 8,1) => "10.1.1.0/24"
-    domain_name = "a.infra.ci"
+    region       = "eastus"
+    vnet_cidr    = "10.1.0.0/16" # cidrsubnet("10.1.0.0/16", 8,1) => "10.1.1.0/24"
+    domain_name  = "a.infra.ci"
   }
   siteB = {
     cluster_name = "cb"
-    region = "eastus2"
-    vnet_cidr = "10.2.0.0/16" # cidrsubnet("10.2.0.0/16", 8,1) => "10.2.1.0/24"
-    domain_name = "b.infra.ci"
+    region       = "eastus2"
+    vnet_cidr    = "10.2.0.0/16" # cidrsubnet("10.2.0.0/16", 8,1) => "10.2.1.0/24"
+    domain_name  = "b.infra.ci"
   }
 }
 
