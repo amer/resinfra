@@ -63,27 +63,12 @@ resource "azurerm_resource_group" "main" {
 //  name = "Microsoft.ContainerService"
 //}
 
-resource "azurerm_virtual_network" "network" {
-  name                = "kube-vnet"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  address_space       = [var.vnet_cidr]
-}
-
-resource "azurerm_subnet" "public" {
-  name                 = "kube-public-subnet"
-  resource_group_name  = azurerm_resource_group.main.name
-  virtual_network_name = azurerm_virtual_network.network.name
-  # "10.1.x.0/24" where x is an odd number for public subnets, starts at 3
-  address_prefixes = [cidrsubnet(var.vnet_cidr, 8, 1 * 2 + 1)]
-}
-
-resource "azurerm_subnet" "private" {
-  name                 = "kube-private-subnet"
-  resource_group_name  = azurerm_resource_group.main.name
-  virtual_network_name = azurerm_virtual_network.network.name
-  # "10.1.x.0/24" where x is an even number for private subnets, starts at 4
-  address_prefixes = [cidrsubnet(var.vnet_cidr, 8, 1 * 2 + 2)]
+locals {
+  subnet_cidr      = cidrsubnet(var.cidr_block, 4, 1) # e.g "10.1.0.0/16", 4, 1 => 10.1.16.0/20
+  aks_generated_rg = "MC_${azurerm_resource_group.main.name}_${azurerm_kubernetes_cluster.main.name}_${azurerm_resource_group.main.location}"
+  aks_nsg_name     = data.external.aks_nsg_name.result.output
+  aks_vmss_name    = data.external.aks_vmss_name.result.output
+  public_node_ips  = split(",", data.external.public_node_ips.result.output)
 }
 
 resource "azurerm_network_security_rule" "all-nodeports" {
@@ -130,7 +115,6 @@ resource "azurerm_kubernetes_cluster" "main" {
     max_count             = 5
     os_disk_size_gb       = 30 # can't be smaller
     enable_node_public_ip = false
-    vnet_subnet_id        = azurerm_subnet.private.id
 
     tags = {
       Environment = "production"
@@ -144,12 +128,15 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   network_profile {
-    load_balancer_sku = "Standard"
-    network_plugin    = "azure" # azure == CNI, use 'azure' if you want to install calico or cilium later
+    outbound_type      = "loadBalancer"
+    service_cidr       = local.subnet_cidr
+    dns_service_ip     = cidrhost(local.subnet_cidr, 10)
+    docker_bridge_cidr = "172.17.0.1/16"
+    load_balancer_sku  = "Standard"
+    network_plugin     = "azure" # azure == CNI, use 'azure' if you want to install calico or cilium later
     # If you want to use Cilium, do NOT specify the '–network-policy' flag when creating
     # the cluster, as this will cause the Azure CNI plugin to push down unwanted iptables rules.
     # network_policy     = "calico"
-    outbound_type = "loadBalancer"
   }
 
   # TODO copy kube_config to ~/Download/somenamehere
@@ -184,7 +171,6 @@ resource "azurerm_kubernetes_cluster_node_pool" "public" {
   min_count             = 2
   max_count             = 2
   enable_node_public_ip = true
-  vnet_subnet_id        = azurerm_subnet.public.id
 
   tags = {
     Environment = "production"
@@ -249,19 +235,12 @@ data "external" "public_node_ips" {
   depends_on = [azurerm_kubernetes_cluster_node_pool.public]
 }
 
-locals {
-  aks_generated_rg = "MC_${azurerm_resource_group.main.name}_${azurerm_kubernetes_cluster.main.name}_${azurerm_resource_group.main.location}"
-  aks_nsg_name     = data.external.aks_nsg_name.result.output
-  aks_vmss_name    = data.external.aks_vmss_name.result.output
-  public_node_ips  = split(",",data.external.public_node_ips.result.output)
-}
-
 resource "cloudflare_record" "public_nodes" {
   name       = "nodes.${cloudflare_record.cluster_cname.name}"
   zone_id    = var.cloudflare_zone_id
   type       = "A"
   ttl        = 1
-  count      = length(local.public_node_ips)
+  count      = azurerm_kubernetes_cluster_node_pool.public.node_count
   value      = element(local.public_node_ips[*], count.index)
-  depends_on = [data.external.public_node_ips]
+  depends_on = [azurerm_kubernetes_cluster_node_pool.public, data.external.public_node_ips, ]
 }

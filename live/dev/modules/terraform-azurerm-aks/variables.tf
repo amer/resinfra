@@ -14,7 +14,7 @@ variable cloudflare_api_token {}
 variable cloudflare_zone_id {}
 variable domain_name {}
 variable vm_size {}
-variable vnet_cidr {}
+variable cidr_block {}
 
 # Refer https://azure.microsoft.com/global-infrastructure/services/?products=monitor
 # for log analytics available regions

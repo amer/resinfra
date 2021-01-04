@@ -3,13 +3,13 @@ locals {
   siteA = {
     cluster_name = "ca"
     region       = "eastus"
-    vnet_cidr    = "10.1.0.0/16" # cidrsubnet("10.1.0.0/16", 8,1) => "10.1.1.0/24"
+    cidr_block   = "10.1.0.0/16" # cidrsubnet("10.1.0.0/16", 4,1) => "10.1.16.0/20", 4096 Addresses
     domain_name  = "a.infra.ci"
   }
   siteB = {
     cluster_name = "cb"
     region       = "eastus2"
-    vnet_cidr    = "10.2.0.0/16" # cidrsubnet("10.2.0.0/16", 8,1) => "10.2.1.0/24"
+    cidr_block   = "10.2.0.0/16" # cidrsubnet("10.2.0.0/16", 4,1) => "10.2.16.0/20", 4096 Addresses
     domain_name  = "b.infra.ci"
   }
 }
@@ -30,7 +30,7 @@ module "azure_aks_siteA" {
   ssh_public_key               = "~/.ssh/id_rsa.pub"
   log_analytics_workspace_name = "${local.project_name}-k8s-log-analytics-workspace-${local.siteA.region}"
   agent_count                  = 2
-  vnet_cidr                    = local.siteA.vnet_cidr
+  cidr_block                   = local.siteA.cidr_block
   domain_name                  = local.siteA.domain_name
   vm_size                      = "Standard_D2s_v3" # Standard_D2s_v3, Standard_B2s | For more info https://azureprice.net/
 }
@@ -51,7 +51,7 @@ module "azure_aks_siteB" {
   ssh_public_key               = "~/.ssh/id_rsa.pub"
   log_analytics_workspace_name = "${local.project_name}-k8s-log-analytics-workspace-${local.siteB.region}"
   agent_count                  = 2
-  vnet_cidr                    = local.siteB.vnet_cidr
+  cidr_block                   = local.siteB.cidr_block
   domain_name                  = local.siteB.domain_name
   vm_size                      = "Standard_D2s_v3" # Standard_D2s_v3, Standard_B2s | For more info https://azureprice.net/
 }

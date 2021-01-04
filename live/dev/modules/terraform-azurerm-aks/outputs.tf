@@ -45,3 +45,11 @@ output "public_node_ips" {
 output "public_nodes_fqdn" {
   value = cloudflare_record.public_nodes.0.name
 }
+
+output "private_subnet_service_cidr" {
+  value = azurerm_kubernetes_cluster.main.network_profile.0.service_cidr
+}
+
+output "private_subnet_dns_service_ip" {
+  value = azurerm_kubernetes_cluster.main.network_profile.0.dns_service_ip
+}
