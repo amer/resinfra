@@ -64,16 +64,58 @@ resource "azurerm_resource_group" "main" {
 //}
 
 locals {
-  subnet_cidr      = cidrsubnet(var.cidr_block, 4, 1) # e.g "10.1.0.0/16", 4, 1 => 10.1.16.0/20
-  pod_cidr         = cidrsubnet(var.cidr_block, 4, 2)
-  aks_generated_rg = "MC_${azurerm_resource_group.main.name}_${azurerm_kubernetes_cluster.main.name}_${azurerm_resource_group.main.location}"
+//  subnet_cidr = cidrsubnet(var.cidr_block, 4, 1) # e.g "10.1.0.0/16", 4, 1 => 10.1.16.0/20
+//  pod_cidr    = cidrsubnet(var.cidr_block, 4, 2)
+  #aks_generated_rg = "MC_${azurerm_resource_group.main.name}_${azurerm_kubernetes_cluster.main.name}_${azurerm_resource_group.main.location}"
+  aks_generated_rg = azurerm_kubernetes_cluster.main.node_resource_group
   aks_nsg_name     = data.external.aks_nsg_name.result.output
   aks_vmss_name    = data.external.aks_vmss_name.result.output
   public_node_ips  = split(",", data.external.public_node_ips.result.output)
 }
 
-resource "azurerm_network_security_rule" "all-nodeports" {
-  name                        = "all-nodeports"
+
+resource "azurerm_virtual_network" "main" {
+  name                = "${var.prefix}-network"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  address_space       = [var.cidr_block]
+}
+
+resource "azurerm_subnet" "internal" {
+  name                 = "internal"
+  virtual_network_name = azurerm_virtual_network.main.name
+  resource_group_name  = azurerm_resource_group.main.name
+  address_prefixes     = [cidrsubnet(var.cidr_block, 6, 2)]
+}
+
+resource "azurerm_subnet" "public" {
+  name                 = "public"
+  virtual_network_name = azurerm_virtual_network.main.name
+  resource_group_name  = azurerm_resource_group.main.name
+  address_prefixes     = [cidrsubnet(var.cidr_block, 6, 1)]
+}
+
+//resource "azurerm_route_table" "example" {
+//  name                          = "${var.prefix}fwrt"
+//  location                      = azurerm_resource_group.example.location
+//  resource_group_name           = azurerm_resource_group.example.name
+//  disable_bgp_route_propagation = false
+//
+//  route {
+//    name           = "${var.prefix}fwrn"
+//    address_prefix = "0.0.0.0/0"
+//    next_hop_type  = "VirtualAppliance"
+//    next_hop_in_ip_address = var.fwprivate_ip
+//  }
+//}
+
+//resource "azurerm_subnet_route_table_association" "example" {
+//  subnet_id      = azurerm_subnet.internal.id
+//  route_table_id = azurerm_route_table.main.id
+//}
+
+resource "azurerm_network_security_rule" "any-nodeport" {
+  name                        = "any-nodeport"
   resource_group_name         = local.aks_generated_rg
   network_security_group_name = local.aks_nsg_name
   priority                    = 100
@@ -116,6 +158,7 @@ resource "azurerm_kubernetes_cluster" "main" {
     max_count             = 5
     os_disk_size_gb       = 30 # can't be smaller
     enable_node_public_ip = false
+    vnet_subnet_id        = azurerm_subnet.internal.id
 
     tags = {
       Environment = "production"
@@ -129,18 +172,20 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   network_profile {
-    outbound_type      = "loadBalancer"
-    pod_cidr           = local.pod_cidr
-    service_cidr       = local.subnet_cidr
-    dns_service_ip     = cidrhost(local.subnet_cidr, 10)
     docker_bridge_cidr = "172.17.0.1/16"
-    load_balancer_sku  = "Standard"
-    network_plugin     = "azure" # azure == CNI, use 'azure' if you want to install calico or cilium later
-    network_policy     = "azure"
+    service_cidr = cidrsubnet(var.cidr_block, 1, 1)
+    dns_service_ip = cidrhost(cidrsubnet(var.cidr_block, 1, 1), 10 )
+    outbound_type     = "loadBalancer"
+    load_balancer_sku = "standard"
+    network_plugin    = "azure" # azure == CNI, use 'azure' if you want to install calico or cilium later
     # If you want to use Cilium, do NOT specify the '–network-policy' flag when creating
     # the cluster, as this will cause the Azure CNI plugin to push down unwanted iptables rules.
     # network_policy     = "calico"
   }
+
+  //  identity {
+  //    type = "SystemAssigned"
+  //  }
 
   # TODO copy kube_config to ~/Download/somenamehere
   provisioner "local-exec" {
@@ -174,6 +219,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "public" {
   min_count             = 2
   max_count             = 2
   enable_node_public_ip = true
+  vnet_subnet_id        = azurerm_subnet.public.id
 
   tags = {
     Environment = "production"
@@ -232,13 +278,23 @@ data "external" "aks_nsg_name" {
   depends_on = [azurerm_kubernetes_cluster_node_pool.public]
 }
 
+resource "null_resource" "sp" {
+  provisioner "local-exec" {
+    command = <<EOF
+          echo 333333333333333333333
+    EOF
+    #interpreter = ["/bin/bash"]
+    #working_dir = path.module
+  }
+}
+
 data "external" "aks_vmss_name" {
   program = [
     "/bin/bash",
     "${path.root}/scripts/get_virtual_machine_scale_set.sh",
     local.aks_generated_rg
   ]
-  depends_on = [azurerm_kubernetes_cluster_node_pool.public]
+  depends_on = [azurerm_kubernetes_cluster.main]
 }
 
 data "external" "public_node_ips" {
