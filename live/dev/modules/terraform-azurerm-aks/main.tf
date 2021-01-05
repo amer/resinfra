@@ -65,6 +65,7 @@ resource "azurerm_resource_group" "main" {
 
 locals {
   subnet_cidr      = cidrsubnet(var.cidr_block, 4, 1) # e.g "10.1.0.0/16", 4, 1 => 10.1.16.0/20
+  pod_cidr         = cidrsubnet(var.cidr_block, 4, 2)
   aks_generated_rg = "MC_${azurerm_resource_group.main.name}_${azurerm_kubernetes_cluster.main.name}_${azurerm_resource_group.main.location}"
   aks_nsg_name     = data.external.aks_nsg_name.result.output
   aks_vmss_name    = data.external.aks_vmss_name.result.output
@@ -80,7 +81,7 @@ resource "azurerm_network_security_rule" "all-nodeports" {
   access                      = "Allow"
   protocol                    = "*"
   source_port_range           = "*"
-  destination_port_range      = "*" # "30000-32767"
+  destination_port_range      = "30000-32767"
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
 }
@@ -129,11 +130,13 @@ resource "azurerm_kubernetes_cluster" "main" {
 
   network_profile {
     outbound_type      = "loadBalancer"
+    pod_cidr           = local.pod_cidr
     service_cidr       = local.subnet_cidr
     dns_service_ip     = cidrhost(local.subnet_cidr, 10)
     docker_bridge_cidr = "172.17.0.1/16"
     load_balancer_sku  = "Standard"
     network_plugin     = "azure" # azure == CNI, use 'azure' if you want to install calico or cilium later
+    network_policy     = "azure"
     # If you want to use Cilium, do NOT specify the '–network-policy' flag when creating
     # the cluster, as this will cause the Azure CNI plugin to push down unwanted iptables rules.
     # network_policy     = "calico"
@@ -202,6 +205,19 @@ module "install_helm" {
 //  depends_on = [azurerm_kubernetes_cluster.main]
 //}
 
+//module "cilium" {
+//  source = "../app-cilium"
+//  depends_on = [azurerm_kubernetes_cluster.main]
+//
+//  azure_client_id = var.client_id
+//  azure_client_secret = var.client_secret
+//  azure_node_resource_group = local.aks_generated_rg
+//  azure_subscription_id = var.subscription_id
+//  azure_tenant_id = var.tenant_id
+# To access hubble run the following command then open http://localhost:12000/
+# kubectl port-forward -n kube-system svc/hubble-ui --address 0.0.0.0 --address :: 12000:80
+//}
+
 data "azurerm_kubernetes_cluster" "main" {
   name                = azurerm_kubernetes_cluster.main.name
   resource_group_name = azurerm_kubernetes_cluster.main.resource_group_name
@@ -234,6 +250,24 @@ data "external" "public_node_ips" {
   ]
   depends_on = [azurerm_kubernetes_cluster_node_pool.public]
 }
+
+data "azurerm_public_ip" "main" {
+  name                = reverse(split("/", tolist(azurerm_kubernetes_cluster.main.network_profile.0.load_balancer_profile.0.effective_outbound_ips)[0]))[0]
+  resource_group_name = azurerm_kubernetes_cluster.main.node_resource_group
+}
+
+output "node_resource_group" {
+  value = data.azurerm_kubernetes_cluster.main.node_resource_group
+}
+
+output "cluster_load_balancer_public_ip" {
+  value = data.azurerm_public_ip.main.ip_address
+}
+
+output "cluster_load_balancer_public_ip_name" {
+  value = data.azurerm_public_ip.main.name
+}
+
 
 resource "cloudflare_record" "public_nodes" {
   name       = "nodes.${cloudflare_record.cluster_cname.name}"

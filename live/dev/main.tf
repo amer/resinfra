@@ -2,13 +2,13 @@ locals {
   project_name = "ri"
   siteA = {
     cluster_name = "ca"
-    region       = "eastus"
+    region       = "westeurope"
     cidr_block   = "10.1.0.0/16" # cidrsubnet("10.1.0.0/16", 4,1) => "10.1.16.0/20", 4096 Addresses
     domain_name  = "a.infra.ci"
   }
   siteB = {
     cluster_name = "cb"
-    region       = "eastus2"
+    region       = "eastus"
     cidr_block   = "10.2.0.0/16" # cidrsubnet("10.2.0.0/16", 4,1) => "10.2.16.0/20", 4096 Addresses
     domain_name  = "b.infra.ci"
   }

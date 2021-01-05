@@ -6,47 +6,70 @@ resource "helm_release" "cilium-stable" {
   version = "1.9.1"
 
   set {
-    name = "nodeinit.enabled"
-    value = true
+    name = "azure.enabled"
+    value = "true"
   }
 
   set {
-    name = "kubeProxyReplacement"
-    value = "partial"
+    name = "azure.resourceGroup"
+    value = var.azure_node_resource_group
   }
 
   set {
-    name = "hostServices.enabled"
-    value = false
+    name = "azure.subscriptionID"
+    value = var.azure_subscription_id
   }
 
   set {
-    name = "externalIPs.enabled"
-    value = false
+    name = "azure.tenantID"
+    value = var.azure_tenant_id
   }
 
   set {
-    name = "nodePort.enabled"
-    value = false
+    name = "azure.clientID"
+    value = var.azure_client_id
   }
 
   set {
-    name = "hostPort.enabled"
-    value = false
+    name = "clientSecret"
+    value = var.azure_client_secret
   }
 
   set {
-    name = "bpf.masquerade"
-    value = false
-  }
-
-  set {
-    name = "image.pullPolicy"
-    value = "IfNotPresent"
+    name = "tunnel"
+    value = "disabled"
   }
 
   set {
     name = "ipam.mode"
-    value = "kubernetes"
+    value = "azure"
+  }
+
+  set {
+    name = "masquerade"
+    value = "false"
+  }
+
+  set {
+    name = "nodeinit.enabled"
+    value = "true"
+  }
+
+  set {
+    name = "hubble.listenAddress"
+    value = ":4244"
+  }
+
+  set {
+    name = "hubble.relay.enabled"
+    value = "true"
+  }
+
+  set {
+    name = "hubble.ui.enabled"
+    value = "true"
   }
 }
+
+
+
