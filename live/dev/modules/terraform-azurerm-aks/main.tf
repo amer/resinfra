@@ -64,10 +64,6 @@ resource "azurerm_resource_group" "main" {
 //}
 
 locals {
-//  subnet_cidr = cidrsubnet(var.cidr_block, 4, 1) # e.g "10.1.0.0/16", 4, 1 => 10.1.16.0/20
-//  pod_cidr    = cidrsubnet(var.cidr_block, 4, 2)
-  #aks_generated_rg = "MC_${azurerm_resource_group.main.name}_${azurerm_kubernetes_cluster.main.name}_${azurerm_resource_group.main.location}"
-  aks_generated_rg = azurerm_kubernetes_cluster.main.node_resource_group
   aks_nsg_name     = data.external.aks_nsg_name.result.output
   aks_vmss_name    = data.external.aks_vmss_name.result.output
   public_node_ips  = split(",", data.external.public_node_ips.result.output)
@@ -85,14 +81,14 @@ resource "azurerm_subnet" "internal" {
   name                 = "internal"
   virtual_network_name = azurerm_virtual_network.main.name
   resource_group_name  = azurerm_resource_group.main.name
-  address_prefixes     = [cidrsubnet(var.cidr_block, 6, 2)]
+  address_prefixes     = [cidrsubnet(var.cidr_block, 8, 1)]
 }
 
 resource "azurerm_subnet" "public" {
   name                 = "public"
   virtual_network_name = azurerm_virtual_network.main.name
   resource_group_name  = azurerm_resource_group.main.name
-  address_prefixes     = [cidrsubnet(var.cidr_block, 6, 1)]
+  address_prefixes     = [cidrsubnet(var.cidr_block, 8, 2)]
 }
 
 //resource "azurerm_route_table" "example" {
@@ -114,9 +110,9 @@ resource "azurerm_subnet" "public" {
 //  route_table_id = azurerm_route_table.main.id
 //}
 
-resource "azurerm_network_security_rule" "any-nodeport" {
+resource "azurerm_network_security_rule" "all-nodeports" {
   name                        = "any-nodeport"
-  resource_group_name         = local.aks_generated_rg
+  resource_group_name         = azurerm_kubernetes_cluster.main.node_resource_group
   network_security_group_name = local.aks_nsg_name
   priority                    = 100
   direction                   = "Inbound"
@@ -172,15 +168,15 @@ resource "azurerm_kubernetes_cluster" "main" {
   }
 
   network_profile {
-    docker_bridge_cidr = "172.17.0.1/16"
-    service_cidr = cidrsubnet(var.cidr_block, 1, 1)
-    dns_service_ip = cidrhost(cidrsubnet(var.cidr_block, 1, 1), 10 )
+//    docker_bridge_cidr = "172.17.0.1/16"
+//    service_cidr = cidrsubnet(var.cidr_block, 8, 1)
+//    dns_service_ip = cidrhost(cidrsubnet(var.cidr_block, 8, 1), 10 )
     outbound_type     = "loadBalancer"
     load_balancer_sku = "standard"
     network_plugin    = "azure" # azure == CNI, use 'azure' if you want to install calico or cilium later
     # If you want to use Cilium, do NOT specify the '–network-policy' flag when creating
     # the cluster, as this will cause the Azure CNI plugin to push down unwanted iptables rules.
-    # network_policy     = "calico"
+    network_policy     = "calico"
   }
 
   //  identity {
@@ -217,7 +213,7 @@ resource "azurerm_kubernetes_cluster_node_pool" "public" {
   availability_zones    = ["1", "2", "3"]
   enable_auto_scaling   = true
   min_count             = 2
-  max_count             = 2
+  max_count             = 5
   enable_node_public_ip = true
   vnet_subnet_id        = azurerm_subnet.public.id
 
@@ -245,7 +241,7 @@ module "install_helm" {
 //  source = "../app-ingress-nginx"
 //  depends_on = [azurerm_kubernetes_cluster.main]
 //}
-//
+
 //module "prometheus" {
 //  source = "../app-prometheus"
 //  depends_on = [azurerm_kubernetes_cluster.main]
@@ -257,11 +253,11 @@ module "install_helm" {
 //
 //  azure_client_id = var.client_id
 //  azure_client_secret = var.client_secret
-//  azure_node_resource_group = local.aks_generated_rg
+//  azure_node_resource_group = azurerm_kubernetes_cluster.main.node_resource_group
 //  azure_subscription_id = var.subscription_id
 //  azure_tenant_id = var.tenant_id
-# To access hubble run the following command then open http://localhost:12000/
-# kubectl port-forward -n kube-system svc/hubble-ui --address 0.0.0.0 --address :: 12000:80
+//  # To access hubble run the following command then open http://localhost:12000/
+//  # kubectl port-forward -n kube-system svc/hubble-ui --address 0.0.0.0 --address :: 12000:80
 //}
 
 data "azurerm_kubernetes_cluster" "main" {
@@ -273,35 +269,59 @@ data "external" "aks_nsg_name" {
   program = [
     "/bin/bash",
     "${path.root}/scripts/get_aks_nsg_name.sh",
-    local.aks_generated_rg
+    azurerm_kubernetes_cluster.main.node_resource_group
   ]
   depends_on = [azurerm_kubernetes_cluster_node_pool.public]
 }
 
-resource "null_resource" "sp" {
+resource "null_resource" "info" {
   provisioner "local-exec" {
     command = <<EOF
-          echo 333333333333333333333
+          echo "
+          -----------------------------------
+          node_resource_group: ${azurerm_kubernetes_cluster.main.node_resource_group}
+          -----------------------------------
+          "
     EOF
-    #interpreter = ["/bin/bash"]
-    #working_dir = path.module
   }
+}
+
+output "install_helm_cilium" {
+  value = <<EOF
+helm repo add cilium https://helm.cilium.io/
+helm install cilium cilium/cilium --version 1.9.1 \
+--namespace kube-system \
+--set azure.enabled=true \
+--set azure.resourceGroup="${azurerm_kubernetes_cluster.main.node_resource_group}" \
+--set azure.subscriptionID="${var.subscription_id}" \
+--set azure.tenantID="${var.tenant_id}" \
+--set azure.clientID="${var.client_id}" \
+--set azure.clientSecret="${var.client_secret}" \
+--set tunnel=disabled \
+--set ipam.mode=azure \
+--set masquerade=false \
+--set nodeinit.enabled=true \
+--set hubble.listenAddress=":4244" \
+--set hubble.relay.enabled=true \
+--set hubble.ui.enabled=true
+EOF
 }
 
 data "external" "aks_vmss_name" {
   program = [
     "/bin/bash",
     "${path.root}/scripts/get_virtual_machine_scale_set.sh",
-    local.aks_generated_rg
+    azurerm_kubernetes_cluster.main.node_resource_group
   ]
   depends_on = [azurerm_kubernetes_cluster.main]
+
 }
 
 data "external" "public_node_ips" {
   program = [
     "/bin/bash",
     "${path.root}/scripts/get_public_node_ips.sh",
-    local.aks_generated_rg,
+    azurerm_kubernetes_cluster.main.node_resource_group,
     local.aks_vmss_name
   ]
   depends_on = [azurerm_kubernetes_cluster_node_pool.public]
@@ -311,19 +331,6 @@ data "azurerm_public_ip" "main" {
   name                = reverse(split("/", tolist(azurerm_kubernetes_cluster.main.network_profile.0.load_balancer_profile.0.effective_outbound_ips)[0]))[0]
   resource_group_name = azurerm_kubernetes_cluster.main.node_resource_group
 }
-
-output "node_resource_group" {
-  value = data.azurerm_kubernetes_cluster.main.node_resource_group
-}
-
-output "cluster_load_balancer_public_ip" {
-  value = data.azurerm_public_ip.main.ip_address
-}
-
-output "cluster_load_balancer_public_ip_name" {
-  value = data.azurerm_public_ip.main.name
-}
-
 
 resource "cloudflare_record" "public_nodes" {
   name       = "nodes.${cloudflare_record.cluster_cname.name}"

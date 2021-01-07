@@ -26,8 +26,16 @@ output "resource_group" {
   value = azurerm_kubernetes_cluster.main.resource_group_name
 }
 
-output "aks_generated_resource_group_name" {
-  value = local.aks_generated_rg
+output "node_resource_group" {
+  value = azurerm_kubernetes_cluster.main.node_resource_group
+}
+
+output "cluster_load_balancer_public_ip" {
+  value = data.azurerm_public_ip.main.ip_address
+}
+
+output "cluster_load_balancer_public_ip_name" {
+  value = data.azurerm_public_ip.main.name
 }
 
 output "public_pool_network_security_group_name" {

@@ -12,7 +12,7 @@ resource "helm_release" "nginx-stable" {
 
   set {
     name = "controller.replicaCount"
-    value = "1"
+    value = "2"
   }
 
   set {

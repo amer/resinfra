@@ -26,10 +26,10 @@ metadata:
 data:
   PUID: "1000"
   PGID: "1000"
-  TZ: "America/Mexico_City"
+  TZ: "Europe/Berlin"
   SERVERPORT: "31820"
   PEERS: "2"
-  PEERDNS: "10.2.16.10"
+  PEERDNS: "10.1.128.10"
   ALLOWEDIPS: "0.0.0.0/0, ::/0"
   INTERNAL_SUBNET: "10.13.13.0"
 ---
