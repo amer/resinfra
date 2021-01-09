@@ -1,0 +1,4 @@
+#!/bin/bash
+
+kubectl apply -f ./wireguard_$(kubectl config current-context).yaml
+kubectl delete -n wireguard pod $(kubectl get pods -n wireguard | grep wireguard | awk '{print $1}')

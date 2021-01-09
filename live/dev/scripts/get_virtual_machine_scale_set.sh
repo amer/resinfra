@@ -7,7 +7,7 @@ function myFunction() {
 }
 
 retry=0
-maxRetries=15
+maxRetries=30
 retryInterval=15
 until [ ${retry} -ge ${maxRetries} ]
 do
@@ -21,8 +21,6 @@ if [ ${retry} -ge ${maxRetries} ]; then
   echo "Failed after ${maxRetries} attempts!"
   exit 1
 fi
-
-
 
 OUTPUT=$(az vmss list -g $1 -o json --query '[].name | [?contains(@,`public`)] | [0] ')
 OUTPUT=${OUTPUT//[$'\t\r\n\"']}

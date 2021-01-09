@@ -110,16 +110,30 @@ resource "azurerm_subnet" "public" {
 //  route_table_id = azurerm_route_table.main.id
 //}
 
-resource "azurerm_network_security_rule" "all-nodeports" {
+resource "azurerm_network_security_rule" "allow-nodeports" {
   name                        = "any-nodeport"
   resource_group_name         = azurerm_kubernetes_cluster.main.node_resource_group
   network_security_group_name = local.aks_nsg_name
-  priority                    = 100
+  priority                    = 400
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = "*"
   source_port_range           = "*"
   destination_port_range      = "30000-32767"
+  source_address_prefix       = "*"
+  destination_address_prefix  = "*"
+}
+
+resource "azurerm_network_security_rule" "allow-ICMP" {
+  name                        = "any-ICMP"
+  resource_group_name         = azurerm_kubernetes_cluster.main.node_resource_group
+  network_security_group_name = local.aks_nsg_name
+  priority                    = 300
+  direction                   = "Inbound"
+  access                      = "Allow"
+  protocol                    = "ICMP"
+  source_port_range           = "*"
+  destination_port_range      = "*"
   source_address_prefix       = "*"
   destination_address_prefix  = "*"
 }
@@ -176,7 +190,7 @@ resource "azurerm_kubernetes_cluster" "main" {
     network_plugin    = "azure" # azure == CNI, use 'azure' if you want to install calico or cilium later
     # If you want to use Cilium, do NOT specify the '–network-policy' flag when creating
     # the cluster, as this will cause the Azure CNI plugin to push down unwanted iptables rules.
-    network_policy     = "calico"
+    #network_policy     = "calico"
   }
 
   //  identity {
