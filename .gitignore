@@ -142,3 +142,4 @@ terraform.rc
 .idea/
 *.hcl
 /tmp/
+/az/terraform/.terraform.lock.hcl

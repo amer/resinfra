@@ -1,0 +1,13 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - setup_docker
+  
+- hosts: cockroach_main_servers
+  roles:
+    - install_cockroachdb
+
+- hosts: cockroach_cluster_initializer
+  roles:
+    - init_cockroachdb

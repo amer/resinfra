@@ -1,18 +1,7 @@
-terraform {
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "=2.37.0"
-    }
-  }
-}
-
 # Configure the Microsoft Azure Provider
 provider "azurerm" {
+  version = "=2.37.0"
   features {}
-  # More information on the authentication methods supported by
-  # the AzureRM Provider can be found here:
-  # http://terraform.io/docs/providers/azurerm/index.html
 
   subscription_id = var.resinfra_subscription_id
   client_id       = var.resinfra_client_id
@@ -20,23 +9,15 @@ provider "azurerm" {
   tenant_id       = var.resinfra_tenant_id
 }
 
-variable "prefix" {
-  default = "resinfra"
-}
-
-resource "random_id" "mv_random_id" {
-  byte_length = 8
-}
-
 # Create a resource group
 resource "azurerm_resource_group" "main" {
-  name     = "${var.prefix}-resources"
-  location = "West US"
+  name     = "${var.prefix}-resources-${random_id.id.hex}"
+  location = "West Europe"
 }
 
 # Create a virtual network
 resource "azurerm_virtual_network" "main" {
-  name                = "${var.prefix}-network"
+  name                = "${var.prefix}-network-${random_id.id.hex}"
   address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -44,19 +25,19 @@ resource "azurerm_virtual_network" "main" {
 
 # Create a subnet
 resource "azurerm_subnet" "internal" {
-  name                 = "${var.prefix}-internal"
+  name                 = "internal"
   resource_group_name  = azurerm_resource_group.main.name
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = ["10.0.2.0/24"]
 }
 
 resource "azurerm_network_interface" "main" {
-  name                = "${var.prefix}-nic"
+  name                = "${var.prefix}-nic-${random_id.id.hex}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
   ip_configuration {
-    name                          = "${var.prefix}-NicConfiguration"
+    name                          = "${var.prefix}-NicConfiguration-${random_id.id.hex}"
     subnet_id                     = azurerm_subnet.internal.id
     public_ip_address_id          = azurerm_public_ip.main.id
     private_ip_address_allocation = "Dynamic"
@@ -65,7 +46,7 @@ resource "azurerm_network_interface" "main" {
 
 # Create Network Security Group and rule
 resource "azurerm_network_security_group" "main" {
-  name                = "${var.prefix}-security-group"
+  name                = "${var.prefix}-security-group-${random_id.id.hex}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
@@ -90,32 +71,39 @@ resource "azurerm_network_interface_security_group_association" "main" {
 
 # Create public IPs
 resource "azurerm_public_ip" "main" {
-  name                         = "${var.prefix}-public-ip"
+  name                         = "${var.prefix}-public-ip-${random_id.id.hex}"
   location                     = azurerm_resource_group.main.location
   resource_group_name          = azurerm_resource_group.main.name
   allocation_method            = "Dynamic"
-  idle_timeout_in_minutes      = 30
-  ip_version                   = "IPv4"
+}
 
-  tags = {
-    environment = "development"
+data "template_cloudinit_config" "config" {
+  gzip          = true
+  base64_encode = true
+
+  part {
+    filename     = "cloud-init"
+    content_type = "text/cloud-config"
+    content      = data.template_file.user_data.rendered
   }
 }
 
 # Create a virtual machine
 resource "azurerm_linux_virtual_machine" "main" {
-  name                = "vm-${var.prefix}-${random_id.mv_random_id.b64_url}"
+  name                = "${var.prefix}-vm-${random_id.id.hex}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
-  size                = "Standard_DS1_v2" # Specs of Standard_DS1_v2 vm: (vCPU: 1, Memory: 3.5 GiB, Storage (SSD): 7 GiB)
+  size                = var.resinfra_vm_size
   admin_username      = "adminuser"
   network_interface_ids = [
     azurerm_network_interface.main.id,
   ]
+  custom_data = data.template_cloudinit_config.config.rendered
+
 
   admin_ssh_key {
     username   = "adminuser"
-    public_key = file("~/.ssh/id_rsa.pub")
+    public_key = file(var.public_key_path)
   }
 
   os_disk {
@@ -124,20 +112,20 @@ resource "azurerm_linux_virtual_machine" "main" {
   }
 
   source_image_reference {
-    publisher = "Canonical"
-    offer     = "UbuntuServer"
-    sku       = "16.04-LTS"
+    publisher = "Debian"
+    offer     = "debian-10"
+    sku       = "10"
     version   = "latest"
   }
 }
 
 resource "azurerm_dns_zone" "azure_zone" {
-  name                = "azure.amer.berlin"
+  name                = "${var.prefix}.azure.amer.berlin"
   resource_group_name = azurerm_resource_group.main.name
 }
 
 resource "azurerm_dns_ns_record" "ns" {
-  name                = "cloudflare-amer.berlin"
+  name                = "${var.prefix}.cloudflare-amer.berlin"
   zone_name           = azurerm_dns_zone.azure_zone.name
   resource_group_name = azurerm_resource_group.main.name
   ttl                 = 50
@@ -167,6 +155,6 @@ output "fqdn" {
   value = azurerm_dns_a_record.mv_public.fqdn
 }
 
-output "public_ip_address" {
+output "azure_public_ip" {
   value = azurerm_public_ip.main.*.ip_address
 }
