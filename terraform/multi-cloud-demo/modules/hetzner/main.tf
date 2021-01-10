@@ -28,7 +28,7 @@ data "hcloud_image" "latest-debian" {
 }
 
 data "template_file" "user_data" {
-  template = file("./preconf.yml")
+  template = file("${path.module}/preconf.yml")
 
   vars = {
     username = "resinfra"

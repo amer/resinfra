@@ -1,0 +1,1 @@
+variable "hcloud_token" {}

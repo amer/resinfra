@@ -20,7 +20,7 @@ variable "location" {
 }
 
 variable "server_type" {
-  default = "CX31"
+  default = "cx31"
   description = "server type to get. Refer to https://www.hetzner.com/cloud for more information about server types."
   # cx11: 1vCPU, 2GM RAM, 20GB Disc
 }
