@@ -1,0 +1,17 @@
+- name: pull cockroachdb image
+  docker_image:
+    name: cockroachdb/cockroach:v20.2.3 
+    source: pull
+
+- name: start cockroachdb container
+  docker_container:
+    name: cockroachdb
+    image: cockroachdb/cockroach:v20.2.3
+    container_default_behavior: compatibility
+    ports: 
+      - 8080:8080
+      - 26257:26257
+    volumes:
+      - "~/cockroach-data:/cockroach/cockroach-data"
+    command: start --insecure --join=10.0.1.2,10.0.1.3,10.0.1.4,10.1.1.2,10.1.1.3,10.1.1.4,10.2.0.2,10.2.0.3,10.2.0.4 --advertise-addr={{ansible_eth0.ipv4.address}}
+    state: started

@@ -3,10 +3,18 @@
   become: true
   roles:
     - setup_docker
-  
-- hosts: cockroach_main_servers
+
+- hosts: cockroach_main_servers_hetzner
   roles:
-    - install_cockroachdb
+    - install_cockroachdb_hetzner
+
+- hosts: cockroach_main_servers_gcp
+  roles:
+    - install_cockroachdb_gcp
+
+- hosts: cockroach_main_servers_azure
+  roles:
+    - install_cockroachdb_azure
 
 - hosts: cockroach_cluster_initializer
   roles:
