@@ -137,3 +137,10 @@ resource "hcloud_server_network" "internal" {
   EOF
   }
 }
+
+# create a route in the Hetzner Network for Azure traffic
+resource "hcloud_network_route" "azure_via_gateway" {
+  network_id = hcloud_network.main.id
+  destination = var.azure_vpc_cidr_block
+  gateway = hcloud_server_network.internal.ip
+}
