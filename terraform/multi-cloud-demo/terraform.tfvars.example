@@ -1,15 +1,4 @@
-# Authentication 
 resinfra_subscription_id = "00000000-0000-0000-0000-000000000000"
 hcloud_token = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-aws_access_key = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-aws_secret_key = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 proxmox_api_password = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-
 username = "resinfra"
-
-# Proxmox Server Configuration
-proxmox_api_user = "username@authtype"
-proxmox_server_port = 8006
-proxmox_server_address = "127.0.0.1"
-proxmox_target_node = "nodename"
-proxmox_vm_gateway = "127.0.0.1"
