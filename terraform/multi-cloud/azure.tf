@@ -155,6 +155,3 @@ output "fqdn" {
   value = azurerm_dns_a_record.mv_public.fqdn
 }
 
-output "azure_public_ip" {
-  value = azurerm_public_ip.main.*.ip_address
-}
