@@ -14,15 +14,12 @@ data:
   CLUSTER_NAME: "ca"
   WG_CONFIG: |
     [Interface]
-    Address = 192.168.1.0/24
-    ListenPort = 51820
-    PrivateKey = 8F8Z+2+LzBniqhDy6OeAyOmyXveEGIhfOeUF9g90mXU=
-    PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -t nat -A POSTROUTING -o INTERNAL_IP_INTERFACE -j MASQUERADE
-    PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -t nat -D POSTROUTING -o INTERNAL_IP_INTERFACE -j MASQUERADE
+    ListenPort=51820
+    PrivateKey=8F8Z+2+LzBniqhDy6OeAyOmyXveEGIhfOeUF9g90mXU=
 
     [Peer]
-    PublicKey = O8HmcIcDnavOFGWGAsl+dK0BqimoOuVSDmU+EEwTbRU=
-    AllowedIPs = 0.0.0.0/0
+    PublicKey=O8HmcIcDnavOFGWGAsl+dK0BqimoOuVSDmU+EEwTbRU=
+    AllowedIPs=0.0.0.0/0
   IP_SCRIPT: |
     #wg-quick up wg0
 
@@ -48,6 +45,8 @@ kind: Deployment
 metadata:
   name: wireguard-deployment
   namespace: wireguard
+#  annotations:
+#    security.alpha.kubernetes.io/unsafe-sysctls: net.ipv4.route.min_pmtu=1000,kernel.msgmax=1 2 3
 spec:
   selector:
     matchLabels:

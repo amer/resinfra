@@ -10,21 +10,23 @@ kind: ConfigMap
 metadata:
   name: wireguard-configmap
   namespace: wireguard
+#  annotations:
+#    security.alpha.kubernetes.io/unsafe-sysctls: net.ipv4.route.min_pmtu=1000,kernel.msgmax=1 2 3
 data:
   CLUSTER_NAME: "cb"
   WG_CONFIG: |
     [Interface]
-    Address = 192.168.1.0/24
-    ListenPort = 51820
-    PrivateKey = 8F8Z+2+LzBniqhDy6OeAyOmyXveEGIhfOeUF9g90mXU=
-    PostUp = iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o eth0 -j MASQUERADE
-    PostDown = iptables -t nat -D POSTROUTING -s 192.168.1.0/24 -o eth0 -j MASQUERADE
+    Address=192.168.1.0/24
+    ListenPort=51820
+    PrivateKey=8F8Z+2+LzBniqhDy6OeAyOmyXveEGIhfOeUF9g90mXU=
+    PostUp=iptables -t nat -A POSTROUTING -s 192.168.1.0/24 -o eth0 -j MASQUERADE
+    PostDown=iptables -t nat -D POSTROUTING -s 192.168.1.0/24 -o eth0 -j MASQUERADE
 
     [Peer]
-    PublicKey = O8HmcIcDnavOFGWGAsl+dK0BqimoOuVSDmU+EEwTbRU=
-    AllowedIPs = 0.0.0.0/0
+    PublicKey=O8HmcIcDnavOFGWGAsl+dK0BqimoOuVSDmU+EEwTbRU=
+    AllowedIPs= 0.0.0.0/0
   IP_SCRIPT: |
-    wg-quick up wg0
+    #wg-quick up wg0
 ---
 apiVersion: apps/v1
 kind: Deployment
