@@ -1,5 +1,5 @@
 terraform {
-  required_version = "=0.14.3"
+  required_version = "=0.14.4"
   required_providers {
     helm       = "=2.0.1"
     kubernetes = "=1.13.3"
