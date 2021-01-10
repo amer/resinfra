@@ -32,3 +32,9 @@ variable "prefix" {
 variable "instances" {
   default = "1"
 }
+
+variable "cidr_block" {}
+variable "azure_vpc_cidr_block" {}
+variable "azurerm_public_ip" {}
+variable "shared_key" {}
+
