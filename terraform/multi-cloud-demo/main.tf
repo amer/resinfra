@@ -8,7 +8,7 @@ module "hetzner" {
   hcloud_token         = var.hcloud_token
   cidr_block           = local.hetzner_vpc_cidr_block
   azure_vpc_cidr_block = local.azure_vpc_cidr_block
-  azurerm_public_ip    = "1.2.3.4"
+  azurerm_public_ip    = "1.2.3.4" # TODO get the public ip of Azure VPN gateway
   shared_key           = var.shared_key
 }
 
