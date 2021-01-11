@@ -94,24 +94,31 @@ resource "hcloud_server_network" "normal-vms-into-subnet" {
 
 # Put the deployment VM into the subnet
 resource "hcloud_server_network" "deployment-vm-into-subnet" {
-  count = var.instances
   server_id = hcloud_server.cockroach_deployer.id
   subnet_id = hcloud_network_subnet.main.id
 
   // TODO: pull current git repo and run cockroachdb ansible
-  /*
+
+  // upload path_private_key
+
   provisioner "remote-exec" {
     inline = [
-      "echo 'SSH is now ready!'"]
+      "echo 'SSH is now ready!'",
+      "echo '${file(var.path_private_key)}' >> ~/.ssh/vm_key",
+      "chmod 0600 ~/.ssh/vm_key",
+      "cd ~/resinfra/",
+      "git pull",
+      "cd ansible",
+      "ansible-playbook cockroach_playbook.yml -i hosts.yml --ssh-common-args='-o StrictHostKeyChecking=no' --private-key ~/.ssh/vm_key"
+      ]
 
     connection {
       type = "ssh"
-      user = "root"
+      user = "resinfra"
       private_key = file(var.path_private_key)
-      host = hcloud_server.gateway.ipv4_address
+      host = hcloud_server.cockroach_deployer.ipv4_address
     }
   }
-  */
 }
 
 ### HETZNER ###
