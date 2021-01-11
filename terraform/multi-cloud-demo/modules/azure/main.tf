@@ -30,10 +30,6 @@ resource "azurerm_resource_group" "main" {
   location = var.location
 }
 
-locals {
-  prefix = "ri"
-}
-
 resource "random_id" "id" {
   byte_length = 4
 }
@@ -47,7 +43,7 @@ resource "random_id" "id" {
 
 # Create a virtual network
 resource "azurerm_virtual_network" "main" {
-  name                = "${local.prefix}-network"
+  name                = "${var.prefix}-network"
   address_space       = [var.azure_vpc_cidr]
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
@@ -63,7 +59,7 @@ resource "azurerm_subnet" "vms" {
 }
 
 
-//Create a second subnet as GatewaySubnet
+# Create a second subnet as GatewaySubnet
 #   This subnet will be used for the gateways
 resource "azurerm_subnet" "gateway" {
   name                 = "GatewaySubnet"
@@ -75,12 +71,12 @@ resource "azurerm_subnet" "gateway" {
 
 
 resource "azurerm_network_interface" "main" {
-  name                = "${local.prefix}-nic-${random_id.id.hex}"
+  name                = "${var.prefix}-nic-${random_id.id.hex}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
   ip_configuration {
-    name                          = "${local.prefix}-NicConfiguration-${random_id.id.hex}"
+    name                          = "${var.prefix}-NicConfiguration-${random_id.id.hex}"
     subnet_id                     = azurerm_subnet.vms.id
     public_ip_address_id          = azurerm_public_ip.main.id
     private_ip_address_allocation = "Dynamic"
@@ -89,19 +85,19 @@ resource "azurerm_network_interface" "main" {
 
 # Create Network Security Group and rule
 resource "azurerm_network_security_group" "main" {
-  name = "${local.prefix}-security-group-${random_id.id.hex}"
-  location = azurerm_resource_group.main.location
+  name                = "${var.prefix}-security-group-${random_id.id.hex}"
+  location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
   security_rule {
-    name = "SSH"
-    priority = 1001
-    direction = "Inbound"
-    access = "Allow"
-    protocol = "Tcp"
-    source_port_range = "*"
-    destination_port_range = "22"
-    source_address_prefix = "*"
+    name                       = "SSH"
+    priority                   = 1001
+    direction                  = "Inbound"
+    access                     = "Allow"
+    protocol                   = "Tcp"
+    source_port_range          = "*"
+    destination_port_range     = "22"
+    source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
 }
@@ -115,7 +111,7 @@ resource "azurerm_network_interface_security_group_association" "main" {
 
 # Create public IPs
 resource "azurerm_public_ip" "main" {
-  name                = "${local.prefix}-public-ip-${random_id.id.hex}"
+  name                = "${var.prefix}-public-ip-${random_id.id.hex}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   allocation_method   = "Dynamic"
@@ -124,7 +120,7 @@ resource "azurerm_public_ip" "main" {
 # Create public IP for Gateway
 # TODO: Needs to be tested!
 resource "azurerm_public_ip" "gateway" {
-  name                = "${local.prefix}-public-gateway-ip-${random_id.id.hex}"
+  name                = "${var.prefix}-public-gateway-ip-${random_id.id.hex}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
   allocation_method   = "Dynamic"
@@ -152,7 +148,7 @@ data "template_cloudinit_config" "config" {
 
 # Create a virtual machine
 resource "azurerm_linux_virtual_machine" "main" {
-  name                = "${local.prefix}-vm-${random_id.id.hex}"
+  name                = "${var.prefix}-vm-${random_id.id.hex}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   size                = var.vm_size
@@ -197,13 +193,22 @@ resource "azurerm_local_network_gateway" "hetzner_onpremise" {
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-  gateway_address     = var.hcloud_gateway_ipv4_address
-  address_space       = [var.hcloud_subnet_cidr]
+  gateway_address = var.hcloud_gateway_ipv4_address
+  address_space   = [var.hcloud_vm_subnet_cidr]
+}
+
+resource "azurerm_local_network_gateway" "gcp" {
+  name                = "gcp"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  gateway_address = var.gcp_gateway_ipv4_address
+  address_space   = [var.gcp_vm_subnet_cidr]
 }
 
 # Create virtual network gateway
 resource "azurerm_virtual_network_gateway" "main" {
-  name                = "${local.prefix}-network-gateway"
+  name                = "${var.prefix}-network-gateway"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
@@ -215,7 +220,7 @@ resource "azurerm_virtual_network_gateway" "main" {
   sku           = "Basic"
 
   ip_configuration {
-    name                          = "${local.prefix}-vnetGatewayConfig"
+    name                          = "${var.prefix}-vnetGatewayConfig"
     public_ip_address_id          = azurerm_public_ip.gateway.id
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = azurerm_subnet.gateway.id
@@ -243,9 +248,18 @@ resource "azurerm_virtual_network_gateway_connection" "hetzner_onpremise" {
   virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
   local_network_gateway_id   = azurerm_local_network_gateway.hetzner_onpremise.id
 
-  # !!!
-  # TODO: find a way to store and distribute these properly accross the gateways
-  # !!!
+  shared_key = var.shared_key
+}
+
+resource "azurerm_virtual_network_gateway_connection" "gcp" {
+  name                = "gcp-connection"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  type                       = "IPsec"
+  virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
+  local_network_gateway_id   = azurerm_local_network_gateway.gcp.id
+
   shared_key = var.shared_key
 }
 

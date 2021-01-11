@@ -25,18 +25,21 @@ variable "server_type" {
   # cx11: 1vCPU, 2GM RAM, 20GB Disc
 }
 
-variable "prefix" {
-  default = "resinfra-mc"
-}
+variable "prefix" {}
 
 variable "instances" {
   default = "1"
 }
 
-variable "cidr_block" {}
-variable "azure_vpc_cidr_block" {}
-variable "shared_key" {}
+variable "hetzner_vm_subnet_cidr" {}
+variable "hetzner_vpc_cidr" {}
+variable "azure_vm_subnet_cidr" {}
+variable "gcp_vm_subnet_cidr" {}
+
 variable "azure_gateway_ipv4_address" {}
+variable "gcp_gateway_ipv4_address" {}
+
+variable "shared_key" {}
 
 variable "path_private_key" {}
 variable "path_public_key" {}
