@@ -19,7 +19,7 @@ provider "hcloud" {
 
 resource "hcloud_ssh_key" "default" {
   name       = "${var.prefix}-hetzner-key-${random_id.id.hex}"
-  public_key = file("~/.ssh/id_rsa.pub")
+  public_key = file(var.path_public_key)
 }
 
 data "hcloud_image" "latest-debian" {
@@ -31,8 +31,8 @@ data "template_file" "user_data" {
   template = file("${path.module}/preconf.yml")
 
   vars = {
-    username = "resinfra"
-    public_key = file("~/.ssh/id_rsa.pub")
+    username   = "resinfra"
+    public_key = file(var.path_public_key)
   }
 }
 
@@ -63,12 +63,6 @@ resource "hcloud_volume" "main" {
   format    = "xfs"
 }
 
-output "hcloud_public_ips" {
-  value = {
-    for server in hcloud_server.main :
-    server.name => server.ipv4_address
-  }
-}
 
 resource "random_id" "id" {
   byte_length = 4
@@ -76,26 +70,24 @@ resource "random_id" "id" {
 
 # Put that VM into the subnet
 resource "hcloud_server_network" "normal-vms-into-subnet" {
-  count = var.instances
+  count     = var.instances
   server_id = hcloud_server.main[count.index].id
   subnet_id = hcloud_network_subnet.main.id
 }
 
-
 ### HETZNER ###
-
 # Create a virtual network
 resource "hcloud_network" "main" {
-  name = "${var.prefix}-network"
+  name     = "${var.prefix}-network"
   ip_range = var.cidr_block
 }
 
 # Create a subnet for both the gateway and the vms
 resource "hcloud_network_subnet" "main" {
-  network_id = hcloud_network.main.id
-  type = "cloud"
+  network_id   = hcloud_network.main.id
+  type         = "cloud"
   network_zone = "eu-central"
-  ip_range   = cidrsubnet(var.cidr_block, 8, 1)
+  ip_range     = cidrsubnet(var.cidr_block, 8, 1)
 }
 
 ### MANUAL GATEWAY VM(S) ###
@@ -113,14 +105,14 @@ resource "hcloud_server" "gateway" {
 resource "hcloud_server_network" "internal" {
   server_id = hcloud_server.gateway.id
   subnet_id = hcloud_network_subnet.main.id
-
+/*
   provisioner "remote-exec" {
     inline = ["echo 'SSH is now ready!'"]
 
     connection {
       type        = "ssh"
       user        = "root"
-      private_key = file("~/.ssh/id_rsa")
+      private_key = file(var.path_private_key)
       host        = hcloud_server.gateway.ipv4_address
     }
   }
@@ -131,16 +123,17 @@ resource "hcloud_server_network" "internal" {
             -u 'root' ${path.module}/ansible/strongswan_playbook.yml \
             --extra-vars 'public_gateway_ip='${hcloud_server.gateway.ipv4_address}' \
                           local_cidr='${var.cidr_block}' \
-                          azure_remote_gateway_ip='${var.azurerm_public_ip}' \
+                          azure_remote_gateway_ip='${var.azure_gateway_ipv4_address}' \
                           azure_remote_cidr='${var.azure_vpc_cidr_block}'
                           psk='${var.shared_key}''
   EOF
   }
+  */
 }
 
 # create a route in the Hetzner Network for Azure traffic
 resource "hcloud_network_route" "azure_via_gateway" {
-  network_id = hcloud_network.main.id
+  network_id  = hcloud_network.main.id
   destination = var.azure_vpc_cidr_block
-  gateway = hcloud_server_network.internal.ip
+  gateway     = hcloud_server_network.internal.ip
 }

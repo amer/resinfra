@@ -3,5 +3,5 @@ output "hetzner" {
 }
 
 output "azure" {
-  value = module.azure.azure_public_ip
+  value = module.azure
 }

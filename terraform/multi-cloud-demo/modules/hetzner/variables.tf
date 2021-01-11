@@ -35,6 +35,8 @@ variable "instances" {
 
 variable "cidr_block" {}
 variable "azure_vpc_cidr_block" {}
-variable "azurerm_public_ip" {}
 variable "shared_key" {}
+variable "azure_gateway_ipv4_address" {}
 
+variable "path_private_key" {}
+variable "path_public_key" {}
