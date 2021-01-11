@@ -163,7 +163,7 @@ resource "hcloud_server_network" "internal" {
         ansible-playbook -i '${hcloud_server.gateway.ipv4_address},'  \
             -u 'root' ${path.module}/../../../../ansible/strongswan_playbook.yml \
             --extra-vars 'public_gateway_ip='${hcloud_server.gateway.ipv4_address}' \
-                          local_cidr='${var.hetzner_vm_subnet_cidr}' \
+                          local_cidr='${var.hetzner_vpc_cidr}' \
                           azure_remote_gateway_ip='${var.azure_gateway_ipv4_address}' \
                           azure_remote_cidr='${var.azure_vm_subnet_cidr}'
                           gcp_remote_gateway_ip='${var.gcp_gateway_ipv4_address}' \

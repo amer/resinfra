@@ -3,5 +3,5 @@ output "gcp_gateway_ipv4_address" {
 }
 
 output "gcp_public_ip_addresses" {
-  value = google_compute_instance.vm.network_interface.0.*.network_ip
+  value = google_compute_instance.vm.*.network_interface.0.network_ip
 }
