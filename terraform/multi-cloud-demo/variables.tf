@@ -10,3 +10,4 @@ variable "shared_key" {}
 
 variable "vpc_cidr" {default = "10.0.0.0/8"}
 variable "prefix" {default = "ri"}
+variable "instances" {default = "2"}

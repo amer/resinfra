@@ -4,6 +4,7 @@ variable "subscription_id" {}
 variable "tenant_id" {}
 variable "location" {}
 variable "vm_size" {}
+variable "instances" {}
 
 variable "prefix" {}
 
@@ -21,3 +22,4 @@ variable "shared_key" {}
 
 variable "path_private_key" {}
 variable "path_public_key" {}
+

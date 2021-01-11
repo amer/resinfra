@@ -84,7 +84,7 @@ resource "google_compute_vpn_gateway" "main" {
 }
 
 # create VPN forwarding routes
-#   these are the default routes created. 
+#   these are the default routes created.
 #   TODO: find out, what they are actually doing / good for.
 
 resource "google_compute_forwarding_rule" "fr_esp" {
@@ -110,7 +110,7 @@ resource "google_compute_forwarding_rule" "fr_udp4500" {
   target      = google_compute_vpn_gateway.main.id
 }
 
-# Create the tunnel & route trafic to remote networks through tunnel 
+# Create the tunnel & route trafic to remote networks through tunnel
 #   for azure
 resource "google_compute_vpn_tunnel" "azure_tunnel" {
   name          = "${var.prefix}-azure-tunnel-${random_id.id.hex}"
@@ -135,7 +135,7 @@ resource "google_compute_route" "azure-route" {
   next_hop_vpn_tunnel = google_compute_vpn_tunnel.azure_tunnel.id
 }
 
-# Create the tunnel & route trafic to remote networks through tunnel 
+# Create the tunnel & route trafic to remote networks through tunnel
 #   for hetzner
 resource "google_compute_vpn_tunnel" "hetzner_tunnel" {
   name          = "${var.prefix}-hetzner-tunnel-${random_id.id.hex}"
@@ -158,4 +158,46 @@ resource "google_compute_route" "hetzner-route" {
   dest_range = var.hetzner_subnet_cidr
 
   next_hop_vpn_tunnel = google_compute_vpn_tunnel.hetzner_tunnel.id
+}
+
+# Create a worker VM
+
+data "template_file" "user_data" {
+  template = file("${path.module}/preconf.yml")
+
+  vars = {
+    username = "resinfra"
+    public_key = file(var.path_public_key)
+  }
+}
+data "template_cloudinit_config" "config" {
+  gzip          = true
+  base64_encode = true
+
+  part {
+    filename     = "cloud-init"
+    content_type = "text/cloud-config"
+    content      = data.template_file.user_data.rendered
+  }
+}
+resource "google_compute_instance" "vm" {
+  count = var.instances
+  name         = "${var.prefix}-vm-${count.index + 1}-${random_id.id.hex}"
+  machine_type = "e2-micro"
+  zone         = "${var.gcp_region}-b"
+
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-10"
+    }
+  }
+
+  network_interface {
+    network = google_compute_subnetwork.vms.id
+  }
+
+  metadata = {
+     user-data = "${data.template_cloudinit_config.config.rendered}"
+  }
+
 }

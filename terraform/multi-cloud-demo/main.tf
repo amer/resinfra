@@ -26,6 +26,7 @@ module "hetzner" {
   hetzner_vm_subnet_cidr     = local.hetzner_vm_subnet_cidr
   hetzner_vpc_cidr           = local.hetzner_cidr
   prefix                     = var.prefix
+  instances                  = var.instances
 }
 
 module "azure" {
@@ -47,6 +48,7 @@ module "azure" {
   hcloud_vm_subnet_cidr       = local.hetzner_vm_subnet_cidr
   shared_key                  = var.shared_key
   prefix                      = var.prefix
+  instances                   = var.instances
 }
 
 module "gcp" {
@@ -61,6 +63,8 @@ module "gcp" {
   hetzner_subnet_cidr          = local.hetzner_vm_subnet_cidr
   prefix                       = var.prefix
   shared_key                   = var.shared_key
+  path_public_key              = local.path_public_key
+  instances                    = var.instances
 }
 
 

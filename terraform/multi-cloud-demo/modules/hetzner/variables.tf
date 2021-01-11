@@ -27,9 +27,7 @@ variable "server_type" {
 
 variable "prefix" {}
 
-variable "instances" {
-  default = "1"
-}
+variable "instances" {}
 
 variable "hetzner_vm_subnet_cidr" {}
 variable "hetzner_vpc_cidr" {}

@@ -148,7 +148,8 @@ data "template_cloudinit_config" "config" {
 
 # Create a virtual machine
 resource "azurerm_linux_virtual_machine" "main" {
-  name                = "${var.prefix}-vm-${random_id.id.hex}"
+  count = var.instances
+  name                = "${var.prefix}-vm-${count.index + 1}-${random_id.id.hex}"
   resource_group_name = azurerm_resource_group.main.name
   location            = azurerm_resource_group.main.location
   size                = var.vm_size
