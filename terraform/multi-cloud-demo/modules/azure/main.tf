@@ -69,16 +69,24 @@ resource "azurerm_subnet" "gateway" {
 }
 
 
+//# Create public IPs
+//resource "azurerm_public_ip" "main" {
+//  name                = "${var.prefix}-public-ip-${random_id.id.hex}"
+//  location            = azurerm_resource_group.main.location
+//  resource_group_name = azurerm_resource_group.main.name
+//  allocation_method   = "Dynamic"
+//}
 
 resource "azurerm_network_interface" "main" {
-  name                = "${var.prefix}-nic-${random_id.id.hex}"
+  count = var.instances
+  name                = "${var.prefix}-nic-${count.index + 1}-${random_id.id.hex}"
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
   ip_configuration {
     name                          = "${var.prefix}-NicConfiguration-${random_id.id.hex}"
     subnet_id                     = azurerm_subnet.vms.id
-    public_ip_address_id          = azurerm_public_ip.main.id
+    # public_ip_address_id          = azurerm_public_ip.main.id
     private_ip_address_allocation = "Dynamic"
   }
 }
@@ -104,27 +112,11 @@ resource "azurerm_network_security_group" "main" {
 
 # Connect the security group to the network interface
 resource "azurerm_network_interface_security_group_association" "main" {
-  network_interface_id      = azurerm_network_interface.main.id
+  count = var.instances
+  network_interface_id      = azurerm_network_interface.main[count.index].id
   network_security_group_id = azurerm_network_security_group.main.id
 }
 
-
-# Create public IPs
-resource "azurerm_public_ip" "main" {
-  name                = "${var.prefix}-public-ip-${random_id.id.hex}"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  allocation_method   = "Dynamic"
-}
-
-# Create public IP for Gateway
-# TODO: Needs to be tested!
-resource "azurerm_public_ip" "gateway" {
-  name                = "${var.prefix}-public-gateway-ip-${random_id.id.hex}"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  allocation_method   = "Dynamic"
-}
 
 data "template_file" "user_data" {
   template = file("${path.module}/preconf.yml")
@@ -155,7 +147,7 @@ resource "azurerm_linux_virtual_machine" "main" {
   size                = var.vm_size
   admin_username      = "adminuser"
   network_interface_ids = [
-    azurerm_network_interface.main.id,
+    azurerm_network_interface.main[count.index].id,
   ]
   custom_data = data.template_cloudinit_config.config.rendered
 
@@ -185,6 +177,15 @@ resource "azurerm_linux_virtual_machine" "main" {
 */
 
 ### AZURE ###
+
+# Create public IP for Gateway
+# TODO: Needs to be tested!
+resource "azurerm_public_ip" "gateway" {
+  name                = "${var.prefix}-public-gateway-ip-${random_id.id.hex}"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+  allocation_method   = "Dynamic"
+}
 
 # Create local network gateway
 #   This is the place where we will store the IP Adresse range of the other network

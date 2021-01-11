@@ -193,7 +193,8 @@ resource "google_compute_instance" "vm" {
   }
 
   network_interface {
-    network = google_compute_subnetwork.vms.id
+    network = google_compute_network.main.id
+    subnetwork = google_compute_subnetwork.vms.id
   }
 
   metadata = {
