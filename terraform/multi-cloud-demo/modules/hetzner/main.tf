@@ -22,6 +22,11 @@ resource "hcloud_ssh_key" "default" {
   public_key = file(var.path_public_key)
 }
 
+// get snapshot with ansible installed for cockroachdb deployment
+data "hcloud_image" "cockroachdb-deploying-ready-snapshot" {
+  with_selector = "cockroachdb_deployment"
+}
+
 data "hcloud_image" "latest-debian" {
   name = "debian-10"
   most_recent = "true"
@@ -41,6 +46,17 @@ resource "hcloud_server" "main" {
   name = "${var.prefix}-vm-${count.index + 1}-${random_id.id.hex}"
   image = data.hcloud_image.latest-debian.name
   server_type = var.server_type
+  location = var.location
+  ssh_keys = [
+    hcloud_ssh_key.default.id]
+  user_data = data.template_file.user_data.rendered
+}
+
+// machine only for the deployment of cockroachdb
+resource "hcloud_server" "cockroach_deployer" {
+  name = "${var.prefix}-cockroach-deployer-${random_id.id.hex}"
+  image = data.hcloud_image.cockroachdb-deploying-ready-snapshot.id
+  server_type = "cx11"
   location = var.location
   ssh_keys = [
     hcloud_ssh_key.default.id]
@@ -76,6 +92,28 @@ resource "hcloud_server_network" "normal-vms-into-subnet" {
   subnet_id = hcloud_network_subnet.main.id
 }
 
+# Put the deployment VM into the subnet
+resource "hcloud_server_network" "deployment-vm-into-subnet" {
+  count = var.instances
+  server_id = hcloud_server.cockroach_deployer.id
+  subnet_id = hcloud_network_subnet.main.id
+
+  // TODO: pull current git repo and run cockroachdb ansible
+  /*
+  provisioner "remote-exec" {
+    inline = [
+      "echo 'SSH is now ready!'"]
+
+    connection {
+      type = "ssh"
+      user = "root"
+      private_key = file(var.path_private_key)
+      host = hcloud_server.gateway.ipv4_address
+    }
+  }
+  */
+}
+
 ### HETZNER ###
 # Create a virtual network
 resource "hcloud_network" "main" {
@@ -103,7 +141,7 @@ resource "hcloud_server" "gateway" {
     hcloud_ssh_key.default.id]
 }
 
-# Put that VM into the subnet
+# Put the Gateway VM into the subnet and run ansible to configure it
 resource "hcloud_server_network" "internal" {
   server_id = hcloud_server.gateway.id
   subnet_id = hcloud_network_subnet.main.id
@@ -119,7 +157,7 @@ resource "hcloud_server_network" "internal" {
       host = hcloud_server.gateway.ipv4_address
     }
   }
-
+/*
   provisioner "local-exec" {
     command = <<EOF
         ansible-playbook -i '${hcloud_server.gateway.ipv4_address},'  \
@@ -134,6 +172,8 @@ resource "hcloud_server_network" "internal" {
             --key-file '${var.path_private_key}'
   EOF
   }
+
+  */
 }
 
 # create a route in the Hetzner Network for Azure traffic
