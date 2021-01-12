@@ -10,6 +10,11 @@
     dest: /home/resinfra/cockroach_start.sh
     mode: 0700
 
+- name: Slurp hosts file
+  slurp:
+    src: /home/resinfra/cockroach_start.sh
+  register: slurpfile
+
 - name: start cockroachdb container
   docker_container:
     name: cockroachdb
@@ -20,6 +25,6 @@
       - 26257:26257
     volumes:
       - "~/cockroach-data:/cockroach/cockroach-data"
-    command: "{{ lookup('file', '/home/resinfra/cockroach_start.sh') }}"
+    command: "{{ slurpfile['content'] | b64decode }}"
     state: started
   become: yes
