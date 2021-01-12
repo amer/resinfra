@@ -26,7 +26,7 @@ provider "azurerm" {
 }
 
 resource "azurerm_resource_group" "main" {
-  name     = "multi-cloud-rg"
+  name     = "${var.prefix}-multi-cloud-rg"
   location = var.location
 }
 
