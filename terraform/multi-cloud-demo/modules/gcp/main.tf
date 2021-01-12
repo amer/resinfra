@@ -210,7 +210,7 @@ resource "google_compute_instance" "vm" {
       nat_ip = google_compute_address.static[count.index].address
     }
   }
-  
+
   metadata = {
         ssh-keys = "resinfra:${file(var.path_public_key)}"
   }
