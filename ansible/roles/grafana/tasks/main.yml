@@ -1,4 +1,9 @@
 ---
+  - name: create grafana directory
+    file:
+      path: /home/resinfra/grafana
+      state: directory
+  
   - name: Copy over the Grafana provisioning files
     copy:
       src: files/provisioning
