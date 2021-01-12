@@ -20,6 +20,6 @@
       - 26257:26257
     volumes:
       - "~/cockroach-data:/cockroach/cockroach-data"
-    command: {{ lookup('file', '/home/resinfra/cockroach_start.sh') }}
+    command: "{{ lookup('file', '/home/resinfra/cockroach_start.sh') }}"
     state: started
   become: yes
