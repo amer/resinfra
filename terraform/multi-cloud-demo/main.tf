@@ -6,7 +6,7 @@ locals {
   gcp_cidr           = cidrsubnet(var.vpc_cidr, 8, 2)    # 10.2.0.0/16
   gcp_vm_subnet_cidr = cidrsubnet(var.vpc_cidr, 16, 512) # 10.2.0.0/24
 
-  hetzner_cidr           = var.vpc_cidr    # 10.0.0.0/8 (Hetzner needs to have all subnets included in the big VPN)
+  hetzner_cidr           = var.vpc_cidr                      # 10.0.0.0/8 (Hetzner needs to have all subnets included in the big VPN)
   hetzner_vm_subnet_cidr = cidrsubnet(var.vpc_cidr, 16, 768) # 10.3.0.0/24
 
   path_private_key = "~/.ssh/ri_key"
@@ -27,6 +27,8 @@ module "hetzner" {
   hetzner_vpc_cidr           = local.hetzner_cidr
   prefix                     = var.prefix
   instances                  = var.instances
+  azure_worker_hosts         = module.azure.azure_private_ip_addresses
+  gcp_worker_hosts           = module.gcp.gcp_private_ip_addresses
 }
 
 module "azure" {

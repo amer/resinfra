@@ -5,3 +5,7 @@ output "hetzner" {
 output "azure" {
   value = module.azure
 }
+
+output "gcp" {
+  value = module.gcp
+}

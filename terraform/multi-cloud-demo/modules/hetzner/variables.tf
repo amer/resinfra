@@ -41,3 +41,6 @@ variable "shared_key" {}
 
 variable "path_private_key" {}
 variable "path_public_key" {}
+
+variable "azure_worker_hosts" {}
+variable "gcp_worker_hosts" {}

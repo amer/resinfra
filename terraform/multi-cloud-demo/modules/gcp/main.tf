@@ -173,7 +173,7 @@ data "template_file" "user_data" {
 
 resource "google_compute_instance" "vm" {
   count = var.instances
-  name         = "${var.prefix}-vm-${count.index + 1}-${random_id.id.hex}"
+  name         = "${var.prefix}-gcp-vm-${count.index + 1}-${random_id.id.hex}"
   machine_type = "e2-micro"
   zone         = "${var.gcp_region}-b"
 
