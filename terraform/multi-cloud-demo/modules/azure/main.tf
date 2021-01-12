@@ -179,7 +179,6 @@ resource "azurerm_linux_virtual_machine" "main" {
 ### AZURE ###
 
 # Create public IP for Gateway
-# TODO: Needs to be tested!
 resource "azurerm_public_ip" "gateway" {
   name                = "${var.prefix}-public-gateway-ip-${random_id.id.hex}"
   location            = azurerm_resource_group.main.location

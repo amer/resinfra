@@ -102,8 +102,13 @@ resource "hcloud_server_network" "deployment-vm-into-subnet" {
 
 # create the hosts file for the cockroach deployment
 resource "local_file" "hosts_file_creation" {
+  depends_on = [
+    hcloud_server_network.normal-vms-into-subnet,
+    hcloud_server_network.deployment-vm-into-subnet,
+    hcloud_server_network.internal
+  ]
   content = templatefile("${path.module}/cockroach_host.ini.tpl", {
-    cockroach_cluster_initializer = hcloud_server_network.normal-vms-into-subnet[0].ip,
+    cockroach_cluster_initializer = hcloud_server_network.deployment-vm-into-subnet.ip,
     azure_hosts                   = var.azure_worker_hosts
     gcp_hosts                     = var.gcp_worker_hosts
     hetzner_hosts                 = hcloud_server_network.normal-vms-into-subnet.*.ip
@@ -127,10 +132,12 @@ resource "null_resource" "hosts_file_copy" {
     destination = "~/cockroach_host.ini"
   }
 }
-
+/*
 resource "null_resource" "cockroach_ansible" {
   depends_on = [
-  null_resource.hosts_file_copy]
+  null_resource.hosts_file_copy,
+  null_resource.strongswan_ansible]
+
   provisioner "remote-exec" {
     inline = [
       "echo 'SSH is now ready!'",
@@ -157,7 +164,7 @@ resource "null_resource" "cockroach_ansible" {
     host        = hcloud_server.cockroach_deployer.ipv4_address
   }
 }
-
+*/
 
 ### HETZNER ###
 # Create a virtual network
@@ -209,6 +216,7 @@ resource "null_resource" "strongswan_ansible" {
     command = <<EOF
         ansible-playbook -i '${hcloud_server.gateway.ipv4_address},'  \
             -u 'root' ${path.module}/../../../../ansible/strongswan_playbook.yml \
+            --ssh-common-args='-o StrictHostKeyChecking=no' \
             --extra-vars 'public_gateway_ip='${hcloud_server.gateway.ipv4_address}' \
                           local_cidr='${var.hetzner_vpc_cidr}' \
                           azure_remote_gateway_ip='${var.azure_gateway_ipv4_address}' \
@@ -241,6 +249,7 @@ resource "hcloud_network_route" "gcp_via_gateway" {
 ------------------
 */
 
+/*
 resource "null_resource" "nodeexporter_ansible" {
   depends_on = [null_resource.hosts_file_copy]
 
@@ -269,7 +278,10 @@ resource "null_resource" "nodeexporter_ansible" {
   }
 }
 
+
 resource "null_resource" "monitoring_ansible" {
+// Depends_on does not support null_resources
+  depends_on = [null_resource.nodeexporter_ansible]
   provisioner "remote-exec" {
     inline = [
       "echo '${file(var.path_private_key)}' >> ~/.ssh/vm_key",
@@ -278,6 +290,7 @@ resource "null_resource" "monitoring_ansible" {
       "git pull",
       "git checkout multi-cloud",
       "cd ansible",
+      "mkdir -p /home/resinfra/grafana/provisioning/datasources",
       <<EOF
         ansible-playbook monitoring_playbook.yml \
                 -i ${hcloud_server_network.deployment-vm-into-subnet.ip}, \
@@ -288,6 +301,52 @@ resource "null_resource" "monitoring_ansible" {
                               monitoring_hosts='${join(",", concat([hcloud_server_network.deployment-vm-into-subnet.ip], var.azure_worker_hosts, var.gcp_worker_hosts, hcloud_server_network.normal-vms-into-subnet.*.ip))}''
       EOF
     ]
+  }
+
+  connection {
+    type        = "ssh"
+    user        = "resinfra"
+    private_key = file(var.path_private_key)
+    host        = hcloud_server.cockroach_deployer.ipv4_address
+  }
+}
+*/
+
+resource "null_resource" "ansible_run_all" {
+  depends_on = [null_resource.hosts_file_copy]
+  provisioner "remote-exec" {
+    inline = [
+      "echo '${file(var.path_private_key)}' >> ~/.ssh/vm_key",
+      "chmod 0600 ~/.ssh/vm_key",
+      "cd ~/resinfra/",
+      "git pull",
+      "git checkout multi-cloud",
+      "cd ansible",
+      "mkdir -p /home/resinfra/grafana/provisioning/datasources",
+      <<EOF
+        ansible-playbook monitoring_playbook.yml \
+                -i ${hcloud_server_network.deployment-vm-into-subnet.ip}, \
+                -u 'resinfra' \
+                --ssh-common-args='-o StrictHostKeyChecking=no' \
+                --private-key ~/.ssh/vm_key \
+                --extra-vars 'prometheus_host='localhost' \
+                              monitoring_hosts='${join(",", concat([hcloud_server_network.deployment-vm-into-subnet.ip], var.azure_worker_hosts, var.gcp_worker_hosts, hcloud_server_network.normal-vms-into-subnet.*.ip))}''
+      EOF,
+      <<EOF
+        ansible-playbook nodeexporter_playbook.yml \
+                -i /home/resinfra/cockroach_host.ini \
+                --ssh-common-args='-o StrictHostKeyChecking=no' \
+                --private-key ~/.ssh/vm_key \
+      EOF,
+      <<EOF
+        ansible-playbook cockroach_playbook.yml \
+                -i /home/resinfra/cockroach_host.ini \
+                --ssh-common-args='-o StrictHostKeyChecking=no' \
+                --private-key ~/.ssh/vm_key \
+                --extra-vars 'priv_ip_list='${join(",", concat(var.azure_worker_hosts, var.gcp_worker_hosts, hcloud_server_network.normal-vms-into-subnet.*.ip))}''
+      EOF
+    ]
+
   }
 
   connection {
