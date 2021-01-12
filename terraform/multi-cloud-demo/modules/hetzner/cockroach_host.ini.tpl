@@ -1,3 +1,4 @@
+# file created dynamically during terraform apply
 [cockroach_cluster_initializer]
 ${cockroach_cluster_initializer}
 
