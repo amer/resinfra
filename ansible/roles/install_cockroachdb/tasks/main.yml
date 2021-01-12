@@ -4,6 +4,12 @@
     source: pull
   become: yes
 
+- name: create the executable
+  template:
+    src: cockroach_start.sh.j2
+    dest: /home/resinfra/cockroach_start.sh
+    mode: 0700
+
 - name: start cockroachdb container
   docker_container:
     name: cockroachdb
@@ -14,6 +20,6 @@
       - 26257:26257
     volumes:
       - "~/cockroach-data:/cockroach/cockroach-data"
-    command: start --insecure --join=10.0.0.2,10.0.0.3,10.0.0.4,10.0.0.5,10.2.0.2,10.2.0.3,10.2.0.4,10.3.0.2,10.3.0.3,10.3.0.4,10.3.0.5 --advertise-addr={{ansible_eth0.ipv4.address}}
+    command: /bin/bash /home/resinfra/cockroach_start.sh
     state: started
   become: yes

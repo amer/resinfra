@@ -4,17 +4,9 @@
   roles:
     - setup_docker
 
-- hosts: cockroach_main_servers_hetzner
+- hosts: cockroach_main_servers
   roles:
-    - install_cockroachdb_hetzner
-
-- hosts: cockroach_main_servers_gcp
-  roles:
-    - install_cockroachdb_gcp
-
-- hosts: cockroach_main_servers_azure
-  roles:
-    - install_cockroachdb_azure
+    - install_cockroachdb
 
 - hosts: cockroach_cluster_initializer
   roles:
