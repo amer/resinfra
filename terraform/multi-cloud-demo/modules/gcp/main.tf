@@ -170,16 +170,7 @@ data "template_file" "user_data" {
     public_key = file(var.path_public_key)
   }
 }
-//data "template_cloudinit_config" "config" {
-//  gzip          = true
-//  base64_encode = true
-//
-//  part {
-//    filename     = "cloud-init"
-//    content_type = "text/cloud-config"
-//    content      = data.template_file.user_data.rendered
-//  }
-//}
+
 resource "google_compute_instance" "vm" {
   count = var.instances
   name         = "${var.prefix}-vm-${count.index + 1}-${random_id.id.hex}"
