@@ -4,7 +4,7 @@
     source: pull
   become: yes
 
-- name: create the executable
+- name: create the command
   template:
     src: cockroach_start.sh.j2
     dest: /home/resinfra/cockroach_start.sh
