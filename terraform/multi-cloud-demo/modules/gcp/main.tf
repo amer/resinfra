@@ -163,23 +163,23 @@ resource "google_compute_route" "hetzner-route" {
 # Create a worker VM
 
 data "template_file" "user_data" {
-  template = file("${path.module}/preconf.yml")
+  template = file("${path.module}/preconf.tpl")
 
   vars = {
     username = "resinfra"
     public_key = file(var.path_public_key)
   }
 }
-data "template_cloudinit_config" "config" {
-  gzip          = true
-  base64_encode = true
-
-  part {
-    filename     = "cloud-init"
-    content_type = "text/cloud-config"
-    content      = data.template_file.user_data.rendered
-  }
-}
+//data "template_cloudinit_config" "config" {
+//  gzip          = true
+//  base64_encode = true
+//
+//  part {
+//    filename     = "cloud-init"
+//    content_type = "text/cloud-config"
+//    content      = data.template_file.user_data.rendered
+//  }
+//}
 resource "google_compute_instance" "vm" {
   count = var.instances
   name         = "${var.prefix}-vm-${count.index + 1}-${random_id.id.hex}"
@@ -196,9 +196,9 @@ resource "google_compute_instance" "vm" {
     network = google_compute_network.main.id
     subnetwork = google_compute_subnetwork.vms.id
   }
-
   metadata = {
-     user-data = "${data.template_cloudinit_config.config.rendered}"
+        ssh-keys = "resinfra:${file(var.path_public_key)}"
   }
+  metadata_startup_script = data.template_file.user_data.rendered
 
 }
