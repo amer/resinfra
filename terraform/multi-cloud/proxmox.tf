@@ -7,7 +7,7 @@ provider "proxmox" {
 
 resource "proxmox_vm_qemu" "proxmox_vm" {
   count             = var.instances
-  name              = "${var.prefix}-vm-${count.index+1}"
+  name              = "${var.prefix}-vm-${count.index+1}-${random_id.id.hex}"
   target_node       = var.proxmox_target_node
   clone             = "debian-cloudinit"
   os_type           = "cloud-init"

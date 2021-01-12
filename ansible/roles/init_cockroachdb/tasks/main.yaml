@@ -1,0 +1,3 @@
+- name: initialize cockroachdb cluster
+  shell: docker exec -it cockroachdb ./cockroach init --insecure
+  become: yes

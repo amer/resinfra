@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: wireguard
+  labels:
+    name: wireguard
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: wireguard-configmap
+  namespace: wireguard
+data:
+  CLUSTER_NAME: "ca"
+  WG_CONFIG: |
+    [Interface]
+    ListenPort=51820
+    PrivateKey=8F8Z+2+LzBniqhDy6OeAyOmyXveEGIhfOeUF9g90mXU=
+
+    [Peer]
+    PublicKey=O8HmcIcDnavOFGWGAsl+dK0BqimoOuVSDmU+EEwTbRU=
+    AllowedIPs=0.0.0.0/0
+  IP_SCRIPT: |
+    #wg-quick up wg0
+
+
+#    [Interface]
+#    PrivateKey = +IBelma2QiiRbqRRB5IjoAMgOTsGoWaXDUmAcFG0WWA=
+#    ListenPort = 51820
+#
+#    [Peer]
+#    PublicKey = +VMQcBwK0OKkPQGa96RTmIxFEd81/DOcdegoZkylNxM=
+#    EndPoint   = nodes.cb.infra.ci:31000
+#    AllowedIPs = 0.0.0.0/0,::/0
+#  IP_SCRIPT: |
+#    ip link add dev wg0 type wireguard
+#    wg setconf wg0 /etc/wireguard/wg0.conf
+#    ip netns add private
+#    ip link set netns private dev wg0
+#    ip -n private addr add 10.3.0.0/16 dev wg0
+#    ip -n private link set wg0 up
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wireguard-deployment
+  namespace: wireguard
+#  annotations:
+#    security.alpha.kubernetes.io/unsafe-sysctls: net.ipv4.route.min_pmtu=1000,kernel.msgmax=1 2 3
+spec:
+  selector:
+    matchLabels:
+      app: wireguard
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: wireguard
+    spec:
+      containers:
+        - name: wireguard
+          image: docker.io/amerj/wg:latest
+          imagePullPolicy: Always # IfNotPresent, Always, Never
+          envFrom:
+            - configMapRef:
+                name: wireguard-configmap
+          securityContext:
+            capabilities:
+              add:
+                - NET_ADMIN
+                - SYS_MODULE
+            privileged: true
+          ports:
+            - containerPort: 51820
+              protocol: UDP
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    k8s-app: wireguard
+  name: wireguard-service
+  namespace: wireguard
+spec:
+  type: NodePort
+  ports:
+    - port: 51820
+      nodePort: 31000
+      protocol: UDP
+      targetPort: 51820s
+  selector:
+    app: wireguard

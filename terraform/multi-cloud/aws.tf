@@ -5,7 +5,7 @@ provider "aws" {
 }
 
 resource "aws_key_pair" "aws_key" {
-  key_name   = "${var.prefix}-aws"
+  key_name   = "${var.prefix}-aws-${random_id.id.hex}"
   public_key = file(var.public_key_path)
 }
 
@@ -38,7 +38,7 @@ resource "aws_default_route_table" "main" {
 
 # Add security group for inbound traffic
 resource "aws_security_group" "allow_inbound_traffic" {
-  name        = "allow-inbound-traffic"
+  name        = "${var.prefix}-allow-inbound-traffic-${random_id.id.hex}"
   description = "Allow inbound HTTP and SSH traffic"
   vpc_id      = aws_vpc.main.id
 
@@ -59,7 +59,7 @@ resource "aws_security_group" "allow_inbound_traffic" {
 
 # Add security group for outbound traffic
 resource "aws_security_group" "allow_outbound_traffic" {
-  name        = "allow-outbound-traffic"
+  name        = "${var.prefix}-allow-outbound-traffic-${random_id.id.hex}"
   description = "Allow all outbound traffic"
   vpc_id      = aws_vpc.main.id
 
@@ -97,6 +97,11 @@ resource "aws_instance" "web" {
     aws_security_group.allow_outbound_traffic.id,
   ]
   user_data = data.template_file.user_data.rendered
+
+
+  tags = {
+    Name = "${var.prefix}-aws-instance-${count.index+1}-${random_id.id.hex}"
+  }
 
 #  provisioner "remote-exec" {
 #    inline = ["echo 'SSH is now ready!'"]
