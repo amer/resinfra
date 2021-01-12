@@ -107,6 +107,7 @@ resource "local_file" "hosts_file_creation" {
     azure_hosts                   = var.azure_worker_hosts
     gcp_hosts                     = var.gcp_worker_hosts
     hetzner_hosts                 = hcloud_server_network.normal-vms-into-subnet.*.ip
+    deployer_vm                   = hcloud_server_network.deployment-vm-into-subnet.ip
   })
   filename = "${path.module}/cockroach_host.ini"
 }
@@ -269,8 +270,6 @@ resource "null_resource" "nodeexporter_ansible" {
 }
 
 resource "null_resource" "monitoring_ansible" {
-  depends_on = [
-  null_resource.hosts_file_copy]
   provisioner "remote-exec" {
     inline = [
       "echo '${file(var.path_private_key)}' >> ~/.ssh/vm_key",
@@ -285,7 +284,8 @@ resource "null_resource" "monitoring_ansible" {
                 -u 'resinfra' \
                 --ssh-common-args='-o StrictHostKeyChecking=no' \
                 --private-key ~/.ssh/vm_key \
-                --extra-vars='{"prometheus_host": "localhost", "monitoring_hosts": ${join(",", concat(hcloud_server_network.deployment-vm-into-subnet.ip, var.azure_worker_hosts, var.gcp_worker_hosts, hcloud_server_network.normal-vms-into-subnet.*.ip))}}'
+                --extra-vars 'prometheus_host='localhost' \
+                              monitoring_hosts='${join(",", concat([hcloud_server_network.deployment-vm-into-subnet.ip], var.azure_worker_hosts, var.gcp_worker_hosts, hcloud_server_network.normal-vms-into-subnet.*.ip))}''
       EOF
     ]
   }

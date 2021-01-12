@@ -12,3 +12,7 @@ ${host}
 %{ for host in hetzner_hosts ~}
 ${host}
 %{ endfor ~}
+
+[deployer_server]
+${deployer_vm}
+
