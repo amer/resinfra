@@ -137,17 +137,17 @@ resource "null_resource" "cockroach_ansible" {
       "chmod 0600 ~/.ssh/vm_key",
       "cd ~/resinfra/",
       "git pull",
-      "cd ansible"]
-  }
-  provisioner "remote-exec" {
-    command = <<EOF
+      "git checkout multi-cloud",
+      "cd ansible",
+      <<EOF
         ansible-playbook cockroach_playbook.yml \
                 -i /home/resinfra/cockroach_host.ini \
                 --ssh-common-args='-o StrictHostKeyChecking=no' \
                 --private-key ~/.ssh/vm_key \
-                --extra-vars 'priv_ip_list='${join(",", [var.azure_worker_hosts, var.gcp_worker_hosts, hcloud_server_network.normal-vms-into-subnet.*.ip])}' \
+                --extra-vars 'priv_ip_list='${join(",", concat(var.azure_worker_hosts, var.gcp_worker_hosts, hcloud_server_network.normal-vms-into-subnet.*.ip))}' \
                               own_priv_ip='${hcloud_server_network.deployment-vm-into-subnet.ip}''
       EOF
+    ]
   }
 
   connection {

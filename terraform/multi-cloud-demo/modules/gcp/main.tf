@@ -46,6 +46,21 @@ resource "google_compute_firewall" "allow_ssh" {
   source_ranges = ["0.0.0.0/0"]
 
 }
+
+# create firewall rule for port 80,443 (ssh)
+resource "google_compute_firewall" "allow_internet" {
+  name    = "${var.prefix}-network-internal-allow-internet-${random_id.id.hex}"
+  network = google_compute_network.main.name
+
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "443"]
+  }
+  source_ranges = ["0.0.0.0/0"]
+
+}
+
 # allow all internal traffic (10.0.0.0/8)
 resource "google_compute_firewall" "allow_internal" {
   name    = "${var.prefix}-network-internal-allow-internal-${random_id.id.hex}"
