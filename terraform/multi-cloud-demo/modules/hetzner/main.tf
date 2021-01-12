@@ -323,28 +323,9 @@ resource "null_resource" "ansible_run_all" {
       "git checkout multi-cloud",
       "cd ansible",
       "mkdir -p /home/resinfra/grafana/provisioning/datasources",
-      <<EOF
-        ansible-playbook monitoring_playbook.yml \
-                -i ${hcloud_server_network.deployment-vm-into-subnet.ip}, \
-                -u 'resinfra' \
-                --ssh-common-args='-o StrictHostKeyChecking=no' \
-                --private-key ~/.ssh/vm_key \
-                --extra-vars 'prometheus_host='localhost' \
-                              monitoring_hosts='${join(",", concat([hcloud_server_network.deployment-vm-into-subnet.ip], var.azure_worker_hosts, var.gcp_worker_hosts, hcloud_server_network.normal-vms-into-subnet.*.ip))}''
-      EOF,
-      <<EOF
-        ansible-playbook nodeexporter_playbook.yml \
-                -i /home/resinfra/cockroach_host.ini \
-                --ssh-common-args='-o StrictHostKeyChecking=no' \
-                --private-key ~/.ssh/vm_key \
-      EOF,
-      <<EOF
-        ansible-playbook cockroach_playbook.yml \
-                -i /home/resinfra/cockroach_host.ini \
-                --ssh-common-args='-o StrictHostKeyChecking=no' \
-                --private-key ~/.ssh/vm_key \
-                --extra-vars 'priv_ip_list='${join(",", concat(var.azure_worker_hosts, var.gcp_worker_hosts, hcloud_server_network.normal-vms-into-subnet.*.ip))}''
-      EOF
+      "ansible-playbook monitoring_playbook.yml -i ${hcloud_server_network.deployment-vm-into-subnet.ip}, -u 'resinfra' --ssh-common-args='-o StrictHostKeyChecking=no' --private-key ~/.ssh/vm_key --extra-vars 'prometheus_host='localhost' monitoring_hosts='${join(",", concat([hcloud_server_network.deployment-vm-into-subnet.ip], var.azure_worker_hosts, var.gcp_worker_hosts, hcloud_server_network.normal-vms-into-subnet.*.ip))}''",
+      "ansible-playbook nodeexporter_playbook.yml -i /home/resinfra/cockroach_host.ini --ssh-common-args='-o StrictHostKeyChecking=no' --private-key ~/.ssh/vm_key",
+      "ansible-playbook cockroach_playbook.yml -i /home/resinfra/cockroach_host.ini --ssh-common-args='-o StrictHostKeyChecking=no' --private-key ~/.ssh/vm_key --extra-vars 'priv_ip_list='${join(",", concat(var.azure_worker_hosts, var.gcp_worker_hosts, hcloud_server_network.normal-vms-into-subnet.*.ip))}''"
     ]
 
   }
