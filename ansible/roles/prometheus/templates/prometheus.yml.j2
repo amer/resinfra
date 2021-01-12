@@ -6,5 +6,5 @@ scrape_configs:
   scrape_interval: 5s
   static_configs:
     {% for host in monitoring_hosts.split(',') %}
-    - targets: ['{{ host }}:9090']
+    - targets: ['{{ host }}:9100']
     {% endfor %}
