@@ -186,6 +186,11 @@ data "template_file" "user_data" {
   }
 }
 
+resource "google_compute_address" "static" {
+  count = var.instances
+  name = "${var.prefix}-ipv4-address-${count.index + 1}-${random_id.id.hex}"
+}
+
 resource "google_compute_instance" "vm" {
   count = var.instances
   name         = "${var.prefix}-gcp-vm-${count.index + 1}-${random_id.id.hex}"
@@ -201,7 +206,11 @@ resource "google_compute_instance" "vm" {
   network_interface {
     network = google_compute_network.main.id
     subnetwork = google_compute_subnetwork.vms.id
+    access_config {
+      nat_ip = google_compute_address.static[count.index].address
+    }
   }
+  
   metadata = {
         ssh-keys = "resinfra:${file(var.path_public_key)}"
   }
