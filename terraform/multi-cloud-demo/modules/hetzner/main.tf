@@ -103,7 +103,7 @@ resource "hcloud_server_network" "deployment-vm-into-subnet" {
 # create the hosts file for the cockroach deployment
 resource "local_file" "hosts_file_creation" {
   content = templatefile("${path.module}/cockroach_host.ini.tpl", {
-    cockroach_cluster_initializer = hcloud_server_network.deployment-vm-into-subnet.ip,
+    cockroach_cluster_initializer = hcloud_server_network.normal-vms-into-subnet[0].ip,
     azure_hosts = var.azure_worker_hosts
     gcp_hosts = var.gcp_worker_hosts
     hetzner_hosts = hcloud_server_network.normal-vms-into-subnet.*.ip
