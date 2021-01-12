@@ -8,7 +8,7 @@
     copy:
       src: files/provisioning
       dest: /home/resinfra/grafana/
-      mode: 666
+      mode: 0666
     changed_when: false
 
   - name: template the datasource file
