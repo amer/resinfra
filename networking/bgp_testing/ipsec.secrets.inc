@@ -1,1 +1,0 @@
-35.242.105.116 : PSK "aksjdcsajhdcinsadicnsdauicnsughuscbhjsdbvszuaedgffzusgczugasdzvgsahjvdahcbhzsgdczgszdv"

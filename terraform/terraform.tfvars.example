@@ -1,0 +1,16 @@
+# Hetzner
+hcloud_token = "xxxxxxxxxxxxx"
+
+# Azure
+client_id = ""00000000-0000-0000-0000-000000000000""
+client_secret = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+subscription_id = ""00000000-0000-0000-0000-000000000000""
+tenant_id = ""00000000-0000-0000-0000-000000000000""
+
+# GCP
+gcp_project_id = "project-id"
+gcp_region = "europe-west1"
+gcp_service_account_path = "path/to/service_account.json"
+
+# IpSec
+shared_key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

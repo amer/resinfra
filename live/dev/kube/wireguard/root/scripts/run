@@ -1,8 +1,0 @@
-#!/bin/bash
-
-cat <<< $WG_CONFIG > /etc/wireguard/wg0.conf
-cat <<< $IP_SCRIPT > /scripts/ip.sh
-
-source /scripts/ip.sh
-
-sleep infinity & wait
