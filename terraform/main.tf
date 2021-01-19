@@ -14,7 +14,7 @@ locals {
 }
 
 module "hetzner" {
-  source                     = "moduleshetzner"
+  source                     = "modules/hetzner"
   hcloud_token               = var.hcloud_token
   shared_key                 = var.shared_key
   path_private_key           = local.path_private_key
@@ -30,7 +30,7 @@ module "hetzner" {
 }
 
 module "azure" {
-  source                      = "modulesazure"
+  source                      = "modules/azure"
   subscription_id             = var.subscription_id
   client_id                   = var.client_id
   client_secret               = var.client_secret
@@ -52,7 +52,7 @@ module "azure" {
 }
 
 module "gcp" {
-  source                       = "modulesgcp"
+  source                       = "modules/gcp"
   azure_gateway_ipv4_address   = module.azure.azure_gateway_ipv4_address
   azure_subnet_cidr            = local.azure_vm_subnet_cidr
   gcp_project_id               = var.gcp_project_id
@@ -68,7 +68,7 @@ module "gcp" {
 }
 
 module "tooling" {
-  source                     = "moduleshetzner\/tooling"
+  source                     = "modules/hetzner/tooling"
   hcloud_token               = var.hcloud_token
   path_private_key           = local.path_private_key
   path_public_key            = local.path_public_key
