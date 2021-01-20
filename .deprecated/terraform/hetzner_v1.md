@@ -1,10 +1,6 @@
 # Terraform for Hetzner
 
-Starts one or multiple VM(s) on Hetzner cloud.
-
-Optional:
-- create and assign floating ips to each of the created vms.
-- create and assign volumes to each of the created vms. 
+Starts one or multiple VM(s) on Hetzner cloud, creates an internal network and joins all VMs to the resinfra net.
 
 ## Usage
 *Tested with terraform version v0.13.5. Older versions of terraform might require the* hashicorp/hcloud *provider. This is tested with the* hetznercloud/hcloud *provider.*
