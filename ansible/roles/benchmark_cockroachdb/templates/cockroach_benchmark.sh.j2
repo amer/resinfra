@@ -1,0 +1,2 @@
+cockroach workload init tpcc --warehouses=10 'postgresql://{{benchmark_target_ip}}:26257?sslmode=disable'
+cockroach workload run tpcc --warehouses=10 --ramp=3m --duration=20m 'postgresql://{{benchmark_target_ip}}:26257?sslmode=disable'

@@ -2,6 +2,9 @@
 [cockroach_cluster_initializer]
 ${cockroach_cluster_initializer}
 
+[cockroach_benchmark_server]
+${hetzner_benchmark_host}
+
 [cockroach_main_servers]
 %{ for host in azure_hosts ~}
 ${host}

@@ -11,3 +11,7 @@
 - hosts: cockroach_cluster_initializer
   roles:
     - init_cockroachdb
+
+- hosts: cockroach_benchmark_server
+  roles:
+    - benchmark_cockroachdb
