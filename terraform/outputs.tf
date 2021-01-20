@@ -9,3 +9,7 @@ output "azure" {
 output "gcp" {
   value = module.gcp
 }
+
+output "proxmox" {
+  value = module.proxmox
+}
