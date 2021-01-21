@@ -5,10 +5,13 @@ provider "proxmox" {
     pm_password = var.proxmox_api_password
 }
 
+resource "random_id" "id" {
+  byte_length = 4
+}
 
 resource "proxmox_vm_qemu" "proxmox_vm" {
-  count             = 2
-  name              = "${var.prefix}-proxmox-vm-${count.index}"
+  count             = var.instances
+  name              = "${var.prefix}-proxmox-vm-${count.index+1}-${random_id.id.hex}"
   target_node       = var.proxmox_target_node
   clone             = "debian-cloudinit"
   os_type           = "cloud-init"

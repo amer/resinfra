@@ -11,3 +11,4 @@ variable "proxmox_target_node" {}
 variable "vm_username" {}
 variable "prefix" {}
 
+variable "instances" {}

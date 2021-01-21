@@ -83,6 +83,7 @@ module "proxmox" {
   proxmox_public_ip_cidr          = "92.204.185.32/29"
   proxmox_vm_subnet_cidr          = local.proxmox_vm_subnet_cidr
   vm_username                     = var.vm_username
+  instances                       = var.instances
 }
 
 module "tooling" {
