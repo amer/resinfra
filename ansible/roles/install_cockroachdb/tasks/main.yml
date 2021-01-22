@@ -2,6 +2,18 @@
   docker_image:
     name: cockroachdb/cockroach:v20.2.3 
     source: pull
+  become: yes
+
+- name: create the command
+  template:
+    src: cockroach_start.sh.j2
+    dest: /home/resinfra/cockroach_start.sh
+    mode: 0700
+
+- name: Slurp hosts file
+  slurp:
+    src: /home/resinfra/cockroach_start.sh
+  register: slurpfile
 
 - name: start cockroachdb container
   docker_container:
@@ -13,5 +25,6 @@
       - 26257:26257
     volumes:
       - "~/cockroach-data:/cockroach/cockroach-data"
-    command: start --insecure --join=10.0.0.2,10.0.0.3,10.0.0.4,10.1.0.2,10.1.0.3,10.1.0.4,10.2.0.2,10.2.0.3,10.2.0.4 --advertise-addr={{ansible_ens10.ipv4.address}}
+    command: "{{ slurpfile['content'] | b64decode }}"
     state: started
+  become: yes

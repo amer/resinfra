@@ -1,0 +1,37 @@
+---
+  - name: create grafana directory
+    file:
+      path: /home/resinfra/grafana
+      state: directory
+  
+  - name: Copy over the Grafana provisioning files
+    copy:
+      src: files/provisioning
+      dest: /home/resinfra/grafana/
+      mode: 0666
+    changed_when: false
+
+  - name: template the datasource file
+    template:
+      src: datasource.yml.j2
+      dest: /home/resinfra/grafana/provisioning/datasources/datasource.yml
+      mode: 0666
+
+  - name: start grafana container
+    docker_container:
+      name: grafana
+      image: grafana/grafana:latest
+      network_mode: host
+#      ports:
+#        - 3000:3000
+      volumes:
+        - /home/resinfra/grafana/provisioning:/etc/grafana/provisioning
+      container_default_behavior: compatibility
+      env:
+        GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+        GF_AUTH_ANONYMOUS_ENABLED: "true"
+        GF_USERS_ALLOW_SIGN_UP: "false"
+        GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      state: started
+      user: root
+    become: yes
