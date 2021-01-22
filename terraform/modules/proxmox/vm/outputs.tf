@@ -7,7 +7,7 @@ output "proxmox_public_ips" {
 }
 
 output "gateway_ipv4_address" {
-  value = regex("\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b", proxmox_vm_qemu.gateway.ipconfig1)
+  value = local.gateway_public_ipv4_address
 }
 
 

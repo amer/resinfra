@@ -19,14 +19,22 @@ conn %default
     dpdtimeout=120s
     dpdaction=restart
 
-conn hetzner-azure
+# todo generate by loop using some kind of map as input
+
+conn to-azure
     left={{public_gateway_ip}} 
     leftsubnet={{local_cidr}} 
     right={{azure_remote_gateway_ip}} 
     rightsubnet={{azure_remote_cidr}}
 
-conn hetzner-gcp
+conn to-gcp
     left={{public_gateway_ip}} 
     leftsubnet={{local_cidr}} 
     right={{gcp_remote_gateway_ip}} 
     rightsubnet={{gcp_remote_cidr}}
+
+conn to-proxmox-or-hetzner-depending-on-what-this-is
+    left={{public_gateway_ip}} 
+    leftsubnet={{local_cidr}} 
+    right={{other_strongswan_gateway_ip}}
+    rightsubnet={{other_strongswan_remote_cidr}}

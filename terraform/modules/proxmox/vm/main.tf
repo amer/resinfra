@@ -61,6 +61,7 @@ resource "proxmox_vm_qemu" "proxmox_vm" {
   ipconfig1 = "ip=${cidrhost(var.proxmox_public_ip_cidr,count.index + 3)}/29,gw=${var.proxmox_server_address}"
   sshkeys = file(var.path_public_key)
   ciuser = var.vm_username
+  cipassword = "10" # todo REMOVE
 }
 
 
@@ -113,4 +114,40 @@ resource "proxmox_vm_qemu" "gateway" {
   ipconfig1 = "ip=${cidrhost(var.proxmox_public_ip_cidr,2)}/29,gw=${var.proxmox_server_address}"
   sshkeys = file(var.path_public_key)
   ciuser = var.vm_username
+  cipassword = "10" #todo REMOVE
+}
+
+locals {
+  gateway_public_ipv4_address = regex("\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b", proxmox_vm_qemu.gateway.ipconfig1)
+}
+
+resource "null_resource" "strongswan_ansible" {
+  provisioner "remote-exec" {
+    inline = ["echo 'SSH is now ready!'"]
+
+    connection {
+      type        = "ssh"
+      user        = var.vm_username
+      private_key = file(var.path_private_key)
+      host        = local.gateway_public_ipv4_address
+    }
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+        ansible-playbook -i '${local.gateway_public_ipv4_address},'  \
+            -u '${var.vm_username}' ${abspath(path.module)}/../../../../ansible/libreswan_playbook.yml \
+            --ssh-common-args='-o StrictHostKeyChecking=no' \
+            --extra-vars 'public_gateway_ip='${local.gateway_public_ipv4_address}' \
+                          local_cidr='${var.proxmox_vm_subnet_cidr}' \
+                          azure_remote_gateway_ip='${var.azure_gateway_ipv4_address}' \
+                          azure_remote_cidr='${var.azure_vm_subnet_cidr}'
+                          gcp_remote_gateway_ip='${var.gcp_gateway_ipv4_address}' \
+                          gcp_remote_cidr='${var.gcp_vm_subnet_cidr}' \
+                          other_strongswan_gateway_ip=${var.hetzner_gateway_ipv4_address} \
+                          other_strongswan_remote_cidr=${var.hetzner_vm_subnet_cidr} \
+                          psk='${var.shared_key}'' \
+            --key-file '${var.path_private_key}'
+  EOF
+  }
 }

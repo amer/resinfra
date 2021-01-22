@@ -1,0 +1,16 @@
+config setup
+    protostack=netkey
+
+conn mysubnet
+     also=mytunnel
+     leftsubnet={{local_cidr}}
+     rightsubnet={{other_strongswan_remote_cidr}}
+     auto=start
+
+conn mytunnel
+    # needed?
+    esp=aes_gcm256-null,aes_gcm128-null,aes256-sha2_512,aes128-sha2_512
+    ikev2=insist
+    left={{public_gateway_ip}}
+    right={{other_strongswan_gateway_ip}}
+    authby=secret
