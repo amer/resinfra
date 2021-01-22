@@ -83,7 +83,7 @@ resource "null_resource" "strongswan_ansible" {
   provisioner "local-exec" {
     command = <<EOF
         ansible-playbook -i '${hcloud_server.gateway.ipv4_address},'  \
-            -u 'root' ${path.module}/../../../../ansible/strongswan_playbook.yml \
+            -u 'root' ${abspath(path.module)}/../../../ansible/strongswan_playbook.yml \
             --ssh-common-args='-o StrictHostKeyChecking=no' \
             --extra-vars 'public_gateway_ip='${hcloud_server.gateway.ipv4_address}' \
                           local_cidr='${var.hetzner_vpc_cidr}' \

@@ -15,7 +15,6 @@ variable "proxmox_server_address" {default = "92.204.175.162"}
 variable "proxmox_target_node" {default = "host1"}
 variable "proxmox_private_gateway_address" {default = "10.4.0.1"}
 
-
 variable "vpc_cidr" {default = "10.0.0.0/8"}
 variable "prefix" {default = "ri"}
 variable "instances" {default = "2"}
