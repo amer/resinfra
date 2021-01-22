@@ -9,12 +9,15 @@ locals {
   hetzner_cidr           = var.vpc_cidr                      # 10.0.0.0/8 (Hetzner needs to have all subnets included in the big VPN)
   hetzner_vm_subnet_cidr = cidrsubnet(var.vpc_cidr, 16, 768) # 10.3.0.0/24
 
+  proxmox_cidr           = cidrsubnet(var.vpc_cidr, 8, 4)       # 10.4.0.0/16
+  proxmox_vm_subnet_cidr = cidrsubnet(local.proxmox_cidr, 8, 0) # 10.4.0.0/24
+
   path_private_key = "~/.ssh/ri_key"
   path_public_key  = "~/.ssh/ri_key.pub"
 }
 
 module "hetzner" {
-  source                     = "modules/hetzner"
+  source                     = "./modules/hetzner"
   hcloud_token               = var.hcloud_token
   shared_key                 = var.shared_key
   path_private_key           = local.path_private_key
@@ -30,7 +33,7 @@ module "hetzner" {
 }
 
 module "azure" {
-  source                      = "modules/azure"
+  source                      = "./modules/azure"
   subscription_id             = var.subscription_id
   client_id                   = var.client_id
   client_secret               = var.client_secret
@@ -52,7 +55,7 @@ module "azure" {
 }
 
 module "gcp" {
-  source                       = "modules/gcp"
+  source                       = "./modules/gcp"
   azure_gateway_ipv4_address   = module.azure.azure_gateway_ipv4_address
   azure_subnet_cidr            = local.azure_vm_subnet_cidr
   gcp_project_id               = var.gcp_project_id
@@ -67,8 +70,24 @@ module "gcp" {
   instances                    = var.instances
 }
 
+module "proxmox" {
+  source                          = "./modules/proxmox/vm"
+  proxmox_api_password            = var.proxmox_api_password
+  proxmox_api_user                = var.proxmox_api_user
+  path_public_key                 = local.path_public_key
+  prefix                          = var.prefix
+  proxmox_server_port             = var.proxmox_server_port
+  proxmox_server_address          = var.proxmox_server_address
+  proxmox_target_node             = var.proxmox_target_node
+  proxmox_private_gateway_address = var.proxmox_private_gateway_address
+  proxmox_public_ip_cidr          = "92.204.185.32/29"
+  proxmox_vm_subnet_cidr          = local.proxmox_vm_subnet_cidr
+  vm_username                     = var.vm_username
+  instances                       = var.instances
+}
+
 module "tooling" {
-  source                     = "modules/hetzner/tooling"
+  source                     = "./modules/hetzner/tooling"
   hcloud_token               = var.hcloud_token
   path_private_key           = local.path_private_key
   path_public_key            = local.path_public_key

@@ -14,3 +14,8 @@ gcp_service_account_path = "path/to/service_account.json"
 
 # IpSec
 shared_key = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# Proxmox
+proxmox_api_password = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+# the "@pve" is important as it tells proxmox to use the proxmox intern user system and not the linux user system
+proxmox_api_user = "username@pve"
