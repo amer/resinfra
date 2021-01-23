@@ -1,16 +1,18 @@
 config setup
     protostack=netkey
 
-conn mysubnet
-     also=mytunnel
-     leftsubnet={{local_cidr}}
-     rightsubnet={{other_strongswan_remote_cidr}}
-     auto=start
-
 conn mytunnel
     # needed?
     esp=aes_gcm256-null,aes_gcm128-null,aes256-sha2_512,aes128-sha2_512
     ikev2=insist
     left={{public_gateway_ip}}
+    leftsubnet={{local_cidr}}
+    # We need to set the source IP address here, otherwise packages for 10.0.0.0/8 would be routed through the default
+    # gateway, i.e., the public internet. See https://libreswan.org/wiki/Subnet_to_subnet_VPN_with_PSK and
+    # https://libreswan.org/man/ipsec.conf.5.html
+    # TODO update source ip address
+    leftsourceip=10.4.0.2
     right={{other_strongswan_gateway_ip}}
+    rightsubnet={{other_strongswan_remote_cidr}}
+    auto=start
     authby=secret
