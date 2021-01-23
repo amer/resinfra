@@ -9,9 +9,11 @@ variable "prefix" {}
 variable "gcp_subnet_cidr"  {}
 variable "azure_subnet_cidr" {}
 variable "hetzner_subnet_cidr" {}
+variable "proxmox_subnet_cidr" {}
 
 variable "azure_gateway_ipv4_address" {}
 variable "hetzner_gateway_ipv4_address" {}
+variable "proxmox_gateway_ipv4_address" {}
 
 variable "shared_key" {}
 

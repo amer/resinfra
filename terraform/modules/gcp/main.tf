@@ -180,6 +180,31 @@ resource "google_compute_route" "hetzner-route" {
   next_hop_vpn_tunnel = google_compute_vpn_tunnel.hetzner_tunnel.id
 }
 
+# Create the tunnel & route trafic to remote networks through tunnel
+#   for proxmox
+resource "google_compute_vpn_tunnel" "proxmox_tunnel" {
+  name          = "${var.prefix}-proxmox-tunnel-${random_id.id.hex}"
+  peer_ip       = var.proxmox_gateway_ipv4_address
+  shared_secret = var.shared_key
+
+  target_vpn_gateway      = google_compute_vpn_gateway.main.id
+  local_traffic_selector  = [var.gcp_subnet_cidr]
+  remote_traffic_selector = [var.proxmox_subnet_cidr]
+
+  depends_on = [
+    google_compute_forwarding_rule.fr_esp,
+    google_compute_forwarding_rule.fr_udp500,
+    google_compute_forwarding_rule.fr_udp4500,
+  ]
+}
+resource "google_compute_route" "proxmox-route" {
+  name       = "${var.prefix}-proxmos-route-${random_id.id.hex}"
+  network    = google_compute_network.main.name
+  dest_range = var.proxmox_subnet_cidr
+
+  next_hop_vpn_tunnel = google_compute_vpn_tunnel.proxmox_tunnel.id
+}
+
 /*
 -------------------------------
    WORKER VM(s)

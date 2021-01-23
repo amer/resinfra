@@ -6,7 +6,7 @@ conn %default
     compress=no
     ikev2=insist
     authby=secret
-    ike=aes256-sha1-modp1024 # tested for azure and gcp
+    ike=aes256-sha1-modp1024 # tested for azure, gcp, StrongSWAN<>LibreSWAN, but FIXME: insecure
     left={{public_gateway_ip}}
     leftsubnet={{local_cidr}}
     # We need to set the source IP address here, otherwise packages for 10.0.0.0/8 would be routed through the default
@@ -21,6 +21,14 @@ conn %default
     dpddelay=30s
     dpdtimeout=120s
     dpdaction=restart
+
+conn to-azure
+    right={{azure_remote_gateway_ip}}
+    rightsubnet={{azure_remote_cidr}}
+
+conn to-gcp
+    right={{gcp_remote_gateway_ip}}
+    rightsubnet={{gcp_remote_cidr}}
 
 conn to-hetzner
     right={{other_strongswan_gateway_ip}}
