@@ -1,10 +1,12 @@
 config setup
     protostack=netkey
 
-conn mytunnel
-    # needed?
-    esp=aes_gcm256-null,aes_gcm128-null,aes256-sha2_512,aes128-sha2_512
+conn %default
+    auto=start
+    compress=no
     ikev2=insist
+    authby=secret
+    ike=aes256-sha1-modp1024 # tested for azure and gcp
     left={{public_gateway_ip}}
     leftsubnet={{local_cidr}}
     # We need to set the source IP address here, otherwise packages for 10.0.0.0/8 would be routed through the default
@@ -12,7 +14,14 @@ conn mytunnel
     # https://libreswan.org/man/ipsec.conf.5.html
     # TODO update source ip address
     leftsourceip=10.4.0.2
+    aggressive=no
+    keyingtries=%forever
+    ikelifetime=28800s
+    lifetime=3600s
+    dpddelay=30s
+    dpdtimeout=120s
+    dpdaction=restart
+
+conn to-hetzner
     right={{other_strongswan_gateway_ip}}
     rightsubnet={{other_strongswan_remote_cidr}}
-    auto=start
-    authby=secret
