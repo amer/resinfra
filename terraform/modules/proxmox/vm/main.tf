@@ -119,6 +119,7 @@ resource "proxmox_vm_qemu" "gateway" {
 
 locals {
   gateway_public_ipv4_address = regex("\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b", proxmox_vm_qemu.gateway.ipconfig1)
+  gateway_private_ipv4_address = regex("\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b", proxmox_vm_qemu.gateway.ipconfig0)
 }
 
 resource "null_resource" "strongswan_ansible" {
@@ -139,6 +140,7 @@ resource "null_resource" "strongswan_ansible" {
             -u '${var.vm_username}' ${abspath(path.module)}/../../../../ansible/libreswan_playbook.yml \
             --ssh-common-args='-o StrictHostKeyChecking=no' \
             --extra-vars 'public_gateway_ip='${local.gateway_public_ipv4_address}' \
+                          local_gateway_ip='${local.gateway_private_ipv4_address}' \
                           local_cidr='${var.proxmox_vm_subnet_cidr}' \
                           azure_remote_gateway_ip='${var.azure_gateway_ipv4_address}' \
                           azure_remote_cidr='${var.azure_vm_subnet_cidr}'

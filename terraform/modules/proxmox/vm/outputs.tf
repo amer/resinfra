@@ -12,7 +12,7 @@ output "gateway_ipv4_address" {
 
 
 output "gateway_private_ipv4_address" {
-  value = regex("\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b", proxmox_vm_qemu.gateway.ipconfig0)
+  value = local.gateway_private_ipv4_address
 }
 
 output "proxmox_private_ip_addresses"{
