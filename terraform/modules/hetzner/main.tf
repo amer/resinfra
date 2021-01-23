@@ -99,17 +99,23 @@ resource "null_resource" "strongswan_ansible" {
   }
 }
 
-# create a route in the Hetzner Network for Azure traffic
+# create a route in the Hetzner Network for Azure, GCP, and Proxmox traffic
+
 resource "hcloud_network_route" "azure_via_gateway" {
   network_id  = hcloud_network.main.id
   destination = var.azure_vm_subnet_cidr
   gateway     = hcloud_server_network.internal.ip
 }
 
-# create a route in the Hetzner Network for GCP traffic
 resource "hcloud_network_route" "gcp_via_gateway" {
   network_id  = hcloud_network.main.id
   destination = var.gcp_vm_subnet_cidr
+  gateway     = hcloud_server_network.internal.ip
+}
+
+resource "hcloud_network_route" "proxmox_via_gateway" {
+  network_id  = hcloud_network.main.id
+  destination = var.proxmox_vm_subnet_cidr
   gateway     = hcloud_server_network.internal.ip
 }
 
