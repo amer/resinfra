@@ -106,6 +106,7 @@ module "tooling" {
   path_private_key           = local.path_private_key
   path_public_key            = local.path_public_key
   prefix                     = var.prefix
+  proxmox_worker_hosts       = module.proxmox.proxmox_private_ip_addresses
   azure_worker_hosts         = module.azure.azure_private_ip_addresses
   gcp_worker_hosts           = module.gcp.gcp_private_ip_addresses
   hetzner_worker_hosts       = module.hetzner.hcloud_private_ip_addresses

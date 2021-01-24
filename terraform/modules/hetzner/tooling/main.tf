@@ -7,12 +7,14 @@ resource "random_id" "id" {
 }
 
 // TODO: ensure this exists or intall on nake machine through preconf
+// This is a preconfigured debian image with ansible, terraform and the git repository installed on it, as well as a key to fetch the git repo
 data "hcloud_image" "cockroachdb-deploying-ready-snapshot" {
   with_selector = "cockroachdb_deployment"
 }
 
 
 # create the hosts file
+# uses the prviate ip addresses of the deployed vms
 resource "local_file" "hosts_file_creation" {
   depends_on = [
     hcloud_server_network.deployment-vm-into-subnet,
@@ -29,6 +31,7 @@ resource "local_file" "hosts_file_creation" {
     azure_hosts                   = var.azure_worker_hosts
     gcp_hosts                     = var.gcp_worker_hosts
     hetzner_hosts                 = var.hetzner_worker_hosts
+    proxmox_hosts                 = var.proxmox_worker_hosts
     deployer_vm                   = hcloud_server_network.deployment-vm-into-subnet.ip
   })
   filename = "${path.module}/cockroach_host.ini"
