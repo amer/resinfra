@@ -17,19 +17,21 @@ locals {
 }
 
 module "hetzner" {
-  source                     = "./modules/hetzner"
-  hcloud_token               = var.hcloud_token
-  shared_key                 = var.shared_key
-  path_private_key           = local.path_private_key
-  path_public_key            = local.path_public_key
-  azure_vm_subnet_cidr       = local.azure_vm_subnet_cidr
-  gcp_gateway_ipv4_address   = module.gcp.gcp_gateway_ipv4_address
-  azure_gateway_ipv4_address = module.azure.azure_gateway_ipv4_address
-  gcp_vm_subnet_cidr         = local.gcp_vm_subnet_cidr
-  hetzner_vm_subnet_cidr     = local.hetzner_vm_subnet_cidr
-  hetzner_vpc_cidr           = local.hetzner_cidr
-  prefix                     = var.prefix
-  instances                  = var.instances
+  source                       = "./modules/hetzner"
+  hcloud_token                 = var.hcloud_token
+  shared_key                   = var.shared_key
+  path_private_key             = local.path_private_key
+  path_public_key              = local.path_public_key
+  azure_vm_subnet_cidr         = local.azure_vm_subnet_cidr
+  gcp_gateway_ipv4_address     = module.gcp.gcp_gateway_ipv4_address
+  azure_gateway_ipv4_address   = module.azure.azure_gateway_ipv4_address
+  gcp_vm_subnet_cidr           = local.gcp_vm_subnet_cidr
+  proxmox_vm_subnet_cidr       = local.proxmox_vm_subnet_cidr
+  proxmox_gateway_ipv4_address = module.proxmox.gateway_ipv4_address
+  hetzner_vm_subnet_cidr       = local.hetzner_vm_subnet_cidr
+  hetzner_vpc_cidr             = local.hetzner_cidr
+  prefix                       = var.prefix
+  instances                    = var.instances
 }
 
 module "azure" {
@@ -49,6 +51,8 @@ module "azure" {
   gcp_vm_subnet_cidr          = local.gcp_vm_subnet_cidr
   hcloud_gateway_ipv4_address = module.hetzner.gateway_ipv4_address
   hcloud_vm_subnet_cidr       = local.hetzner_vm_subnet_cidr
+  proxmox_gateway_ipv4_address = module.proxmox.gateway_ipv4_address
+  proxmox_vm_subnet_cidr          = local.proxmox_vm_subnet_cidr
   shared_key                  = var.shared_key
   prefix                      = var.prefix
   instances                   = var.instances
@@ -64,6 +68,8 @@ module "gcp" {
   gcp_subnet_cidr              = local.gcp_vm_subnet_cidr
   hetzner_gateway_ipv4_address = module.hetzner.gateway_ipv4_address
   hetzner_subnet_cidr          = local.hetzner_vm_subnet_cidr
+  proxmox_gateway_ipv4_address = module.proxmox.gateway_ipv4_address
+  proxmox_subnet_cidr          = local.proxmox_vm_subnet_cidr
   prefix                       = var.prefix
   shared_key                   = var.shared_key
   path_public_key              = local.path_public_key
@@ -72,8 +78,15 @@ module "gcp" {
 
 module "proxmox" {
   source                          = "./modules/proxmox/vm"
+  hetzner_gateway_ipv4_address    = module.hetzner.gateway_ipv4_address
+  hetzner_vm_subnet_cidr          = local.hetzner_vm_subnet_cidr
+  azure_gateway_ipv4_address      = module.azure.azure_gateway_ipv4_address
+  azure_vm_subnet_cidr            = local.azure_vm_subnet_cidr
+  gcp_gateway_ipv4_address        = module.gcp.gcp_gateway_ipv4_address
+  gcp_vm_subnet_cidr              = local.gcp_vm_subnet_cidr
   proxmox_api_password            = var.proxmox_api_password
   proxmox_api_user                = var.proxmox_api_user
+  path_private_key                = local.path_private_key
   path_public_key                 = local.path_public_key
   prefix                          = var.prefix
   proxmox_server_port             = var.proxmox_server_port
@@ -84,6 +97,7 @@ module "proxmox" {
   proxmox_vm_subnet_cidr          = local.proxmox_vm_subnet_cidr
   vm_username                     = var.vm_username
   instances                       = var.instances
+  shared_key                      = var.shared_key
 }
 
 module "tooling" {

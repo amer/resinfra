@@ -83,31 +83,39 @@ resource "null_resource" "strongswan_ansible" {
   provisioner "local-exec" {
     command = <<EOF
         ansible-playbook -i '${hcloud_server.gateway.ipv4_address},'  \
-            -u 'root' ${path.module}/../../../../ansible/strongswan_playbook.yml \
+            -u 'root' ${abspath(path.module)}/../../../ansible/strongswan_playbook.yml \
             --ssh-common-args='-o StrictHostKeyChecking=no' \
             --extra-vars 'public_gateway_ip='${hcloud_server.gateway.ipv4_address}' \
-                          local_cidr='${var.hetzner_vpc_cidr}' \
+                          local_cidr='${var.hetzner_vm_subnet_cidr}' \
                           azure_remote_gateway_ip='${var.azure_gateway_ipv4_address}' \
                           azure_remote_cidr='${var.azure_vm_subnet_cidr}'
                           gcp_remote_gateway_ip='${var.gcp_gateway_ipv4_address}' \
                           gcp_remote_cidr='${var.gcp_vm_subnet_cidr}' \
+                          other_strongswan_gateway_ip=${var.proxmox_gateway_ipv4_address} \
+                          other_strongswan_remote_cidr=${var.proxmox_vm_subnet_cidr} \
                           psk='${var.shared_key}'' \
             --key-file '${var.path_private_key}'
   EOF
   }
 }
 
-# create a route in the Hetzner Network for Azure traffic
+# create a route in the Hetzner Network for Azure, GCP, and Proxmox traffic
+
 resource "hcloud_network_route" "azure_via_gateway" {
   network_id  = hcloud_network.main.id
   destination = var.azure_vm_subnet_cidr
   gateway     = hcloud_server_network.internal.ip
 }
 
-# create a route in the Hetzner Network for GCP traffic
 resource "hcloud_network_route" "gcp_via_gateway" {
   network_id  = hcloud_network.main.id
   destination = var.gcp_vm_subnet_cidr
+  gateway     = hcloud_server_network.internal.ip
+}
+
+resource "hcloud_network_route" "proxmox_via_gateway" {
+  network_id  = hcloud_network.main.id
+  destination = var.proxmox_vm_subnet_cidr
   gateway     = hcloud_server_network.internal.ip
 }
 

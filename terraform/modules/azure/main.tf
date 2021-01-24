@@ -140,6 +140,15 @@ resource "azurerm_local_network_gateway" "gcp" {
   address_space   = [var.gcp_vm_subnet_cidr]
 }
 
+resource "azurerm_local_network_gateway" "proxmox" {
+  name                = "proxmox"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  gateway_address = var.proxmox_gateway_ipv4_address
+  address_space   = [var.proxmox_vm_subnet_cidr]
+}
+
 # Create virtual network gateway
 resource "azurerm_virtual_network_gateway" "main" {
   name                = "${var.prefix}-network-gateway"
@@ -184,6 +193,18 @@ resource "azurerm_virtual_network_gateway_connection" "gcp" {
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
   local_network_gateway_id   = azurerm_local_network_gateway.gcp.id
+
+  shared_key = var.shared_key
+}
+
+resource "azurerm_virtual_network_gateway_connection" "proxmox" {
+  name                = "proxmox-connection"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  type                       = "IPsec"
+  virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
+  local_network_gateway_id   = azurerm_local_network_gateway.proxmox.id
 
   shared_key = var.shared_key
 }

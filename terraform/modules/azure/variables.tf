@@ -10,10 +10,13 @@ variable "prefix" {}
 
 variable "hcloud_gateway_ipv4_address" {}
 variable "gcp_gateway_ipv4_address" {}
+variable "proxmox_gateway_ipv4_address" {}
 
 variable "hcloud_vm_subnet_cidr" {}
 variable "azure_vm_subnet_cidr" {}
 variable "gcp_vm_subnet_cidr" {}
+variable "proxmox_vm_subnet_cidr" {}
+
 
 variable "azure_vpc_cidr" {}
 variable "azure_gateway_subnet_cidr" {}
