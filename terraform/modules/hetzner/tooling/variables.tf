@@ -15,4 +15,5 @@ variable "proxmox_worker_hosts" {}
 
 variable "hcloud_ssh_key_id" {}
 
-variable "strongswan_ansible_updated" {}
+variable "hcloud_strongswan_ansible_updated" {}
+variable "proxmox_strongswan_ansible_updated" {}
