@@ -24,7 +24,8 @@ resource "local_file" "hosts_file_creation" {
     var.proxmox_worker_hosts,
     # pass the id of the strongswan ansible null_ressource to make sure that all other ansible scripts only run after
     # the strongswan ansible script has passed
-    var.strongswan_ansible_updated
+    var.hcloud_strongswan_ansible_updated,
+    var.proxmox_strongswan_ansible_updated
   ]
 
   content = templatefile("${path.module}/cockroach_host.ini.tpl", {

@@ -21,3 +21,7 @@ output "proxmox_private_ip_addresses"{
       server.name => regex("\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b", server.ipconfig0)
     }
 }
+
+output "ansible_strongswan_updated"{
+  value = null_resource.strongswan_ansible.id
+}

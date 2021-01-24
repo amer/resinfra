@@ -112,5 +112,6 @@ module "tooling" {
   hetzner_worker_hosts       = module.hetzner.hcloud_private_ip_addresses
   hetzner_subnet_id          = module.hetzner.hcloud_subnet_id
   hcloud_ssh_key_id          = module.hetzner.hcloud_ssh_key_id
-  strongswan_ansible_updated = module.hetzner.ansible_strongswan_updated
+  hcloud_strongswan_ansible_updated = module.hetzner.ansible_strongswan_updated
+  proxmox_strongswan_ansible_updated = module.proxmox.ansible_strongswan_updated
 }
