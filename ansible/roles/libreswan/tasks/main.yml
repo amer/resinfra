@@ -1,28 +1,3 @@
-# enable kernel packet forwarding
-- name: enable ipv4 forwarding
-  ansible.posix.sysctl:
-    name: net.ipv4.ip_forward
-    value: '1'
-    reload: no
-    
-- name: enable ipv6 forwarding
-  ansible.posix.sysctl:
-    name: net.ipv6.conf.all.forwarding
-    value: '1'
-    reload: no
-    
-- name: disable ipv4 redirects
-  ansible.posix.sysctl:
-    name: net.ipv4.conf.all.accept_redirects
-    value: '0'
-    reload: no
-    
-- name: disable ipv4 send redirects
-  ansible.posix.sysctl:
-    name: net.ipv4.conf.all.send_redirects
-    value: '0'
-    reload: yes
-
 - name: install LibreSWAN
   apt:
     name:

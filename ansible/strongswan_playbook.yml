@@ -2,4 +2,5 @@
 - hosts: all
   become: true # FIXME change to common user once this is merged with the unified multi-cloud deployment
   roles:
+    - router
     - strongswan
