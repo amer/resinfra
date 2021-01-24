@@ -61,7 +61,6 @@ resource "proxmox_vm_qemu" "proxmox_vm" {
   ipconfig1 = "ip=${cidrhost(var.proxmox_public_ip_cidr,count.index + 3)}/29,gw=${var.proxmox_server_address}"
   sshkeys = file(var.path_public_key)
   ciuser = var.vm_username
-  cipassword = "10" # todo REMOVE
 }
 
 
@@ -114,7 +113,6 @@ resource "proxmox_vm_qemu" "gateway" {
   ipconfig1 = "ip=${cidrhost(var.proxmox_public_ip_cidr,2)}/29,gw=${var.proxmox_server_address}"
   sshkeys = file(var.path_public_key)
   ciuser = var.vm_username
-  cipassword = "10" #todo REMOVE
 }
 
 locals {
