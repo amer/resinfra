@@ -127,7 +127,7 @@ resource "null_resource" "cockroach_ansible" {
                 -i /home/resinfra/cockroach_host.ini \
                 --ssh-common-args='-o StrictHostKeyChecking=no' \
                 --private-key ~/.ssh/vm_key \
-                --extra-vars 'priv_ip_list='${join(",", concat(var.azure_worker_hosts, var.gcp_worker_hosts, var.hetzner_worker_hosts, var.proxmox_worker_hosts.*.ipconfig0))}''
+                --extra-vars 'priv_ip_list='${join(",", concat(var.azure_worker_hosts, var.gcp_worker_hosts, var.hetzner_worker_hosts, var.proxmox_worker_hosts.*.1))}''
       EOF
     ]
   }
@@ -183,7 +183,7 @@ resource "null_resource" "monitoring_ansible" {
   ]
 
   triggers = {
-    instance_ids = join(",", concat([hcloud_server_network.deployment-vm-into-subnet.ip], var.azure_worker_hosts, var.gcp_worker_hosts, var.hetzner_worker_hosts, var.proxmox_worker_hosts.*.ipconfig0))
+    instance_ids = join(",", concat([hcloud_server_network.deployment-vm-into-subnet.ip], var.azure_worker_hosts, var.gcp_worker_hosts, var.hetzner_worker_hosts, var.proxmox_worker_hosts.*.1))
   }
 
   connection {
@@ -209,7 +209,7 @@ resource "null_resource" "monitoring_ansible" {
                 --ssh-common-args='-o StrictHostKeyChecking=no' \
                 --private-key ~/.ssh/vm_key \
                 --extra-vars 'prometheus_host='localhost' \
-                              monitoring_hosts='${join(",", concat([hcloud_server_network.deployment-vm-into-subnet.ip], var.azure_worker_hosts, var.gcp_worker_hosts, var.hetzner_worker_hosts, var.proxmox_worker_hosts.*.ipconfig0))}''
+                              monitoring_hosts='${join(",", concat([hcloud_server_network.deployment-vm-into-subnet.ip], var.azure_worker_hosts, var.gcp_worker_hosts, var.hetzner_worker_hosts, var.proxmox_worker_hosts.*.1))}''
       EOF
     ]
   }
