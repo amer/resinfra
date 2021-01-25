@@ -99,7 +99,9 @@ resource "null_resource" "hosts_file_copy" {
 
 resource "null_resource" "cockroach_ansible" {
   depends_on = [
-    local_file.hosts_file_creation
+    local_file.hosts_file_creation,
+    null_resource.nodeexporter_ansible,
+    null_resource.monitoring_ansible
   ]
 
   triggers = {
@@ -120,7 +122,7 @@ resource "null_resource" "cockroach_ansible" {
       "chmod 0600 ~/.ssh/vm_key",
       "cd ~/resinfra/",
       "git pull",
-      "git checkout dev_refactor_proxmox",
+      "git checkout ${var.git_checkout_branch}",
       "cd ansible",
       <<EOF
         ansible-playbook cockroach_playbook.yml \
@@ -163,7 +165,7 @@ resource "null_resource" "nodeexporter_ansible" {
       "chmod 0600 ~/.ssh/vm_key",
       "cd ~/resinfra/",
       "git pull",
-      "git checkout dev_refactor_proxmox",
+      "git checkout ${var.git_checkout_branch}",
       "cd ansible",
       <<EOF
         ansible-playbook nodeexporter_playbook.yml \
@@ -179,7 +181,8 @@ resource "null_resource" "nodeexporter_ansible" {
 resource "null_resource" "monitoring_ansible" {
   depends_on = [
     local_file.hosts_file_creation,
-    hcloud_server.cockroach_deployer
+    hcloud_server.cockroach_deployer,
+    null_resource.nodeexporter_ansible
   ]
 
   triggers = {
@@ -199,7 +202,7 @@ resource "null_resource" "monitoring_ansible" {
       "chmod 0600 ~/.ssh/vm_key",
       "cd ~/resinfra/",
       "git pull",
-      "git checkout dev_refactor_proxmox",
+      "git checkout ${var.git_checkout_branch}",
       "cd ansible",
       "mkdir -p /home/resinfra/grafana/provisioning/datasources",
       <<EOF

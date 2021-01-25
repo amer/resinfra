@@ -17,3 +17,5 @@ variable "hcloud_ssh_key_id" {}
 
 variable "hcloud_strongswan_ansible_updated" {}
 variable "proxmox_strongswan_ansible_updated" {}
+
+variable "git_checkout_branch" {}

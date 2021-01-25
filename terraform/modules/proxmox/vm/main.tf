@@ -13,7 +13,7 @@ resource "proxmox_vm_qemu" "proxmox_vm" {
   count             = var.instances
   name              = "${var.prefix}-proxmox-vm-${count.index+1}-${random_id.id.hex}"
   target_node       = var.proxmox_target_node
-  clone             = "debian-cloudinit"
+  clone             = "debian-cloudinit-10G"
   os_type           = "cloud-init"
   cores             = 2
   sockets           = "1"
@@ -61,6 +61,33 @@ resource "proxmox_vm_qemu" "proxmox_vm" {
   ipconfig1 = "ip=${cidrhost(var.proxmox_public_ip_cidr,count.index + 3)}/29,gw=${var.proxmox_server_address}"
   sshkeys = file(var.path_public_key)
   ciuser = var.vm_username
+
+  /* There are 2 things that have to be changed in order to get it work correctly
+        1. install ansible dependencies for docker deployment
+        2. change the default root to the private network
+
+    to 1: Ansible can not run properly on the proxmox image because the python-apt package is not installed by default
+          So we have to "manually" install it on the machine
+
+    to 2: The default route seems to be randomly picked from the public or private network.
+          It currently only works as intended when the private ip of the proxmox machine is picked as the default route.
+          This gets enforced by executing "sudo ip route replace default via 10.4.0.1 dev eth0 onlink"
+  */
+  provisioner "remote-exec" {
+    inline = ["echo 'SSH is now ready!'", "echo 'Wait 30 sec to ensure init phase is finished'", "sleep 30",
+              "echo 'Install pytho3-apt dependency'", "sudo apt install python3-apt -y",
+              "echo 'Setting default gateway to 10.4.0.1'", "sudo ip route replace default via 10.4.0.1 dev eth0 onlink"]
+
+    connection {
+      type        = "ssh"
+      user        = var.vm_username
+      private_key = file(var.path_private_key)
+      host        = cidrhost(var.proxmox_public_ip_cidr,count.index + 3)
+    }
+  }
+
+
+
 }
 
 
@@ -120,7 +147,13 @@ locals {
   gateway_private_ipv4_address = regex("\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b", proxmox_vm_qemu.gateway.ipconfig0)
 }
 
+
 resource "null_resource" "strongswan_ansible" {
+
+  triggers = {
+    gateway_recreation_trigger = proxmox_vm_qemu.gateway.id
+  }
+
   provisioner "remote-exec" {
     inline = ["echo 'SSH is now ready!'"]
 
