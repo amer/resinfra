@@ -16,7 +16,7 @@ locals {
   path_public_key  = "~/.ssh/ri_key.pub"
 
   // This branch will get checked out on the ansible deployer machine
-  git_checkout_branch = "git_checkout_branch"
+  git_checkout_branch = "main"
 }
 
 module "hetzner" {
