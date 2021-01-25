@@ -27,13 +27,13 @@ resource "google_compute_subnetwork" "vms" {
   name          = "${var.prefix}-internal-${random_id.id.hex}"
   ip_cidr_range = var.gcp_subnet_cidr
   region        = var.gcp_region
-  network       = google_compute_network.main.id
+  network       = google_compute_network.main.self_link
 }
 
 # create firewall rule for port 22 (ssh)
 resource "google_compute_firewall" "allow_ssh" {
   name    = "${var.prefix}-network-internal-allow-ssh-${random_id.id.hex}"
-  network = google_compute_network.main.name
+  network = google_compute_network.main.self_link
 
 
   allow {
@@ -47,7 +47,7 @@ resource "google_compute_firewall" "allow_ssh" {
 # create firewall rule for port 80,443 (ssh)
 resource "google_compute_firewall" "allow_internet" {
   name    = "${var.prefix}-network-internal-allow-internet-${random_id.id.hex}"
-  network = google_compute_network.main.name
+  network = google_compute_network.main.self_link
 
 
   allow {
@@ -61,7 +61,7 @@ resource "google_compute_firewall" "allow_internet" {
 # allow all internal traffic (10.0.0.0/8)
 resource "google_compute_firewall" "allow_internal" {
   name    = "${var.prefix}-network-internal-allow-internal-${random_id.id.hex}"
-  network = google_compute_network.main.name
+  network = google_compute_network.main.self_link
 
 
   allow {
@@ -74,7 +74,7 @@ resource "google_compute_firewall" "allow_internal" {
 # allow icmp
 resource "google_compute_firewall" "allow_icmp" {
   name    = "${var.prefix}-network-internal-allow-icmp-${random_id.id.hex}"
-  network = google_compute_network.main.name
+  network = google_compute_network.main.self_link
 
 
   allow {
@@ -100,7 +100,7 @@ resource "google_compute_address" "gateway_ip_address" {
 # Create classic VPN
 resource "google_compute_vpn_gateway" "main" {
   name    = "${var.prefix}-vpn"
-  network = google_compute_network.main.id
+  network = google_compute_network.main.self_link
 }
 
 # create VPN forwarding routes
@@ -111,7 +111,7 @@ resource "google_compute_forwarding_rule" "fr_esp" {
   name        = "fr-esp"
   ip_protocol = "ESP"
   ip_address  = google_compute_address.gateway_ip_address.address
-  target      = google_compute_vpn_gateway.main.id
+  target      = google_compute_vpn_gateway.main.self_link
 }
 
 resource "google_compute_forwarding_rule" "fr_udp500" {
@@ -119,7 +119,7 @@ resource "google_compute_forwarding_rule" "fr_udp500" {
   ip_protocol = "UDP"
   port_range  = "500"
   ip_address  = google_compute_address.gateway_ip_address.address
-  target      = google_compute_vpn_gateway.main.id
+  target      = google_compute_vpn_gateway.main.self_link
 }
 
 resource "google_compute_forwarding_rule" "fr_udp4500" {
@@ -127,7 +127,7 @@ resource "google_compute_forwarding_rule" "fr_udp4500" {
   ip_protocol = "UDP"
   port_range  = "4500"
   ip_address  = google_compute_address.gateway_ip_address.address
-  target      = google_compute_vpn_gateway.main.id
+  target      = google_compute_vpn_gateway.main.self_link
 }
 
 # Create the tunnel & route trafic to remote networks through tunnel
@@ -137,7 +137,7 @@ resource "google_compute_vpn_tunnel" "azure_tunnel" {
   peer_ip       = var.azure_gateway_ipv4_address
   shared_secret = var.shared_key
 
-  target_vpn_gateway      = google_compute_vpn_gateway.main.id
+  target_vpn_gateway      = google_compute_vpn_gateway.main.self_link
   local_traffic_selector  = [var.gcp_subnet_cidr]
   remote_traffic_selector = [var.azure_subnet_cidr]
 
@@ -149,10 +149,10 @@ resource "google_compute_vpn_tunnel" "azure_tunnel" {
 }
 resource "google_compute_route" "azure-route" {
   name       = "${var.prefix}-azure-route-${random_id.id.hex}"
-  network    = google_compute_network.main.name
+  network    = google_compute_network.main.self_link
   dest_range = var.azure_subnet_cidr
 
-  next_hop_vpn_tunnel = google_compute_vpn_tunnel.azure_tunnel.id
+  next_hop_vpn_tunnel = google_compute_vpn_tunnel.azure_tunnel.self_link
 }
 
 # Create the tunnel & route trafic to remote networks through tunnel
@@ -162,7 +162,7 @@ resource "google_compute_vpn_tunnel" "hetzner_tunnel" {
   peer_ip       = var.hetzner_gateway_ipv4_address
   shared_secret = var.shared_key
 
-  target_vpn_gateway      = google_compute_vpn_gateway.main.id
+  target_vpn_gateway      = google_compute_vpn_gateway.main.self_link
   local_traffic_selector  = [var.gcp_subnet_cidr]
   remote_traffic_selector = [var.hetzner_subnet_cidr]
 
@@ -174,10 +174,10 @@ resource "google_compute_vpn_tunnel" "hetzner_tunnel" {
 }
 resource "google_compute_route" "hetzner-route" {
   name       = "${var.prefix}-hetzner-route-${random_id.id.hex}"
-  network    = google_compute_network.main.name
+  network    = google_compute_network.main.self_link
   dest_range = var.hetzner_subnet_cidr
 
-  next_hop_vpn_tunnel = google_compute_vpn_tunnel.hetzner_tunnel.id
+  next_hop_vpn_tunnel = google_compute_vpn_tunnel.hetzner_tunnel.self_link
 }
 
 # Create the tunnel & route trafic to remote networks through tunnel
@@ -187,7 +187,7 @@ resource "google_compute_vpn_tunnel" "proxmox_tunnel" {
   peer_ip       = var.proxmox_gateway_ipv4_address
   shared_secret = var.shared_key
 
-  target_vpn_gateway      = google_compute_vpn_gateway.main.id
+  target_vpn_gateway      = google_compute_vpn_gateway.main.self_link
   local_traffic_selector  = [var.gcp_subnet_cidr]
   remote_traffic_selector = [var.proxmox_subnet_cidr]
 
@@ -199,10 +199,10 @@ resource "google_compute_vpn_tunnel" "proxmox_tunnel" {
 }
 resource "google_compute_route" "proxmox-route" {
   name       = "${var.prefix}-proxmos-route-${random_id.id.hex}"
-  network    = google_compute_network.main.name
+  network    = google_compute_network.main.self_link
   dest_range = var.proxmox_subnet_cidr
 
-  next_hop_vpn_tunnel = google_compute_vpn_tunnel.proxmox_tunnel.id
+  next_hop_vpn_tunnel = google_compute_vpn_tunnel.proxmox_tunnel.self_link
 }
 
 /*
@@ -238,8 +238,8 @@ resource "google_compute_instance" "worker_vm" {
   }
 
   network_interface {
-    network = google_compute_network.main.id
-    subnetwork = google_compute_subnetwork.vms.id
+    network = google_compute_network.main.self_link
+    subnetwork = google_compute_subnetwork.vms.self_link
     access_config {
       nat_ip = google_compute_address.static[count.index].address
     }
