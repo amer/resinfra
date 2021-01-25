@@ -18,6 +18,20 @@ terraform {
 }
 ```
 and when running `terraform init` the provider should get automatically downloaded and installed.
+
+## Prerequisites
+
+IP routes pointing to the subnets connected by VPN (i.e., those that are hosted on other providers) need to be added 
+*manually* on the host. The host itself is not affected by the terraform scripts, so that these routes will survive a 
+destroy and re-deploy. For example, if the VPN gateway will be running on `10.4.0.2`, and the remote subnets are 
+`10.1/16`, `10.2/16`, and `10.3/16`, add the following entries using `ip route add`: 
+
+```
+10.1.0.0/16 via 10.4.0.2
+10.2.0.0/16 via 10.4.0.2
+10.3.0.0/16 via 10.4.0.2
+```
+
 ## Defining the Deployment
 ### Create a Virtual Machine
 #### Create a template

@@ -1,15 +1,14 @@
-- name: install StrongSWAN
+- name: install LibreSWAN
   apt:
     name:
-      - strongswan
-      - libcharon-extra-plugins
+      - libreswan
     state: present
     update_cache: yes
 
-- name: configure StrongSWAN
+- name: configure LibreSWAN
   template:
-    src: ipsec.conf.j2
-    dest: /etc/ipsec.conf
+    src: main.conf.j2
+    dest: /etc/ipsec.d/main.conf
     mode: 0400
 
 - name: add PSK
