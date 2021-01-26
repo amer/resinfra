@@ -1,3 +1,7 @@
+data "external" "local_git_state" {
+  program = ["./local-git-state-data-source.sh"]
+}
+
 locals {
   azure_cidr                = cidrsubnet(var.vpc_cidr, 8, 1)    # 10.1.0.0/16 (Azure does not allow to add overlapping subnets when creating vpn routes)
   azure_vm_subnet_cidr      = cidrsubnet(var.vpc_cidr, 16, 256) # 10.1.0.0/24
@@ -15,8 +19,9 @@ locals {
   path_private_key = "~/.ssh/ri_key"
   path_public_key  = "~/.ssh/ri_key.pub"
 
-  // This branch will get checked out on the ansible deployer machine
-  git_checkout_branch = "dev_consul"
+  // This branch will get checked out on the ansible deployer machine.
+  // Variable default cannot be another variable, so we implement our own default logic.
+  git_checkout_branch = var.git_checkout_branch != "" ? var.git_checkout_branch : data.external.local_git_state.result.current_branch
 }
 
 module "hetzner" {
