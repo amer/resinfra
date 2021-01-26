@@ -63,9 +63,7 @@ module "azure" {
 
 module "gcp" {
   source                       = "./modules/gcp"
-  # azure_gateway_ipv4_address   = module.azure.azure_gateway_ipv4_address
-  azure_gateway_ipv4_address   = "132.255.0.0"
-
+  azure_gateway_ipv4_address   = module.azure.azure_gateway_ipv4_address
   azure_subnet_cidr            = local.azure_vm_subnet_cidr
   gcp_project_id               = var.gcp_project_id
   gcp_region                   = var.gcp_region
