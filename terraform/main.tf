@@ -14,6 +14,9 @@ locals {
 
   path_private_key = "~/.ssh/ri_key"
   path_public_key  = "~/.ssh/ri_key.pub"
+
+  // This branch will get checked out on the ansible deployer machine
+  git_checkout_branch = "main"
 }
 
 module "hetzner" {
@@ -35,27 +38,27 @@ module "hetzner" {
 }
 
 module "azure" {
-  source                      = "./modules/azure"
-  subscription_id             = var.subscription_id
-  client_id                   = var.client_id
-  client_secret               = var.client_secret
-  tenant_id                   = var.tenant_id
-  location                    = "eastus"
-  vm_size                     = "Standard_D2s_v3" # Standard_D2s_v3, Standard_B2s | For more info https://azureprice.net/
-  path_private_key            = local.path_private_key
-  path_public_key             = local.path_public_key
-  azure_gateway_subnet_cidr   = local.azure_gateway_subnet_cidr
-  azure_vm_subnet_cidr        = local.azure_vm_subnet_cidr
-  azure_vpc_cidr              = local.azure_cidr
-  gcp_gateway_ipv4_address    = module.gcp.gcp_gateway_ipv4_address
-  gcp_vm_subnet_cidr          = local.gcp_vm_subnet_cidr
-  hcloud_gateway_ipv4_address = module.hetzner.gateway_ipv4_address
-  hcloud_vm_subnet_cidr       = local.hetzner_vm_subnet_cidr
+  source                       = "./modules/azure"
+  subscription_id              = var.subscription_id
+  client_id                    = var.client_id
+  client_secret                = var.client_secret
+  tenant_id                    = var.tenant_id
+  location                     = "eastus"
+  vm_size                      = "Standard_D2s_v3" # Standard_D2s_v3, Standard_B2s | For more info https://azureprice.net/
+  path_private_key             = local.path_private_key
+  path_public_key              = local.path_public_key
+  azure_gateway_subnet_cidr    = local.azure_gateway_subnet_cidr
+  azure_vm_subnet_cidr         = local.azure_vm_subnet_cidr
+  azure_vpc_cidr               = local.azure_cidr
+  gcp_gateway_ipv4_address     = module.gcp.gcp_gateway_ipv4_address
+  gcp_vm_subnet_cidr           = local.gcp_vm_subnet_cidr
+  hcloud_gateway_ipv4_address  = module.hetzner.gateway_ipv4_address
+  hcloud_vm_subnet_cidr        = local.hetzner_vm_subnet_cidr
   proxmox_gateway_ipv4_address = module.proxmox.gateway_ipv4_address
-  proxmox_vm_subnet_cidr          = local.proxmox_vm_subnet_cidr
-  shared_key                  = var.shared_key
-  prefix                      = var.prefix
-  instances                   = var.instances
+  proxmox_vm_subnet_cidr       = local.proxmox_vm_subnet_cidr
+  shared_key                   = var.shared_key
+  prefix                       = var.prefix
+  instances                    = var.instances
 }
 
 module "gcp" {
@@ -101,15 +104,18 @@ module "proxmox" {
 }
 
 module "tooling" {
-  source                     = "./modules/hetzner/tooling"
-  hcloud_token               = var.hcloud_token
-  path_private_key           = local.path_private_key
-  path_public_key            = local.path_public_key
-  prefix                     = var.prefix
-  azure_worker_hosts         = module.azure.azure_private_ip_addresses
-  gcp_worker_hosts           = module.gcp.gcp_private_ip_addresses
-  hetzner_worker_hosts       = module.hetzner.hcloud_private_ip_addresses
-  hetzner_subnet_id          = module.hetzner.hcloud_subnet_id
-  hcloud_ssh_key_id          = module.hetzner.hcloud_ssh_key_id
-  strongswan_ansible_updated = module.hetzner.ansible_strongswan_updated
+  source                             = "./modules/hetzner/tooling"
+  git_checkout_branch                = local.git_checkout_branch
+  hcloud_token                       = var.hcloud_token
+  path_private_key                   = local.path_private_key
+  path_public_key                    = local.path_public_key
+  prefix                             = var.prefix
+  proxmox_worker_hosts               = module.proxmox.proxmox_private_ip_addresses
+  azure_worker_hosts                 = module.azure.azure_private_ip_addresses
+  gcp_worker_hosts                   = module.gcp.gcp_private_ip_addresses
+  hetzner_worker_hosts               = module.hetzner.hcloud_private_ip_addresses
+  hetzner_subnet_id                  = module.hetzner.hcloud_subnet_id
+  hcloud_ssh_key_id                  = module.hetzner.hcloud_ssh_key_id
+  hcloud_strongswan_ansible_updated  = module.hetzner.ansible_strongswan_updated
+  proxmox_strongswan_ansible_updated = module.proxmox.ansible_strongswan_updated
 }

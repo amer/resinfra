@@ -7,21 +7,25 @@ resource "random_id" "id" {
 }
 
 // TODO: ensure this exists or intall on nake machine through preconf
+// This is a preconfigured debian image with ansible, terraform and the git repository installed on it, as well as a key to fetch the git repo
 data "hcloud_image" "cockroachdb-deploying-ready-snapshot" {
   with_selector = "cockroachdb_deployment"
 }
 
 
 # create the hosts file
+# uses the prviate ip addresses of the deployed vms
 resource "local_file" "hosts_file_creation" {
   depends_on = [
     hcloud_server_network.deployment-vm-into-subnet,
     var.hetzner_worker_hosts,
     var.azure_worker_hosts,
     var.gcp_worker_hosts,
+    var.proxmox_worker_hosts,
     # pass the id of the strongswan ansible null_ressource to make sure that all other ansible scripts only run after
     # the strongswan ansible script has passed
-    var.strongswan_ansible_updated
+    var.hcloud_strongswan_ansible_updated,
+    var.proxmox_strongswan_ansible_updated
   ]
 
   content = templatefile("${path.module}/cockroach_host.ini.tpl", {
@@ -29,6 +33,7 @@ resource "local_file" "hosts_file_creation" {
     azure_hosts                   = var.azure_worker_hosts
     gcp_hosts                     = var.gcp_worker_hosts
     hetzner_hosts                 = var.hetzner_worker_hosts
+    proxmox_hosts                 = var.proxmox_worker_hosts
     deployer_vm                   = hcloud_server_network.deployment-vm-into-subnet.ip
   })
   filename = "${path.module}/cockroach_host.ini"
@@ -57,7 +62,7 @@ resource "hcloud_server" "cockroach_deployer" {
   server_type = "cpx31"
   location    = var.location
   ssh_keys = [
-  var.hcloud_ssh_key_id]
+    var.hcloud_ssh_key_id]
   user_data = data.template_file.user_data.rendered
 }
 
@@ -94,7 +99,9 @@ resource "null_resource" "hosts_file_copy" {
 
 resource "null_resource" "cockroach_ansible" {
   depends_on = [
-    local_file.hosts_file_creation
+    local_file.hosts_file_creation,
+    null_resource.nodeexporter_ansible,
+    null_resource.monitoring_ansible
   ]
 
   triggers = {
@@ -115,14 +122,15 @@ resource "null_resource" "cockroach_ansible" {
       "chmod 0600 ~/.ssh/vm_key",
       "cd ~/resinfra/",
       "git pull",
-      "git checkout multi-cloud",
+      "git checkout ${var.git_checkout_branch}",
+      "git pull",
       "cd ansible",
       <<EOF
         ansible-playbook cockroach_playbook.yml \
                 -i /home/resinfra/cockroach_host.ini \
                 --ssh-common-args='-o StrictHostKeyChecking=no' \
                 --private-key ~/.ssh/vm_key \
-                --extra-vars 'priv_ip_list='${join(",", concat(var.azure_worker_hosts, var.gcp_worker_hosts, var.hetzner_worker_hosts))}''
+                --extra-vars 'priv_ip_list='${join(",", concat(var.azure_worker_hosts, var.gcp_worker_hosts, var.hetzner_worker_hosts, var.proxmox_worker_hosts))}''
       EOF
     ]
   }
@@ -158,7 +166,8 @@ resource "null_resource" "nodeexporter_ansible" {
       "chmod 0600 ~/.ssh/vm_key",
       "cd ~/resinfra/",
       "git pull",
-      "git checkout multi-cloud",
+      "git checkout ${var.git_checkout_branch}",
+      "git pull",
       "cd ansible",
       <<EOF
         ansible-playbook nodeexporter_playbook.yml \
@@ -174,11 +183,12 @@ resource "null_resource" "nodeexporter_ansible" {
 resource "null_resource" "monitoring_ansible" {
   depends_on = [
     local_file.hosts_file_creation,
-    hcloud_server.cockroach_deployer
+    hcloud_server.cockroach_deployer,
+    null_resource.nodeexporter_ansible
   ]
 
   triggers = {
-    instance_ids = join(",", concat([hcloud_server_network.deployment-vm-into-subnet.ip], var.azure_worker_hosts, var.gcp_worker_hosts, var.hetzner_worker_hosts))
+    instance_ids = join(",", concat([hcloud_server_network.deployment-vm-into-subnet.ip], var.azure_worker_hosts, var.gcp_worker_hosts, var.hetzner_worker_hosts, var.proxmox_worker_hosts))
   }
 
   connection {
@@ -194,7 +204,8 @@ resource "null_resource" "monitoring_ansible" {
       "chmod 0600 ~/.ssh/vm_key",
       "cd ~/resinfra/",
       "git pull",
-      "git checkout multi-cloud",
+      "git checkout ${var.git_checkout_branch}",
+      "git pull",
       "cd ansible",
       "mkdir -p /home/resinfra/grafana/provisioning/datasources",
       <<EOF
@@ -204,7 +215,7 @@ resource "null_resource" "monitoring_ansible" {
                 --ssh-common-args='-o StrictHostKeyChecking=no' \
                 --private-key ~/.ssh/vm_key \
                 --extra-vars 'prometheus_host='localhost' \
-                              monitoring_hosts='${join(",", concat([hcloud_server_network.deployment-vm-into-subnet.ip], var.azure_worker_hosts, var.gcp_worker_hosts, var.hetzner_worker_hosts))}''
+                              monitoring_hosts='${join(",", concat([hcloud_server_network.deployment-vm-into-subnet.ip], var.azure_worker_hosts, var.gcp_worker_hosts, var.hetzner_worker_hosts, var.proxmox_worker_hosts))}''
       EOF
     ]
   }
