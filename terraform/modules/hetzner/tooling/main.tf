@@ -188,7 +188,7 @@ resource "null_resource" "consul_ansible" {
                 -l cockroach_main_servers \
                 --ssh-common-args='-o StrictHostKeyChecking=no' \
                 --private-key ~/.ssh/vm_key \
-                --extra-vars 'server='false' leader_node='${hcloud_server_network.deployment-vm-into-subnet.ip}''
+                --extra-vars "server=false leader_node=${hcloud_server_network.deployment-vm-into-subnet.ip}"
       EOF
     ]
   }
