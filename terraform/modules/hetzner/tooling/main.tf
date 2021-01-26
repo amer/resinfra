@@ -123,6 +123,7 @@ resource "null_resource" "cockroach_ansible" {
       "cd ~/resinfra/",
       "git pull",
       "git checkout ${var.git_checkout_branch}",
+      "git pull",
       "cd ansible",
       <<EOF
         ansible-playbook cockroach_playbook.yml \
@@ -166,6 +167,7 @@ resource "null_resource" "nodeexporter_ansible" {
       "cd ~/resinfra/",
       "git pull",
       "git checkout ${var.git_checkout_branch}",
+      "git pull",
       "cd ansible",
       <<EOF
         ansible-playbook nodeexporter_playbook.yml \
@@ -203,6 +205,7 @@ resource "null_resource" "monitoring_ansible" {
       "cd ~/resinfra/",
       "git pull",
       "git checkout ${var.git_checkout_branch}",
+      "git pull",
       "cd ansible",
       "mkdir -p /home/resinfra/grafana/provisioning/datasources",
       <<EOF
