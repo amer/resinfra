@@ -16,7 +16,7 @@ locals {
   path_public_key  = "~/.ssh/ri_key.pub"
 
   // This branch will get checked out on the ansible deployer machine
-  git_checkout_branch = "main"
+  git_checkout_branch = "dev_consul"
 }
 
 module "hetzner" {
@@ -63,7 +63,9 @@ module "azure" {
 
 module "gcp" {
   source                       = "./modules/gcp"
-  azure_gateway_ipv4_address   = module.azure.azure_gateway_ipv4_address
+  # azure_gateway_ipv4_address   = module.azure.azure_gateway_ipv4_address
+  azure_gateway_ipv4_address   = "132.255.0.0"
+
   azure_subnet_cidr            = local.azure_vm_subnet_cidr
   gcp_project_id               = var.gcp_project_id
   gcp_region                   = var.gcp_region
