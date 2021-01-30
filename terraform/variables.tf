@@ -20,4 +20,4 @@ variable "prefix" {default = "ri"}
 variable "instances" {default = "2"}
 variable "vm_username" {default = "resinfra"}
 
-variable "git_checkout_branch" {default = ""}
+variable "git_checkout_branch" {default = "dev_jan"}

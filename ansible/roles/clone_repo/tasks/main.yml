@@ -1,0 +1,16 @@
+- name: copy over the ssh key
+  copy:
+    src: '{{ priv_key_path }}'
+    dest: /root/.ssh/ri_key
+    mode: 0600
+
+- name: copy over the ssh config
+  copy:
+    src:  ssh_config
+    dest: /root/.ssh/config
+    mode: 0600
+
+- name: clone git repo
+  git:
+    repo: git@gitserv:amer/resinfra.git
+    dest: /resinfra

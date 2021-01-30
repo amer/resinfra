@@ -33,5 +33,6 @@
         GF_USERS_ALLOW_SIGN_UP: "false"
         GF_AUTH_DISABLE_LOGIN_FORM: "true"
       state: started
+      restart_policy: always
       user: root
     become: yes

@@ -1,6 +1,6 @@
 node_name= "{{ ansible_hostname }}"
 {% if bind_addr is defined %}
-bind_addr= "{{ priv_ip }}"
+bind_addr= "{{ bind_addr }}"
 {% else %}
 bind_addr= "{{ inventory_hostname }}"
 {% endif %}

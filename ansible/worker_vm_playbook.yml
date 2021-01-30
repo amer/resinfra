@@ -2,9 +2,8 @@
 - hosts: all
   become: true
   roles:
-    - setup_docker
+    - consul
 
 - hosts: all
   roles:
-    - prometheus
-    - grafana
+    - nodeexporter

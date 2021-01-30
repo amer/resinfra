@@ -25,4 +25,5 @@
       state: started
       restart: yes
       user: root
+      restart_policy: always
     become: yes

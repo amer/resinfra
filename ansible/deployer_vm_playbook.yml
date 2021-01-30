@@ -1,0 +1,12 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - resinfra_user
+    - clone_repo
+    - consul
+
+- hosts: all
+  roles:
+    - prometheus
+    - grafana
