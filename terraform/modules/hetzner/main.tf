@@ -34,7 +34,7 @@ data "template_file" "user_data" {
 
 # Create a virtual network
 resource "hcloud_network" "main" {
-  name     = "${var.prefix}-network"
+  name     = "${var.prefix}-network-${random_id.id.hex}"
   ip_range = var.hetzner_vpc_cidr
 }
 
@@ -54,7 +54,7 @@ resource "hcloud_network_subnet" "main" {
 
 # Create VM that will be the gateway
 resource "hcloud_server" "gateway" {
-  name        = "${var.prefix}-hetzner-gateway-vm"
+  name        = "${var.prefix}-hetzner-gateway-vm-${random_id.id.hex}"
   image       = "ubuntu-20.04"
   server_type = "cx11"
   location    = "nbg1"
