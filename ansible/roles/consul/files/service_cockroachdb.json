@@ -1,0 +1,18 @@
+{
+  "services": [
+    {
+      "name": "cockroachdb",
+      "tags": [
+        "database"
+      ],
+      "port": 8080,
+      "check": {
+        "args": [
+          "curl",
+          "localhost/health"
+        ],
+        "interval": "10s"
+      }
+    }
+  ]
+}
