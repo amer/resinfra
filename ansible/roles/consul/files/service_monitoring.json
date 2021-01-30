@@ -8,7 +8,7 @@
       "port": 9100,
       "check": {
         "name": "Health check for node exporter on port 9100",
-        "http": "http://localhost:8080/metrics",
+        "http": "http://localhost:9100",
         "interval": "10s"
       }
     },
