@@ -40,6 +40,16 @@
     src: consul.service.j2
     dest: /etc/systemd/system/consul.service
 
+- name: copy over the service configuration
+  copy:
+    src: files/service_cockroachdb.json
+    dest: /etc/consul.d/
+
+- name: copy over the service configuration
+  copy:
+    src: files/service_monitoring.json
+    dest: /etc/consul.d/
+
 - name: start the consul service
   systemd:
     state: started

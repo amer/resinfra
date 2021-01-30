@@ -1,0 +1,11 @@
+{
+  "services": [
+    {
+      "name": "node_exporter",
+      "tags": [
+        "monitoring"
+      ],
+      "port": 9100
+    }
+  ]
+}
