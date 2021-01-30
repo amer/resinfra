@@ -1,0 +1,15 @@
+node_name= "{{ ansible_hostname }}"
+{% if bind_addr is defined %}
+bind_addr= "{{ priv_ip }}"
+{% else %}
+bind_addr= "{{ inventory_hostname }}"
+{% endif %}
+data_dir= "/home/consul/consul-data"
+datacenter= "resnet"
+{% if server == 'true' %}
+server=true
+bootstrap_expect=1
+ui=true
+{% else %}
+retry_join= ["{{ leader_node }}"]
+{% endif %}

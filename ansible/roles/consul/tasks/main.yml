@@ -1,0 +1,42 @@
+- name: Add Consul GPG apt Key
+  apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present
+
+- name: Get release name
+  command: lsb_release -cs
+  register: os_release
+  changed_when: false
+
+- name: Add consul repository
+  apt_repository:
+    repo: deb [arch=amd64] https://apt.releases.hashicorp.com {{ os_release.stdout }} main
+    state: present
+
+- name: install Consul
+  apt:
+    name:
+      - consul
+    state: present
+    update_cache: yes
+
+- name: template the config file
+  template:
+    src: config.hcl.j2
+    dest: /etc/consul.d/consul.hcl
+
+- name: add a consul user
+  user:
+    name: consul
+    state: present
+
+- name: copy over the service file
+  copy:
+    src: files/consul.service
+    dest: /etc/systemd/system/consul.service
+
+- name: start the consul service
+  systemd:
+    state: started
+    daemon_reload: yes
+    name: consul

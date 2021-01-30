@@ -39,12 +39,6 @@ resource "local_file" "hosts_file_creation" {
   filename = "${path.module}/cockroach_host.ini"
 }
 
-/*
-------------------------
-    COCKROACHDB
-------------------------
-*/
-
 data "template_file" "user_data" {
   template = file("${path.module}/preconf.yml")
 
@@ -74,7 +68,7 @@ resource "hcloud_server_network" "deployment-vm-into-subnet" {
 
 }
 
-
+# copy over the hosts file to the deployer vm
 resource "null_resource" "hosts_file_copy" {
   depends_on = [
     local_file.hosts_file_creation
@@ -96,6 +90,13 @@ resource "null_resource" "hosts_file_copy" {
     destination = "~/cockroach_host.ini"
   }
 }
+
+
+/*
+------------------------
+    COCKROACHDB
+------------------------
+*/
 
 resource "null_resource" "cockroach_ansible" {
   depends_on = [
@@ -131,6 +132,63 @@ resource "null_resource" "cockroach_ansible" {
                 --ssh-common-args='-o StrictHostKeyChecking=no' \
                 --private-key ~/.ssh/vm_key \
                 --extra-vars 'priv_ip_list='${join(",", concat(var.azure_worker_hosts, var.gcp_worker_hosts, var.hetzner_worker_hosts, var.proxmox_worker_hosts))}''
+      EOF
+    ]
+  }
+}
+
+/*
+------------------
+    CONSUL
+------------------
+*/
+resource "null_resource" "consul_ansible" {
+  depends_on = [
+    local_file.hosts_file_creation,
+  ]
+
+  triggers = {
+    local_file_id = local_file.hosts_file_creation.id
+  }
+
+  connection {
+    type        = "ssh"
+    user        = "resinfra"
+    private_key = file(var.path_private_key)
+    host        = hcloud_server.cockroach_deployer.ipv4_address
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "cd ~/resinfra/",
+      "git pull",
+      "git checkout ${var.git_checkout_branch}",
+      "git pull",
+      "cd ansible",
+      <<EOF
+        ansible-playbook consul_playbook.yml \
+                -i /home/resinfra/cockroach_host.ini \
+                -l deployer_server \
+                --ssh-common-args='-o StrictHostKeyChecking=no' \
+                --private-key ~/.ssh/vm_key \
+                --extra-vars 'server='true''
+      EOF
+    ]
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "cd ~/resinfra/",
+      "git pull",
+      "git checkout ${var.git_checkout_branch}",
+      "git pull",
+      "cd ansible",
+      <<EOF
+        ansible-playbook consul_playbook.yml \
+                -i /home/resinfra/cockroach_host.ini \
+                -l cockroach_main_servers \
+                --ssh-common-args='-o StrictHostKeyChecking=no' \
+                --private-key ~/.ssh/vm_key \
+                --extra-vars "server=false leader_node=${hcloud_server_network.deployment-vm-into-subnet.ip}"
       EOF
     ]
   }
