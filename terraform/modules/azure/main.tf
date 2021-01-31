@@ -136,8 +136,13 @@ resource "azurerm_local_network_gateway" "gcp" {
   location            = azurerm_resource_group.main.location
   resource_group_name = azurerm_resource_group.main.name
 
-  gateway_address = var.gcp_gateway_ipv4_address
-  address_space   = [var.gcp_vm_subnet_cidr]
+  gateway_address = "35.242.77.80" # TODO replace with actual address of GCP HA VPN gateway
+  address_space = [] # leave empty, will be populated through BGP
+
+  bgp_settings {
+    asn = 65522
+    bgp_peering_address = "169.254.23.2"
+  }
 }
 
 resource "azurerm_local_network_gateway" "proxmox" {
@@ -159,14 +164,21 @@ resource "azurerm_virtual_network_gateway" "main" {
   vpn_type = "RouteBased"
 
   active_active = false
-  enable_bgp    = false
-  sku           = "Basic"
+  enable_bgp    = true
+  sku           = "Standard"
 
   ip_configuration {
     name                          = "${var.prefix}-vnetGatewayConfig"
     public_ip_address_id          = azurerm_public_ip.gateway.id
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = azurerm_subnet.gateway.id
+  }
+
+  bgp_settings {
+    asn = 65521
+    # "The IP address must be part of the subnet of the Virtual Network Gateway.", but it cannot be, because GCP
+    # requires the address to be "link-local", i.e., 169.254/16
+    peering_address = "169.254.23.1"
   }
 }
 
@@ -193,6 +205,7 @@ resource "azurerm_virtual_network_gateway_connection" "gcp" {
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
   local_network_gateway_id   = azurerm_local_network_gateway.gcp.id
+  enable_bgp                 = true
 
   shared_key = var.shared_key
 }
