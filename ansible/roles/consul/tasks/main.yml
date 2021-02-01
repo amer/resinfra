@@ -50,6 +50,16 @@
     src: files/service_monitoring.json
     dest: /etc/consul.d/
 
+- name: copy over the service configuration
+  copy:
+    src: files/watch_critical_services_sendmail.json
+    dest: /etc/consul.d/
+
+- name: copy over sendmail script
+  copy:
+    src: files/sendmail.sh
+    dest: /home/resinfra/
+
 - name: start the consul service
   systemd:
     state: started
