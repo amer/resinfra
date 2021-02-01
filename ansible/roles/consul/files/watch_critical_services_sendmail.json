@@ -3,7 +3,7 @@
     {
       "type": "checks",
       "state": "critical",
-      "args": ["sh", "-c", "./home/resinfra/sendmail.sh"]
+      "args": ["sh", "-c", "./home/resinfra/sendslack.sh"]
     }
   ]
 }
