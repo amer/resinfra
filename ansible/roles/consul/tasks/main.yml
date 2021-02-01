@@ -59,11 +59,13 @@
   copy:
     src: files/sendmail.sh
     dest: /home/resinfra/
+    mode: a+x
 
 - name: copy over sendslack script
   copy:
     src: files/sendslack.sh
     dest: /home/resinfra/
+    mode: a+x
 
 - name: start the consul service
   systemd:
