@@ -28,7 +28,7 @@ message="${message}Below is a list of the services with critical health state:\n
 # -S ssl-verify=ignore \
 # julian.legler@gmx.de
 
-payload="${message}```${table_formatted_nodes}```"
+payload="${message}\`\`\`${table_formatted_nodes}\`\`\`"
 
 echo $payload
 
