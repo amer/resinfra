@@ -2,7 +2,6 @@
   "watches": [
     {
       "type": "checks",
-      "service": "cockroachdb",
       "state": "critical",
       "args": ["sh", "-c", "./home/resinfra/sendmail.sh"]
     }
