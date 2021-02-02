@@ -155,15 +155,6 @@ resource "google_compute_forwarding_rule" "fr_udp4500" {
 
 # Create the tunnel & route trafic to remote networks through tunnel
 #   for azure
-resource "google_compute_external_vpn_gateway" "azure_gateway" {
-  name            = "${var.prefix}-azure-gateway-${random_id.id.hex}"
-  redundancy_type = "SINGLE_IP_INTERNALLY_REDUNDANT"
-  interface {
-    id         = 0
-    ip_address = var.azure_gateway_ipv4_address
-  }
-}
-
 resource "google_compute_vpn_tunnel" "azure_tunnel" {
   name          = "${var.prefix}-azure-tunnel-${random_id.id.hex}"
   shared_secret = var.shared_key
@@ -181,6 +172,16 @@ resource "google_compute_vpn_tunnel" "azure_tunnel" {
     google_compute_forwarding_rule.fr_udp4500,
   ]
 }
+
+resource "google_compute_external_vpn_gateway" "azure_gateway" {
+  name            = "${var.prefix}-azure-gateway-${random_id.id.hex}"
+  redundancy_type = "SINGLE_IP_INTERNALLY_REDUNDANT"
+  interface {
+    id         = 0
+    ip_address = var.azure_gateway_ipv4_address
+  }
+}
+
 resource "google_compute_router_interface" "azure0" {
   name = "${var.prefix}-azure-0-interface-${random_id.id.hex}"
   # This is weird because we have e.g. 169.254.22.2/30 which is not a valid CIDR prefix (-> rfc4632), but
@@ -191,6 +192,7 @@ resource "google_compute_router_interface" "azure0" {
   router = google_compute_router.main.name
   vpn_tunnel = google_compute_vpn_tunnel.azure_tunnel.self_link
 }
+
 resource "google_compute_router_peer" "azure0" {
   name = "${var.prefix}-azure-0-bgp-peer-${random_id.id.hex}"
   router = google_compute_router.main.name
