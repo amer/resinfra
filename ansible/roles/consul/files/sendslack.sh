@@ -4,9 +4,12 @@
 consul_json=$(cat /dev/stdin)
 
 # parse the json and get the node name and service names of the critical services
-parsed_json=$( echo $consul_json | tr '\r\n' ' ' | jq -r '.[] |  {node: .Node, service: .ServiceName, service_state: .Status}' )
+table_formatted_nodes=mlr --ijson --opprint --barred \
+                        cut -f Node,ServiceName,Status then \
+                        group-by Node \
+                        <<< $consul_json
 
-echo $parsed_json
+echo $table_formatted_nodes
 
 # some informational message for the mail body
 message="This is a automatic alert message from a check handler triggered by a consul watcher\n"
@@ -25,7 +28,7 @@ message="${message}Below is a list of the services with critical health state:\n
 # -S ssl-verify=ignore \
 # julian.legler@gmx.de
 
-payload=${message}${parsed_json}
+payload="${message}\`\`\`${table_formatted_nodes}\`\`\`"
 
 echo $payload
 
