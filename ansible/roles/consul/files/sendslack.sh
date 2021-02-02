@@ -4,10 +4,10 @@
 consul_json=$(cat /dev/stdin)
 
 # parse the json and get the node name and service names of the critical services
-table_formatted_nodes=mlr --ijson --opprint --barred \
+table_formatted_nodes=$(mlr --ijson --opprint --barred \
                         cut -f Node,ServiceName,Status then \
                         group-by Node \
-                        <<< $consul_json
+                        <<< $consul_json)
 
 echo $table_formatted_nodes
 
@@ -30,12 +30,12 @@ message="${message}Below is a list of the services with critical health state:\n
 
 payload="${message}\`\`\`${table_formatted_nodes}\`\`\`"
 
-echo $payload
+#echo $payload
 
 #escaped_payload=$(echo $payload | sed 's/"/\"/g' | sed "s/'/\'/g" )
 escaped_payload=$(echo $payload | sed 's/"/\\"/g; s/}/\}\n/g')
 postdata="{\"text\":\"$escaped_payload\"}"
-echo $postdata
+#echo $postdata
 
 
 #echo "$postdata"
