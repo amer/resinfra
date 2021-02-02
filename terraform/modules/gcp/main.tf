@@ -120,7 +120,7 @@ resource "google_compute_router" "main" {
   network = google_compute_network.main.self_link
 
   bgp {
-    asn = 65522
+    asn = var.gcp_asn
   }
 }
 
@@ -183,15 +183,19 @@ resource "google_compute_vpn_tunnel" "azure_tunnel" {
 }
 resource "google_compute_router_interface" "azure0" {
   name = "${var.prefix}-azure-0-interface-${random_id.id.hex}"
-  ip_range = "169.254.23.2/30"
+  # This is weird because we have e.g. 169.254.22.2/30 which is not a valid CIDR prefix (-> rfc4632), but
+  # - is interpreted as 169.254.22.0/30
+  # - assigns the router the address specified, i.e., 169.254.22.2
+  # TODO maybe investigate if this is (1) reliable and (2) needed
+  ip_range = "${var.gcp_bgp_peer_address}/30"
   router = google_compute_router.main.name
   vpn_tunnel = google_compute_vpn_tunnel.azure_tunnel.self_link
 }
 resource "google_compute_router_peer" "azure0" {
   name = "${var.prefix}-azure-0-bgp-peer-${random_id.id.hex}"
   router = google_compute_router.main.name
-  peer_ip_address = "169.254.23.1"
-  peer_asn = 65521
+  peer_ip_address = var.azure_bgp_peer_address
+  peer_asn = var.azure_asn
   interface = google_compute_router_interface.azure0.name
 }
 

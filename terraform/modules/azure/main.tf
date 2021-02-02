@@ -131,20 +131,6 @@ resource "azurerm_local_network_gateway" "hetzner_onpremise" {
   address_space   = [var.hcloud_vm_subnet_cidr]
 }
 
-resource "azurerm_local_network_gateway" "gcp" {
-  name                = "gcp"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-
-  gateway_address = "35.242.77.80" # TODO replace with actual address of GCP HA VPN gateway
-  address_space = [] # leave empty, will be populated through BGP
-
-  bgp_settings {
-    asn = 65522
-    bgp_peering_address = "169.254.23.2"
-  }
-}
-
 resource "azurerm_local_network_gateway" "proxmox" {
   name                = "proxmox"
   location            = azurerm_resource_group.main.location
@@ -152,6 +138,24 @@ resource "azurerm_local_network_gateway" "proxmox" {
 
   gateway_address = var.proxmox_gateway_ipv4_address
   address_space   = [var.proxmox_vm_subnet_cidr]
+}
+
+# The tunnel to GCP uses BGP, but is not yet highly available.
+resource "azurerm_local_network_gateway" "gcp" {
+  name                = "gcp"
+  location            = azurerm_resource_group.main.location
+  resource_group_name = azurerm_resource_group.main.name
+
+  # Just use the first address until we can establish redundant connections
+  gateway_address = var.gcp_ha_gateway_interfaces[0].ip_address
+  # We only add the address of the BGP peer to the route table.
+  # The rest of the routes will be discovered through BGP.
+  address_space = ["${var.gcp_bgp_peer_address}/32"]
+
+  bgp_settings {
+    asn = var.gcp_asn
+    bgp_peering_address = var.gcp_bgp_peer_address
+  }
 }
 
 # Create virtual network gateway
@@ -175,10 +179,10 @@ resource "azurerm_virtual_network_gateway" "main" {
   }
 
   bgp_settings {
-    asn = 65521
+    asn = var.azure_asn
     # "The IP address must be part of the subnet of the Virtual Network Gateway.", but it cannot be, because GCP
     # requires the address to be "link-local", i.e., 169.254/16
-    peering_address = "169.254.23.1"
+    peering_address = var.azure_bgp_peer_address
   }
 }
 
