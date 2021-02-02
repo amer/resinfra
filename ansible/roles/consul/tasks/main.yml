@@ -13,10 +13,11 @@
     repo: deb [arch=amd64] https://apt.releases.hashicorp.com {{ os_release.stdout }} main
     state: present
 
-- name: install Consul
+- name: install Consul and Miller (Data processing tool)
   apt:
     name:
       - consul
+      - miller
     state: present
     update_cache: yes
 
