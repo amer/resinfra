@@ -162,7 +162,7 @@ resource "null_resource" "copy_ipsec_files" {
   provisioner "file" {
     content = templatefile("${path.module}../../../../templates/libreswan-ipsec.conf.j2", {
       public_gateway_ip            = local.gateway_public_ipv4_address
-      local_cidr                   = var.hetzner_vm_subnet_cidr
+      local_cidr                   = var.proxmox_vm_subnet_cidr
       azure_remote_gateway_ip      = var.azure_gateway_ipv4_address
       azure_remote_cidr            = var.azure_vm_subnet_cidr
       gcp_remote_gateway_ip        = var.gcp_gateway_ipv4_address
@@ -187,8 +187,7 @@ resource "null_resource" "copy_ipsec_files" {
     inline = [
       "chmod 0400 /etc/ipsec.secrets",
       "chmod 0400 /etc/ipsec.d/main.conf",
-      "ipsec restart && ipsec start"
-      // in case ipsec is not running, restart will have no effect. If ipsec is running, start will have no effect.
+      "ipsec restart"
     ]
   }
 }
