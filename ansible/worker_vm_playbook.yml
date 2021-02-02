@@ -2,8 +2,6 @@
 - hosts: all
   become: true
   roles:
+    - resinfra_user
     - consul
-
-- hosts: all
-  roles:
     - nodeexporter

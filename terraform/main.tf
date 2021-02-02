@@ -1,37 +1,33 @@
-terraform {
-  backend "consul" {
-    address  = "localhost:8500"
-    scheme   = "http"
-    path     = "tf/terraform.tfstate"
-    lock     = true
-    gzip     = false
-  }
-}
-
-data "external" "local_git_state" {
-  program = ["./local-git-state-data-source.sh"]
-}
-
 locals {
-  azure_cidr                = cidrsubnet(var.vpc_cidr, 8, 1)    # 10.1.0.0/16 (Azure does not allow to add overlapping subnets when creating vpn routes)
-  azure_vm_subnet_cidr      = cidrsubnet(var.vpc_cidr, 16, 256) # 10.1.0.0/24
-  azure_gateway_subnet_cidr = cidrsubnet(var.vpc_cidr, 16, 257) # 10.1.1.0/24
+  azure_cidr = cidrsubnet(var.vpc_cidr, 8, 1)
+  # 10.1.0.0/16 (Azure does not allow to add overlapping subnets when creating vpn routes)
+  azure_vm_subnet_cidr = cidrsubnet(var.vpc_cidr, 16, 256)
+  # 10.1.0.0/24
+  azure_gateway_subnet_cidr = cidrsubnet(var.vpc_cidr, 16, 257)
+  # 10.1.1.0/24
 
-  gcp_cidr           = cidrsubnet(var.vpc_cidr, 8, 2)    # 10.2.0.0/16
-  gcp_vm_subnet_cidr = cidrsubnet(var.vpc_cidr, 16, 512) # 10.2.0.0/24
+  gcp_cidr = cidrsubnet(var.vpc_cidr, 8, 2)
+  # 10.2.0.0/16
+  gcp_vm_subnet_cidr = cidrsubnet(var.vpc_cidr, 16, 512)
+  # 10.2.0.0/24
 
-  hetzner_cidr           = var.vpc_cidr                      # 10.0.0.0/8 (Hetzner needs to have all subnets included in the big VPN)
-  hetzner_vm_subnet_cidr = cidrsubnet(var.vpc_cidr, 16, 768) # 10.3.0.0/24
+  hetzner_cidr = var.vpc_cidr
+  # 10.0.0.0/8 (Hetzner needs to have all subnets included in the big VPN)
+  hetzner_vm_subnet_cidr = cidrsubnet(var.vpc_cidr, 16, 768)
+  # 10.3.0.0/24
 
-  proxmox_cidr           = cidrsubnet(var.vpc_cidr, 8, 4)       # 10.4.0.0/16
-  proxmox_vm_subnet_cidr = cidrsubnet(local.proxmox_cidr, 8, 0) # 10.4.0.0/24
+  proxmox_cidr = cidrsubnet(var.vpc_cidr, 8, 4)
+  # 10.4.0.0/16
+  proxmox_vm_subnet_cidr = cidrsubnet(local.proxmox_cidr, 8, 0)
+  # 10.4.0.0/24
 
   path_private_key = "~/.ssh/ri_key"
   path_public_key  = "~/.ssh/ri_key.pub"
 
-  // This branch will get checked out on the ansible deployer machine.
-  // Variable default cannot be another variable, so we implement our own default logic.
-  git_checkout_branch = var.git_checkout_branch != "" ? var.git_checkout_branch : data.external.local_git_state.result.current_branch
+  azure_resource_group     = "ri-multi-cloud-rg"
+  azure_worker_vm_image_id = "/subscriptions/e6994910-2d0d-4220-ae62-73c0242d7d4d/resourceGroups/ri-multi-cloud-rg/providers/Microsoft.Compute/images/azure-worker-vm"
+
+  consul_leader_ip = "10.3.0.254"
 }
 
 module "hetzner" {
@@ -50,16 +46,18 @@ module "hetzner" {
   hetzner_vpc_cidr             = local.hetzner_cidr
   prefix                       = var.prefix
   instances                    = var.instances
+  consul_leader_ip             = local.consul_leader_ip
 }
 
 module "azure" {
-  source                       = "./modules/azure"
-  subscription_id              = var.subscription_id
-  client_id                    = var.client_id
-  client_secret                = var.client_secret
-  tenant_id                    = var.tenant_id
-  location                     = "eastus"
-  vm_size                      = "Standard_D2s_v3" # Standard_D2s_v3, Standard_B2s | For more info https://azureprice.net/
+  source          = "./modules/azure"
+  subscription_id = var.subscription_id
+  client_id       = var.client_id
+  client_secret   = var.client_secret
+  tenant_id       = var.tenant_id
+  location        = "westeurope"
+  vm_size         = "Standard_D2s_v3"
+  # Standard_D2s_v3, Standard_B2s | For more info https://azureprice.net/
   path_private_key             = local.path_private_key
   path_public_key              = local.path_public_key
   azure_gateway_subnet_cidr    = local.azure_gateway_subnet_cidr
@@ -74,6 +72,8 @@ module "azure" {
   shared_key                   = var.shared_key
   prefix                       = var.prefix
   instances                    = var.instances
+  azure_worker_vm_image_id     = local.azure_worker_vm_image_id
+  resource_group               = local.azure_resource_group
 }
 
 module "gcp" {
@@ -116,21 +116,4 @@ module "proxmox" {
   vm_username                     = var.vm_username
   instances                       = var.instances
   shared_key                      = var.shared_key
-}
-
-module "tooling" {
-  source                             = "./modules/hetzner/tooling"
-  git_checkout_branch                = local.git_checkout_branch
-  hcloud_token                       = var.hcloud_token
-  path_private_key                   = local.path_private_key
-  path_public_key                    = local.path_public_key
-  prefix                             = var.prefix
-  proxmox_worker_hosts               = module.proxmox.proxmox_private_ip_addresses
-  azure_worker_hosts                 = module.azure.azure_private_ip_addresses
-  gcp_worker_hosts                   = module.gcp.gcp_private_ip_addresses
-  hetzner_worker_hosts               = module.hetzner.hcloud_private_ip_addresses
-  hetzner_subnet_id                  = module.hetzner.hcloud_subnet_id
-  hcloud_ssh_key_id                  = module.hetzner.hcloud_ssh_key_id
-  hcloud_strongswan_ansible_updated  = module.hetzner.ansible_strongswan_updated
-  proxmox_strongswan_ansible_updated = module.proxmox.ansible_strongswan_updated
 }

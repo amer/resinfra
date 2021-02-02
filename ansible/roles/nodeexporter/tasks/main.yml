@@ -7,4 +7,5 @@
         - 9100:9100
       container_default_behavior: compatibility
       state: started
+      restart_policy: always
     become: yes

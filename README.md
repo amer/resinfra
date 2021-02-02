@@ -5,7 +5,7 @@ The main goal of this project is to build a more resilient infrastructure by spa
 clouds. To achieve this goal, we deploy virtual machines across different cloud providers and connect them together. Afterwards, we deploy monitoring solutions and create watchdogs that ensure that failed infrastructure is re-created.
 
 ## How to run it?
-
+Ensure all images are built and ready. For more information see [the packer directory](packer).
 Create and populate a ``terraform/terraform.tfvars`` file. Use 
 [terraform.tfvars.example](terraform/terraform.tfvars.example) as a template. 
 

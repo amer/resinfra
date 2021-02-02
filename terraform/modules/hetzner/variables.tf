@@ -43,3 +43,5 @@ variable "shared_key" {}
 
 variable "path_private_key" {}
 variable "path_public_key" {}
+
+variable "consul_leader_ip" {}

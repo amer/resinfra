@@ -26,3 +26,6 @@ variable "shared_key" {}
 variable "path_private_key" {}
 variable "path_public_key" {}
 
+variable "azure_worker_vm_image_id" {}
+
+variable "resource_group" {}

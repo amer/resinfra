@@ -6,17 +6,17 @@
     state: present
     update_cache: yes
 
-- name: configure StrongSWAN
-  template:
-    src: ipsec.conf.j2
-    dest: /etc/ipsec.conf
-    mode: 0400
-
-- name: add PSK
-  template:
-    src: ipsec.secrets.j2
-    dest: /etc/ipsec.secrets
-    mode: 0400
-
-- name: apply IPSec changes
-  shell: ipsec restart
+#- name: configure StrongSWAN
+#  template:
+#    src: ipsec.conf.j2
+#    dest: /etc/ipsec.conf
+#    mode: 0400
+#
+#- name: add PSK
+#  template:
+#    src: ipsec.secrets.j2
+#    dest: /etc/ipsec.secrets
+#    mode: 0400
+#
+#- name: apply IPSec changes
+#  shell: ipsec restart

@@ -23,4 +23,3 @@ variable "git_checkout_branch" {}
 variable "hetzer_deployer_internal_ip" {}
 variable "hetzner_deployer_id" {}
 variable "hetzner_deployer_ip" {}
-variable "hetzer_deployer_external_ip" {}

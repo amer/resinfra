@@ -1,0 +1,22 @@
+{
+  "hcloud_token": "",
+  "path_private_key": "~/.ssh/ri_key",
+  "path_pub_key": "~/.ssh/ri_key.pub",
+
+  "resinfra_vpc_cidr": "10.0.0.0/8",
+  "consul_leader_node": "10.3.0.254",
+
+  "client_id": "",
+  "client_secret": "",
+  "subscription_id": "",
+  "tenant_id": "",
+  "azure_resource_group": "ri-multi-cloud-rg",
+
+  "gcp_project_id": "sublime-night-298409",
+  "gcp_region": "europe-west1-b",
+  "gcp_service_account_path": "",
+
+  "proxmox_pw" :"",
+  "proxmox_url": "https://92.204.175.162:8006/api2/json",
+  "proxmox_user" : ""
+}

@@ -5,11 +5,7 @@ datasources:
     type: prometheus
     access: proxy
     orgId: 1
-    {% if prometheus_host is defined %}
-    url: http://{{ prometheus_host }}:9090
-    {% else %}
     url: http://localhost:9090
-    {% endif %}
     basicAuth: false
     isDefault: true
     editable: true

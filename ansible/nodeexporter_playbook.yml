@@ -1,9 +1,0 @@
----
-- hosts: all
-  become: true
-  roles:
-    - setup_docker
-
-- hosts: all
-  roles:
-    - nodeexporter

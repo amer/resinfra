@@ -8,5 +8,7 @@
 
 - hosts: all
   roles:
+    - nodeexporter
     - prometheus
     - grafana
+
