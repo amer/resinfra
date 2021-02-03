@@ -17,7 +17,7 @@ Make sure, that the necessary images exist on the specific cloud providers:
   
 If not, use the [packer scripts](../packer) to build the necessary images.
 
-**It is important that the consul leader node is reachable from ``10.3.0.254`` as this is hardcoded in the 
+**It is important that the consul leader node is reachable on``10.3.0.254`` as this is hardcoded in the 
 consul clients installed in the images. If you want to change the address of the leader node, either start the consul 
 clients with a different ``retry_join`` configuration or change that parameter when building the images with packer.**
 This is important as this is the central piece of information required to connect all nodes within consul.
@@ -119,6 +119,5 @@ Monitoring is set up through the builder vm and ansible scripts. A docker contai
 [node exporter](https://prometheus.io/docs/guides/node-exporter/) is installed on all worker vms. On the monitoring 
 machine a prometheus instance is installed to collect metrics from respective targets. Metrics are then 
 displayed in Grafana.
-
 
 
