@@ -19,5 +19,3 @@ variable "vpc_cidr" { default = "10.0.0.0/8" }
 variable "prefix" { default = "ri" }
 variable "instances" { default = "2" }
 variable "vm_username" { default = "resinfra" }
-
-variable "git_checkout_branch" { default = "dev_jan" }
