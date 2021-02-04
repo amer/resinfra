@@ -20,6 +20,8 @@ resource "random_id" "id" {
   byte_length = 4
 }
 
+data "azurerm_subscription" "current" {}
+
 /*
 ------------------------
     INTERNAL NETWORK
@@ -180,9 +182,19 @@ resource "azurerm_virtual_network_gateway" "main" {
 
   bgp_settings {
     asn = var.azure_asn
-    # "The IP address must be part of the subnet of the Virtual Network Gateway.", but it cannot be, because GCP
-    # requires the address to be "link-local", i.e., 169.254/16
-    peering_address = var.azure_bgp_peer_address
+  }
+
+  # Setting the BGP peer address to an APIPA address is not supported as of 02/2021, see
+  # https://github.com/terraform-providers/terraform-provider-azurerm/issues/10262
+  # Instead, we set it through the Azure REST API here.
+  provisioner "local-exec" {
+    command = <<EOF
+      URL='https://management.azure.com/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${azurerm_resource_group.main.name}/providers/Microsoft.Network/virtualNetworkGateways/${azurerm_virtual_network_gateway.main.name}?api-version=2020-07-01'
+      AUTH_HEADER="Authorization: Bearer $(az account get-access-token | jq -r '.accessToken')"
+      curl -H "$AUTH_HEADER" $URL | \
+        jq -M '.properties.bgpSettings.bgpPeeringAddresses[0].customBgpIpAddresses += ["${var.azure_bgp_peer_address}"]' | \
+        curl -XPUT -H "$AUTH_HEADER" -H 'Content-Type: application/json' --data @- $URL
+    EOF
   }
 }
 
