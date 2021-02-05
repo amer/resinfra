@@ -16,6 +16,21 @@ locals {
   proxmox_cidr           = cidrsubnet(var.vpc_cidr, 8, 4)       # 10.4.0.0/16
   proxmox_vm_subnet_cidr = cidrsubnet(local.proxmox_cidr, 8, 0) # 10.4.0.0/24
 
+  # In our architecture, each provider gets assigned an IP address range in which it can freely assign addresses
+  # (through DHCP). Thus, each provider is treated as an Autonomous System and is assigned an Autonomous System Number
+  # from the pool of private ASNs as defined in RFC6996, 64512 - 65534. Azure (and maybe other providers) reserve some
+  # of the private ASNs for internal use, see https://docs.microsoft.com/de-de/azure/vpn-gateway/vpn-gateway-bgp-overview#what-asns-autonomous-system-numbers-can-i-use
+  azure_asn = 65521
+  gcp_asn   = 65522
+
+  # The BGP peer address can theoretically be any address other than the public IP addresses of the VPN gateways.
+  # In the case of GCP, it must be an APIPA address.
+  # In the case of Azure, it can be any address, but if it is an APIPA address,
+  # it must be 169.254.21/24 or 169.254.22/24. (https://docs.microsoft.com/en-us/azure/vpn-gateway/bgp-howto)
+  # FIXME this structure won't make sense any more when we activate BGP for more providers.
+  azure_bgp_peer_address = "169.254.22.1"
+  gcp_bgp_peer_address   = "169.254.22.2"
+
   path_private_key = "~/.ssh/ri_key"
   path_public_key  = "~/.ssh/ri_key.pub"
 
@@ -55,8 +70,13 @@ module "azure" {
   azure_gateway_subnet_cidr    = local.azure_gateway_subnet_cidr
   azure_vm_subnet_cidr         = local.azure_vm_subnet_cidr
   azure_vpc_cidr               = local.azure_cidr
+  azure_asn                    = local.azure_asn
+  azure_bgp_peer_address       = local.azure_bgp_peer_address
   gcp_gateway_ipv4_address     = module.gcp.gcp_gateway_ipv4_address
   gcp_vm_subnet_cidr           = local.gcp_vm_subnet_cidr
+  gcp_asn                      = local.gcp_asn
+  gcp_bgp_peer_address         = local.gcp_bgp_peer_address
+  gcp_ha_gateway_interfaces    = module.gcp.gcp_ha_gateway_interfaces
   hcloud_gateway_ipv4_address  = module.hetzner.gateway_ipv4_address
   hcloud_vm_subnet_cidr        = local.hetzner_vm_subnet_cidr
   proxmox_gateway_ipv4_address = module.proxmox.gateway_ipv4_address
@@ -70,10 +90,14 @@ module "gcp" {
   source                       = "./modules/gcp"
   azure_gateway_ipv4_address   = module.azure.azure_gateway_ipv4_address
   azure_subnet_cidr            = local.azure_vm_subnet_cidr
+  azure_asn                    = local.azure_asn
+  azure_bgp_peer_address       = local.azure_bgp_peer_address
   gcp_project_id               = var.gcp_project_id
   gcp_region                   = var.gcp_region
   gcp_service_account_path     = var.gcp_service_account_path
   gcp_subnet_cidr              = local.gcp_vm_subnet_cidr
+  gcp_asn                      = local.gcp_asn
+  gcp_bgp_peer_address         = local.gcp_bgp_peer_address
   hetzner_gateway_ipv4_address = module.hetzner.gateway_ipv4_address
   hetzner_subnet_cidr          = local.hetzner_vm_subnet_cidr
   proxmox_gateway_ipv4_address = module.proxmox.gateway_ipv4_address
