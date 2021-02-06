@@ -66,7 +66,8 @@ resource "null_resource" "cockroach_ansible" {
   depends_on = [
     local_file.hosts_file_creation,
     null_resource.nodeexporter_ansible,
-    null_resource.monitoring_ansible
+    null_resource.monitoring_ansible,
+    null_resource.consul_ansible
   ]
 
   triggers = {
@@ -109,6 +110,7 @@ resource "null_resource" "cockroach_ansible" {
 resource "null_resource" "consul_ansible" {
   depends_on = [
     local_file.hosts_file_creation,
+    null_resource.nodeexporter_ansible
   ]
 
   triggers = {
@@ -205,8 +207,7 @@ resource "null_resource" "nodeexporter_ansible" {
 resource "null_resource" "monitoring_ansible" {
   depends_on = [
     local_file.hosts_file_creation,
-    hcloud_server.cockroach_deployer,
-    null_resource.nodeexporter_ansible
+    null_resource.consul_ansible
   ]
 
   triggers = {

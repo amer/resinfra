@@ -16,6 +16,8 @@ resource "random_id" "id" {
   byte_length = 4
 }
 
+data "azurerm_subscription" "current" {}
+
 /*
 ------------------------
     INTERNAL NETWORK
@@ -127,15 +129,6 @@ resource "azurerm_local_network_gateway" "hetzner_onpremise" {
   address_space   = [var.hcloud_vm_subnet_cidr]
 }
 
-resource "azurerm_local_network_gateway" "gcp" {
-  name                = "gcp"
-  location            = var.location
-  resource_group_name = var.resource_group
-
-  gateway_address = var.gcp_gateway_ipv4_address
-  address_space   = [var.gcp_vm_subnet_cidr]
-}
-
 resource "azurerm_local_network_gateway" "proxmox" {
   name                = "proxmox"
   location            = var.location
@@ -143,6 +136,24 @@ resource "azurerm_local_network_gateway" "proxmox" {
 
   gateway_address = var.proxmox_gateway_ipv4_address
   address_space   = [var.proxmox_vm_subnet_cidr]
+}
+
+# The tunnel to GCP uses BGP, but is not yet highly available.
+resource "azurerm_local_network_gateway" "gcp" {
+  name                = "gcp"
+  location            = var.location
+  resource_group_name = var.resource_group
+
+  # Just use the first address until we can establish redundant connections
+  gateway_address = var.gcp_ha_gateway_interfaces[0].ip_address
+  # We only add the address of the BGP peer to the route table.
+  # The rest of the routes will be discovered through BGP.
+  address_space = ["${var.gcp_bgp_peer_address}/32"]
+
+  bgp_settings {
+    asn = var.gcp_asn
+    bgp_peering_address = var.gcp_bgp_peer_address
+  }
 }
 
 # Create virtual network gateway
@@ -155,14 +166,31 @@ resource "azurerm_virtual_network_gateway" "main" {
   vpn_type = "RouteBased"
 
   active_active = false
-  enable_bgp    = false
-  sku           = "Basic"
+  enable_bgp    = true
+  sku           = "Standard"
 
   ip_configuration {
     name                          = "${var.prefix}-vnetGatewayConfig"
     public_ip_address_id          = azurerm_public_ip.gateway.id
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = azurerm_subnet.gateway.id
+  }
+
+  bgp_settings {
+    asn = var.azure_asn
+  }
+
+  # Setting the BGP peer address to an APIPA address is not supported as of 02/2021, see
+  # https://github.com/terraform-providers/terraform-provider-azurerm/issues/10262
+  # Instead, we set it through the Azure REST API here.
+  provisioner "local-exec" {
+    command = <<EOF
+      URL='https://management.azure.com/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group}/providers/Microsoft.Network/virtualNetworkGateways/${azurerm_virtual_network_gateway.main.name}?api-version=2020-07-01'
+      AUTH_HEADER="Authorization: Bearer $(az account get-access-token | jq -r '.accessToken')"
+      curl -H "$AUTH_HEADER" $URL | \
+        jq -M '.properties.bgpSettings.bgpPeeringAddresses[0].customBgpIpAddresses += ["${var.azure_bgp_peer_address}"]' | \
+        curl -XPUT -H "$AUTH_HEADER" -H 'Content-Type: application/json' --data @- $URL
+    EOF
   }
 }
 
@@ -189,6 +217,7 @@ resource "azurerm_virtual_network_gateway_connection" "gcp" {
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
   local_network_gateway_id   = azurerm_local_network_gateway.gcp.id
+  enable_bgp                 = true
 
   shared_key = var.shared_key
 }
@@ -236,6 +265,4 @@ resource "azurerm_linux_virtual_machine" "worker_vm" {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
   }
-
-
 }

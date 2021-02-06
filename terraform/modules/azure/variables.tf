@@ -17,9 +17,16 @@ variable "azure_vm_subnet_cidr" {}
 variable "gcp_vm_subnet_cidr" {}
 variable "proxmox_vm_subnet_cidr" {}
 
-
 variable "azure_vpc_cidr" {}
 variable "azure_gateway_subnet_cidr" {}
+
+variable "gcp_asn" {}
+variable "azure_asn" {}
+
+variable "gcp_bgp_peer_address" {}
+variable "azure_bgp_peer_address" {}
+
+variable "gcp_ha_gateway_interfaces" {}
 
 variable "shared_key" {}
 

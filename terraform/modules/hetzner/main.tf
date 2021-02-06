@@ -27,7 +27,6 @@ data "hcloud_image" "gateway-snapshot" {
   most_recent = true
 }
 
-
 /*
 ------------------------
     INTERNAL NETWORK
@@ -36,16 +35,16 @@ data "hcloud_image" "gateway-snapshot" {
 
 # Create a virtual network
 resource "hcloud_network" "main" {
-  name = "${var.prefix}-network"
+  name     = "${var.prefix}-network-${random_id.id.hex}"
   ip_range = var.hetzner_vpc_cidr
 }
 
 # Create a subnet for both the gateway and the vms
 resource "hcloud_network_subnet" "main" {
-  network_id = hcloud_network.main.id
-  type = "cloud"
+  network_id   = hcloud_network.main.id
+  type         = "cloud"
   network_zone = "eu-central"
-  ip_range = var.hetzner_vm_subnet_cidr
+  ip_range     = var.hetzner_vm_subnet_cidr
 }
 
 /*
@@ -78,7 +77,7 @@ resource "hcloud_server_network" "deployer-vm" {
 
 # Create VM that will be the gateway
 resource "hcloud_server" "gateway" {
-  name = "${var.prefix}-hetzner-gateway-vm"
+  name = "${var.prefix}-hetzner-gateway-vm-${random_id.id.hex}"
   image = data.hcloud_image.gateway-snapshot.id
   server_type = "cx11"
   location = "nbg1"
