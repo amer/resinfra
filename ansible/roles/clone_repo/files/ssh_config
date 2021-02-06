@@ -1,0 +1,5 @@
+Host gitserv
+    Hostname github.com
+    IdentityFile /root/.ssh/ri_key
+    IdentitiesOnly yes
+    StrictHostKeyChecking no

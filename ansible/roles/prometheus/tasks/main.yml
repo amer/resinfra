@@ -1,28 +1,28 @@
----
-  - name: create prometheus directory
-    file:
-      path: /home/resinfra/prometheus
-      state: directory
+- name: create prometheus directory
+  file:
+    path: /home/resinfra/prometheus
+    state: directory
 
-  - name: template the prometheus.yml
-    template:
-      src: prometheus.yml.j2
-      dest: /home/resinfra/prometheus/prometheus.yml
-      mode: 0666
+- name: copy over the prometheus.yml
+  copy:
+    src: prometheus.yml
+    dest: /home/resinfra/prometheus/prometheus.yml
+    mode: 0666
 
-  - name: start prometheus container
-    docker_container:
-      name: prometheus
-      image: prom/prometheus:latest
-      network_mode: host
+- name: start prometheus container
+  become: yes
+  docker_container:
+    name: prometheus
+    image: prom/prometheus:latest
+    network_mode: host
 #      ports:
 #        - 9090:9090
-      volumes:
-        - /home/resinfra/prometheus:/etc/prometheus
-      container_default_behavior: compatibility
-      command:
-        - '--config.file=/etc/prometheus/prometheus.yml'
-      state: started
-      restart: yes
-      user: root
-    become: yes
+    volumes:
+      - /home/resinfra/prometheus:/etc/prometheus
+    container_default_behavior: compatibility
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+    state: started
+    restart: yes
+    user: root
+    restart_policy: always

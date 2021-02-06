@@ -2,9 +2,13 @@
 - hosts: all
   become: true
   roles:
-    - setup_docker
+    - resinfra_user
+    - clone_repo
+    - consul
 
 - hosts: all
   roles:
+    - nodeexporter
     - prometheus
     - grafana
+

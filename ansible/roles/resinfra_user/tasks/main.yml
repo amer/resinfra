@@ -1,0 +1,39 @@
+- name: Make sure we have a 'resinfra' group
+  group:
+    name: resinfra
+    state: present
+
+- name: Allow 'resinfra' group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%resinfra'
+    line: '%resinfra ALL=(ALL) NOPASSWD: ALL'
+
+- name: Setup root account properly
+  lineinfile:
+    backup: yes
+    dest: /etc/shadow
+    regexp: "^root:.*$"
+    state: present
+    line: "root:*:18606:0:99999:7:::"
+# for more info see https://linuxize.com/post/etc-shadow-file/
+
+- name: add resinfra user
+  user:
+    name: resinfra
+    state: present
+    shell: /bin/bash
+    groups: resinfra
+
+- name: Set authorized key
+  authorized_key:
+    user: resinfra
+    state: present
+    key: "{{ lookup('file', '{{pub_key_path}}') }}"
+
+- name: Set authorized key
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ lookup('file', '{{pub_key_path}}') }}"

@@ -25,18 +25,24 @@
     src: config.hcl.j2
     dest: /etc/consul.d/consul.hcl
 
+- name: copy the node exporter service file
+  template:
+    src: files/nodeexporter_service.json
+    dest: /etc/consul.d/nodeexporter_service.json
+
 - name: add a consul user
   user:
     name: consul
     state: present
 
 - name: copy over the service file
-  copy:
-    src: files/consul.service
+  template:
+    src: consul.service.j2
     dest: /etc/systemd/system/consul.service
 
 - name: start the consul service
   systemd:
     state: started
+    enabled: yes
     daemon_reload: yes
     name: consul

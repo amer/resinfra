@@ -257,14 +257,6 @@ resource "google_compute_route" "proxmox-route" {
 -------------------------------
 */
 
-data "template_file" "user_data" {
-  template = file("${path.module}/preconf.tpl")
-
-  vars = {
-    username = "resinfra"
-    public_key = file(var.path_public_key)
-  }
-}
 
 resource "google_compute_address" "static" {
   count = var.instances
@@ -279,7 +271,7 @@ resource "google_compute_instance" "worker_vm" {
 
   boot_disk {
     initialize_params {
-      image = "debian-cloud/debian-10"
+      image = "gcp-worker-vm"
     }
   }
 
@@ -294,5 +286,4 @@ resource "google_compute_instance" "worker_vm" {
   metadata = {
         ssh-keys = "resinfra:${file(var.path_public_key)}"
   }
-  metadata_startup_script = data.template_file.user_data.rendered
 }

@@ -34,7 +34,7 @@ resource "local_file" "hosts_file_creation" {
     gcp_hosts                     = var.gcp_worker_hosts
     hetzner_hosts                 = var.hetzner_worker_hosts
     proxmox_hosts                 = var.proxmox_worker_hosts
-    deployer_vm                   = hcloud_server_network.deployment-vm-into-subnet.ip
+    deployer_vm                   = var.hetzner_deployer_ip
   })
   filename = "${path.module}/cockroach_host.ini"
 }
@@ -48,47 +48,11 @@ data "template_file" "user_data" {
   }
 }
 
-
-// machine only for the deployment of cockroachdb
-resource "hcloud_server" "cockroach_deployer" {
-  name        = "${var.prefix}-hetzner-cockroach-deployer-${random_id.id.hex}"
-  image       = data.hcloud_image.cockroachdb-deploying-ready-snapshot.id
-  server_type = "cpx31"
-  location    = var.location
-  ssh_keys = [
-    var.hcloud_ssh_key_id]
-  user_data = data.template_file.user_data.rendered
-}
-
-
 # Put the deployment VM into the subnet
 resource "hcloud_server_network" "deployment-vm-into-subnet" {
-  server_id = hcloud_server.cockroach_deployer.id
+  server_id = var.hetzner_deployer_id
   subnet_id = var.hetzner_subnet_id
-
-}
-
-# copy over the hosts file to the deployer vm
-resource "null_resource" "hosts_file_copy" {
-  depends_on = [
-    local_file.hosts_file_creation
-  ]
-
-  triggers = {
-    local_file_id = local_file.hosts_file_creation.id
-  }
-
-  connection {
-    type        = "ssh"
-    user        = "resinfra"
-    private_key = file(var.path_private_key)
-    host        = hcloud_server.cockroach_deployer.ipv4_address
-  }
-
-  provisioner "file" {
-    source      = "${path.module}/cockroach_host.ini"
-    destination = "~/cockroach_host.ini"
-  }
+  ip = var.hetzer_deployer_internal_ip
 }
 
 

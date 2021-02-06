@@ -4,18 +4,3 @@
       - libreswan
     state: present
     update_cache: yes
-
-- name: configure LibreSWAN
-  template:
-    src: main.conf.j2
-    dest: /etc/ipsec.d/main.conf
-    mode: 0400
-
-- name: add PSK
-  template:
-    src: ipsec.secrets.j2
-    dest: /etc/ipsec.secrets
-    mode: 0400
-
-- name: apply IPSec changes
-  shell: ipsec restart

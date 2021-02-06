@@ -11,10 +11,6 @@ provider "azurerm" {
   tenant_id       = var.tenant_id
 }
 
-resource "azurerm_resource_group" "main" {
-  name     = "${var.prefix}-multi-cloud-rg"
-  location = var.location
-}
 
 resource "random_id" "id" {
   byte_length = 4
@@ -33,15 +29,15 @@ data "azurerm_subscription" "current" {}
 resource "azurerm_virtual_network" "main" {
   name                = "${var.prefix}-network"
   address_space       = [var.azure_vpc_cidr]
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group
 }
 
 # Create a subnet
 #   This subnet will be used to place the machines
 resource "azurerm_subnet" "vms" {
   name                 = "internal"
-  resource_group_name  = azurerm_resource_group.main.name
+  resource_group_name  = var.resource_group
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = [var.azure_vm_subnet_cidr]
 }
@@ -51,7 +47,7 @@ resource "azurerm_subnet" "vms" {
 #   This subnet will be used for the gateways
 resource "azurerm_subnet" "gateway" {
   name                 = "GatewaySubnet"
-  resource_group_name  = azurerm_resource_group.main.name
+  resource_group_name  = var.resource_group
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = [var.azure_gateway_subnet_cidr]
 }
@@ -61,15 +57,15 @@ resource "azurerm_subnet" "gateway" {
 //resource "azurerm_public_ip" "main" {
 //  name                = "${var.prefix}-public-ip-${random_id.id.hex}"
 //  location            = azurerm_resource_group.main.location
-//  resource_group_name = azurerm_resource_group.main.name
+//  resource_group_name = var.resource_group
 //  allocation_method   = "Dynamic"
 //}
 
 resource "azurerm_network_interface" "main" {
   count               = var.instances
   name                = "${var.prefix}-nic-${count.index + 1}-${random_id.id.hex}"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group
 
   ip_configuration {
     name      = "${var.prefix}-NicConfiguration-${random_id.id.hex}"
@@ -82,8 +78,8 @@ resource "azurerm_network_interface" "main" {
 # Create Network Security Group and rule
 resource "azurerm_network_security_group" "main" {
   name                = "${var.prefix}-security-group-${random_id.id.hex}"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group
 
   security_rule {
     name                       = "SSH"
@@ -116,9 +112,9 @@ resource "azurerm_network_interface_security_group_association" "main" {
 # Create public IP for Gateway
 resource "azurerm_public_ip" "gateway" {
   name                = "${var.prefix}-public-gateway-ip-${random_id.id.hex}"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
-  allocation_method   = "Dynamic"
+  location            = var.location
+  resource_group_name = var.resource_group
+  allocation_method   = "Static"
 }
 
 # Create local network gateway
@@ -126,8 +122,8 @@ resource "azurerm_public_ip" "gateway" {
 #   as well as the ip address of the other gateway.
 resource "azurerm_local_network_gateway" "hetzner_onpremise" {
   name                = "hetzner-onpremise"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group
 
   gateway_address = var.hcloud_gateway_ipv4_address
   address_space   = [var.hcloud_vm_subnet_cidr]
@@ -135,8 +131,8 @@ resource "azurerm_local_network_gateway" "hetzner_onpremise" {
 
 resource "azurerm_local_network_gateway" "proxmox" {
   name                = "proxmox"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group
 
   gateway_address = var.proxmox_gateway_ipv4_address
   address_space   = [var.proxmox_vm_subnet_cidr]
@@ -145,8 +141,8 @@ resource "azurerm_local_network_gateway" "proxmox" {
 # The tunnel to GCP uses BGP, but is not yet highly available.
 resource "azurerm_local_network_gateway" "gcp" {
   name                = "gcp"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group
 
   # Just use the first address until we can establish redundant connections
   gateway_address = var.gcp_ha_gateway_interfaces[0].ip_address
@@ -163,8 +159,8 @@ resource "azurerm_local_network_gateway" "gcp" {
 # Create virtual network gateway
 resource "azurerm_virtual_network_gateway" "main" {
   name                = "${var.prefix}-network-gateway"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group
 
   type     = "Vpn"
   vpn_type = "RouteBased"
@@ -189,7 +185,7 @@ resource "azurerm_virtual_network_gateway" "main" {
   # Instead, we set it through the Azure REST API here.
   provisioner "local-exec" {
     command = <<EOF
-      URL='https://management.azure.com/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${azurerm_resource_group.main.name}/providers/Microsoft.Network/virtualNetworkGateways/${azurerm_virtual_network_gateway.main.name}?api-version=2020-07-01'
+      URL='https://management.azure.com/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group}/providers/Microsoft.Network/virtualNetworkGateways/${azurerm_virtual_network_gateway.main.name}?api-version=2020-07-01'
       AUTH_HEADER="Authorization: Bearer $(az account get-access-token | jq -r '.accessToken')"
       curl -H "$AUTH_HEADER" $URL | \
         jq -M '.properties.bgpSettings.bgpPeeringAddresses[0].customBgpIpAddresses += ["${var.azure_bgp_peer_address}"]' | \
@@ -203,8 +199,8 @@ resource "azurerm_virtual_network_gateway" "main" {
 #   the local network gateway
 resource "azurerm_virtual_network_gateway_connection" "hetzner_onpremise" {
   name                = "hetzner-onpremise-connection"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group
 
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
@@ -215,8 +211,8 @@ resource "azurerm_virtual_network_gateway_connection" "hetzner_onpremise" {
 
 resource "azurerm_virtual_network_gateway_connection" "gcp" {
   name                = "gcp-connection"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group
 
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
@@ -228,8 +224,8 @@ resource "azurerm_virtual_network_gateway_connection" "gcp" {
 
 resource "azurerm_virtual_network_gateway_connection" "proxmox" {
   name                = "proxmox-connection"
-  location            = azurerm_resource_group.main.location
-  resource_group_name = azurerm_resource_group.main.name
+  location            = var.location
+  resource_group_name = var.resource_group
 
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
@@ -246,39 +242,19 @@ resource "azurerm_virtual_network_gateway_connection" "proxmox" {
 */
 
 
-data "template_file" "user_data" {
-  template = file("${path.module}/preconf.yml")
-
-  vars = {
-    username   = "resinfra"
-    public_key = file(var.path_public_key)
-  }
-}
-
-data "template_cloudinit_config" "config" {
-  gzip          = true
-  base64_encode = true
-
-  part {
-    filename     = "cloud-init"
-    content_type = "text/cloud-config"
-    content      = data.template_file.user_data.rendered
-  }
-}
-
 # Create a virtual machine
 resource "azurerm_linux_virtual_machine" "worker_vm" {
   count               = var.instances
   name                = "${var.prefix}-azure-vm-${count.index + 1}-${random_id.id.hex}"
-  resource_group_name = azurerm_resource_group.main.name
-  location            = azurerm_resource_group.main.location
+  resource_group_name = var.resource_group
+  location            = var.location
   size                = var.vm_size
   admin_username      = "adminuser"
   network_interface_ids = [
     azurerm_network_interface.main[count.index].id,
   ]
-  custom_data = data.template_cloudinit_config.config.rendered
 
+  source_image_id = var.azure_worker_vm_image_id
 
   admin_ssh_key {
     username   = "adminuser"
@@ -288,12 +264,5 @@ resource "azurerm_linux_virtual_machine" "worker_vm" {
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
-  }
-
-  source_image_reference {
-    publisher = "Debian"
-    offer     = "debian-10"
-    sku       = "10"
-    version   = "latest"
   }
 }

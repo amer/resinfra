@@ -140,6 +140,7 @@ terraform.rc
 /az/terraform/env.sh
 /az/terraform/draft/
 .idea/
-*.hcl
+*.terraform.lock.hcl
 /tmp/
 /az/terraform/.terraform.lock.hcl
+*packer-vars.json

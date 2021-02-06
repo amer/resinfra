@@ -18,4 +18,7 @@ variable "hcloud_ssh_key_id" {}
 variable "hcloud_strongswan_ansible_updated" {}
 variable "proxmox_strongswan_ansible_updated" {}
 
-variable "git_checkout_branch" {}
+
+variable "hetzer_deployer_internal_ip" {}
+variable "hetzner_deployer_id" {}
+variable "hetzner_deployer_ip" {}

@@ -2,12 +2,33 @@
 This is our root directory for [terraform modules](https://www.terraform.io/docs/modules/index.html).
 We define one module per cloud provider, with each possibly having more submodules.  
 
+## Prerequisites
+Make sure, that the necessary images exist on the specific cloud providers:
+- gateway image:
+  - Hetzner snapshot with ``hetzner-gateway-vm`` label
+  - Proxmox clone named ``proxmox-gateway-vm``   
+- deployer / resinfra image:
+  - Hetzner snapshot with ``hetzner-deployer`` lablel
+- worker vm image:
+  - Azure image
+  - GCP image with name ``gcp-worker-vm``
+  - Hetzner snapshot with ``hetzner-worker-vm`` label
+  - Proxmox clone named ``proxmox-worker-vm``
+  
+If not, use the [packer scripts](../packer) to build the necessary images.
+
+**It is important that the consul leader node is reachable on``10.3.0.254`` as this is hardcoded in the 
+consul clients installed in the images. If you want to change the address of the leader node, either start the consul 
+clients with a different ``retry_join`` configuration or change that parameter when building the images with packer.**
+This is important as this is the central piece of information required to connect all nodes within consul.
+
 ## Usage
 ### TL;DR
 Create and populate a ``terraform.tfvars`` file in this directory. Use 
 [terraform.tfvars.example](terraform.tfvars.example) as a template. 
 
-Set the ``git_checkout_branch`` variable in the `main.tf` to the branch you want to work with. 
+*For Azure:* make sure that the ressource group ``ri-multi-cloud-rg`` exists in the region `westeurope` and 
+set the id for the worker vm image in the top-level ``main.tf`` script if necessary.
 
 To build the entire infrastructure:
 ```
@@ -16,13 +37,11 @@ terraform apply
 
 After the process is finished you should be able to access the following dashboards:
 * Grafana Dashboard: http://<hetzner.gateway_ipv4_address>:3000
-* CockroachDB Dashboard: http://\<any public ip that is not a gateway\>:8080
+* Consul Dashboard: http://\<any public ip that is not a gateway\>:8500
 
-A full build of the infrastructure takes over 30 minutes because the azure gateway is very slow. 
-You can deploy only a part of the infrastructure by using the `-target` parameter. 
-This infrastructure should take less then 30 minutes to complete:
+To build only parts on the infrastructure run:
 ```
-terraform apply -target=module.hetzner -target=module.gcp -target=module.tooling 
+terraform apply -target=module.hetzner -target=module.gcp
 ```
 
 ### Terraform modules
@@ -100,6 +119,5 @@ Monitoring is set up through the builder vm and ansible scripts. A docker contai
 [node exporter](https://prometheus.io/docs/guides/node-exporter/) is installed on all worker vms. On the monitoring 
 machine a prometheus instance is installed to collect metrics from respective targets. Metrics are then 
 displayed in Grafana.
-
 
 

@@ -15,7 +15,3 @@ output "gateway_private_ipv4_address" {
 output "proxmox_private_ip_addresses"{
   value = [for server in proxmox_vm_qemu.proxmox_vm : regex("\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b", server.ipconfig0)]
 }
-
-output "ansible_strongswan_updated"{
-  value = null_resource.strongswan_ansible.id
-}
