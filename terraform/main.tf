@@ -40,7 +40,7 @@ locals {
   path_public_key  = "~/.ssh/ri_key.pub"
 
   azure_resource_group     = "ri-multi-cloud-rg"
-  azure_worker_vm_image_id = "/subscriptions/e6994910-2d0d-4220-ae62-73c0242d7d4d/resourceGroups/ri-multi-cloud-rg/providers/Microsoft.Compute/images/azure-worker-vm"
+  azure_worker_vm_image_id = "/subscriptions/${var.subscription_id}/resourceGroups/${local.azure_resource_group}/providers/Microsoft.Compute/images/azure-worker-vm"
 
   consul_leader_ip = "10.3.0.254"
 }
