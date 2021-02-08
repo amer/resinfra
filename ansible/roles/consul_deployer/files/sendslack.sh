@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # get the json object
 consul_json=$(cat /dev/stdin)
