@@ -20,7 +20,7 @@
       "port": 9090,
       "check": {
         "name": "Health check for Prometheus on port 9090",
-        "http": "http://localhost:9090/healthy",
+        "http": "http://localhost:9090",
         "interval": "10s"
       }
     }
