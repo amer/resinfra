@@ -54,12 +54,11 @@
 - name: copy over sendslack script
   copy:
     src: files/sendslack.sh
-    dest: /home/resinfra/
+    dest: /home/consul/
     mode: a+x
+    owner: consul
 
 - name: start the consul service
   systemd:
-    state: started
     enabled: yes
-    daemon_reload: yes
     name: consul
