@@ -1,0 +1,9 @@
+{
+  "watches": [
+    {
+      "type": "checks",
+      "state": "critical",
+      "args": ["bash", "-c", "/home/resinfra/sendslack.sh"]
+    }
+  ]
+}
