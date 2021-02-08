@@ -51,12 +51,6 @@
     src: files/watch_critical_services_sendslack.json
     dest: /etc/consul.d/
 
-- name: copy over sendmail script
-  copy:
-    src: files/sendmail.sh
-    dest: /home/resinfra/
-    mode: a+x
-
 - name: copy over sendslack script
   copy:
     src: files/sendslack.sh
