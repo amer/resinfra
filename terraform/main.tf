@@ -33,8 +33,8 @@ locals {
   # In the case of Azure, it can be any address, but if it is an APIPA address,
   # it must be 169.254.21/24 or 169.254.22/24. (https://docs.microsoft.com/en-us/azure/vpn-gateway/bgp-howto)
   # FIXME this structure won't make sense any more when we activate BGP for more providers.
-  azure_bgp_peer_address = "169.254.22.1"
-  gcp_bgp_peer_address   = "169.254.22.2"
+  azure_bgp_peer_address = ["169.254.22.1", "169.254.22.5"]
+  gcp_bgp_peer_address   = ["169.254.22.2", "169.254.22.6"]
 
   path_private_key = "~/.ssh/ri_key"
   path_public_key  = "~/.ssh/ri_key.pub"

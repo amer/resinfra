@@ -111,10 +111,11 @@ resource "azurerm_network_interface_security_group_association" "main" {
 
 # Create public IP for Gateway
 resource "azurerm_public_ip" "gateway" {
-  name                = "${var.prefix}-public-gateway-ip-${random_id.id.hex}"
+  count               = 2 #length(var.gcp_ha_gateway_interfaces)
+  name                = "${var.prefix}-public-gateway-ip-${count.index}-${random_id.id.hex}"
   location            = var.location
   resource_group_name = var.resource_group
-  allocation_method   = "Static"
+  allocation_method   = "Dynamic"
 }
 
 # Create local network gateway
@@ -138,21 +139,23 @@ resource "azurerm_local_network_gateway" "proxmox" {
   address_space   = [var.proxmox_vm_subnet_cidr]
 }
 
-# The tunnel to GCP uses BGP, but is not yet highly available.
+# The tunnel to GCP uses BGP, and is highly available
 resource "azurerm_local_network_gateway" "gcp" {
-  name                = "gcp"
+  count = 2 #length(var.gcp_ha_gateway_interfaces)
+
+  name                = "gcp-${count.index}"
   location            = var.location
   resource_group_name = var.resource_group
 
   # Just use the first address until we can establish redundant connections
-  gateway_address = var.gcp_ha_gateway_interfaces[0].ip_address
+  gateway_address = var.gcp_ha_gateway_interfaces[count.index].ip_address
   # We only add the address of the BGP peer to the route table.
   # The rest of the routes will be discovered through BGP.
-  address_space = ["${var.gcp_bgp_peer_address}/32"]
+  address_space = ["${var.gcp_bgp_peer_address[count.index]}/32"]
 
   bgp_settings {
     asn = var.gcp_asn
-    bgp_peering_address = var.gcp_bgp_peer_address
+    bgp_peering_address = var.gcp_bgp_peer_address[count.index]
   }
 }
 
@@ -165,13 +168,19 @@ resource "azurerm_virtual_network_gateway" "main" {
   type     = "Vpn"
   vpn_type = "RouteBased"
 
-  active_active = false
+  active_active = true
   enable_bgp    = true
-  sku           = "Standard"
+  sku           = "HighPerformance"
 
   ip_configuration {
-    name                          = "${var.prefix}-vnetGatewayConfig"
-    public_ip_address_id          = azurerm_public_ip.gateway.id
+    name                          = "${var.prefix}-vnetGatewayConfig-0"
+    public_ip_address_id          = azurerm_public_ip.gateway[0].id
+    private_ip_address_allocation = "Dynamic"
+    subnet_id                     = azurerm_subnet.gateway.id
+  }
+  ip_configuration {
+    name                          = "${var.prefix}-vnetGatewayConfig-1"
+    public_ip_address_id          = azurerm_public_ip.gateway[1].id
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = azurerm_subnet.gateway.id
   }
@@ -183,12 +192,14 @@ resource "azurerm_virtual_network_gateway" "main" {
   # Setting the BGP peer address to an APIPA address is not supported as of 02/2021, see
   # https://github.com/terraform-providers/terraform-provider-azurerm/issues/10262
   # Instead, we set it through the Azure REST API here.
+  # FIXME there should be a better way of "zipping" the bgpPeeringAddresses and the azure_bgp_peer_address array
   provisioner "local-exec" {
     command = <<EOF
       URL='https://management.azure.com/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group}/providers/Microsoft.Network/virtualNetworkGateways/${azurerm_virtual_network_gateway.main.name}?api-version=2020-07-01'
       AUTH_HEADER="Authorization: Bearer $(az account get-access-token | jq -r '.accessToken')"
       curl -H "$AUTH_HEADER" $URL | \
-        jq -M '.properties.bgpSettings.bgpPeeringAddresses[0].customBgpIpAddresses += ["${var.azure_bgp_peer_address}"]' | \
+        jq -M '.properties.bgpSettings.bgpPeeringAddresses[0].customBgpIpAddresses = ["${var.azure_bgp_peer_address[0]}"] |
+               .properties.bgpSettings.bgpPeeringAddresses[1].customBgpIpAddresses = ["${var.azure_bgp_peer_address[1]}"]' | \
         curl -XPUT -H "$AUTH_HEADER" -H 'Content-Type: application/json' --data @- $URL
     EOF
   }
@@ -210,13 +221,15 @@ resource "azurerm_virtual_network_gateway_connection" "hetzner_onpremise" {
 }
 
 resource "azurerm_virtual_network_gateway_connection" "gcp" {
-  name                = "gcp-connection"
+  count = 2 #length(var.gcp_ha_gateway_interfaces)
+
+  name                = "gcp-connection-${count.index}"
   location            = var.location
   resource_group_name = var.resource_group
 
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
-  local_network_gateway_id   = azurerm_local_network_gateway.gcp.id
+  local_network_gateway_id   = azurerm_local_network_gateway.gcp[count.index].id
   enable_bgp                 = true
 
   shared_key = var.shared_key
