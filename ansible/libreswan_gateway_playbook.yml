@@ -4,6 +4,6 @@
   roles:
     - resinfra_user
     - nodeexporter
-    - consul
+    - consul_worker
     - router
     - libreswan
