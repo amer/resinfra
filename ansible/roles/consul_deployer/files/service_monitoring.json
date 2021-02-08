@@ -1,18 +1,6 @@
 {
   "services": [
     {
-      "name": "node_exporter",
-      "tags": [
-        "monitoring"
-      ],
-      "port": 9100,
-      "check": {
-        "name": "Health check for node exporter on port 9100",
-        "http": "http://localhost:9100",
-        "interval": "10s"
-      }
-    },
-    {
       "name": "grafana",
       "tags": [
         "monitoring"

@@ -1,0 +1,10 @@
+data_dir= "/home/consul/consul-data"
+datacenter= "resnet"
+disable_host_node_id=false
+{% if server == 'true' %}
+server=true
+bootstrap_expect=1
+ui=true
+{% else %}
+retry_join= ["{{ leader_node }}"]
+{% endif %}

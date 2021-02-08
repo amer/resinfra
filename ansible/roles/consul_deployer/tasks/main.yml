@@ -43,17 +43,12 @@
 
 - name: copy over the service configuration
   copy:
-    src: files/service_cockroachdb.json
-    dest: /etc/consul.d/
-
-- name: copy over the service configuration
-  copy:
     src: files/service_monitoring.json
     dest: /etc/consul.d/
 
 - name: copy over the service configuration
   copy:
-    src: files/watch_critical_services_sendmail.json
+    src: files/watch_critical_services_sendslack.json
     dest: /etc/consul.d/
 
 - name: copy over sendmail script
