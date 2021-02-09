@@ -3,8 +3,8 @@
   become: true
   roles:
     - resinfra_user
-    - consul_deployer
     - clone_repo
+    - consul_deployer
 
 - hosts: all
   roles:
