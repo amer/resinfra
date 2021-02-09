@@ -13,11 +13,12 @@
     repo: deb [arch=amd64] https://apt.releases.hashicorp.com {{ os_release.stdout }} main
     state: present
 
-- name: install Consul and Miller (Data processing tool)
+- name: install Consul, Miller (Data processing tool) and jq (JSON query tool)
   apt:
     name:
       - consul
       - miller
+      - jq
     state: present
     update_cache: yes
 
@@ -59,11 +60,18 @@
 - name: copy over sendslack script
   copy:
     src: files/sendslack.sh
-    dest: /home/consul/
+    dest: /resinfra/terraform/
     mode: a+x
     owner: consul
 
-- name: start the consul service
+- name: copy over handle_watcher script
+  copy:
+    src: files/handle_watcher.sh
+    dest: /resinfra/terraform/
+    mode: a+x
+    owner: consul
+
+- name: set the consul service for auto start
   systemd:
     enabled: yes
     name: consul

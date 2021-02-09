@@ -16,3 +16,10 @@
   git:
     repo: git@gitserv:amer/resinfra.git
     dest: /resinfra
+
+- name: set open permissions for git repo
+  file:
+    dest: /resinfra
+    mode: u+rwx
+    recurse: yes
+

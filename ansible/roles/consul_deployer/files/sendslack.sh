@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # get the json object
-consul_json=$(cat /dev/stdin)
+consul_json="$1"
+
+#echo $consul_json
 
 # parse the json and get the node name and service names of the critical services
 table_formatted_nodes=$(echo "$consul_json" | mlr --ijson --opprint --barred cut -f Node,ServiceName,Status then group-by Node)
