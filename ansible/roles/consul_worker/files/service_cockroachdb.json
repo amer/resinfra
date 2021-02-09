@@ -9,7 +9,8 @@
       "check": {
         "name": "Health check for CockroachDB on port 8080",
         "http": "http://localhost:8080/health",
-        "interval": "10s"
+        "interval": "20s",
+        "timeout": "10s"
       }
     }
   ]

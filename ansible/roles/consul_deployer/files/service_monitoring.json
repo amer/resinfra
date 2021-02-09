@@ -9,7 +9,8 @@
       "check": {
         "name": "Health check for Grafana on port 3000",
         "http": "http://localhost:3000",
-        "interval": "10s"
+        "interval": "20s",
+        "timeout": "10s"
       }
     },
     {
@@ -21,7 +22,8 @@
       "check": {
         "name": "Health check for Prometheus on port 9090",
         "http": "http://localhost:9090",
-        "interval": "10s"
+        "interval": "20s",
+        "timeout": "10s"
       }
     }
   ]
