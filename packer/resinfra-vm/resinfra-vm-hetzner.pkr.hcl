@@ -2,6 +2,8 @@ variable "hcloud_token" {}
 variable "path_private_key" {}
 variable "path_pub_key" {}
 variable "resinfra_vpc_cidr" {}
+variable "gcp_service_account_path" {}
+variable "terraform_tfvars_path" {}
 
 source "hcloud" "hcloud" {
   token = var.hcloud_token
