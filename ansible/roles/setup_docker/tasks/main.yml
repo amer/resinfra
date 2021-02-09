@@ -66,4 +66,6 @@
 
 - name: install pip docker module to control docker
   pip:
-    name: docker
+    name:
+      - setuptools
+      - docker
