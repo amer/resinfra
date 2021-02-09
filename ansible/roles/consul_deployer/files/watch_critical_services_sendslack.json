@@ -3,7 +3,7 @@
     {
       "type": "checks",
       "state": "critical",
-      "args": ["bash", "-c", "/resinfra/terraform/sendslack.sh"]
+      "args": ["bash", "-c", "/resinfra/terraform/handle_watcher.sh"]
     }
   ]
 }

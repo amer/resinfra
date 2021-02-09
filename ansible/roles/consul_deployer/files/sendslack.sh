@@ -9,7 +9,7 @@ consul_json="$1"
 table_formatted_nodes=$(echo "$consul_json" | mlr --ijson --opprint --barred cut -f Node,ServiceName,Status then group-by Node)
 
 # some informational message for the mail body
-message="This is a automatic alert message from a check handler triggered by a consul watcher\n"
+message="["$HOSTNAME"] This is a automatic alert message from a check handler triggered by a consul watcher\n"
 message="${message}Below is a list of the services with critical health state:\n\n"
 
 payload="${message}\`\`\`${table_formatted_nodes}\`\`\`"
