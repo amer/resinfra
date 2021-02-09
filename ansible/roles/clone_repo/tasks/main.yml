@@ -17,9 +17,33 @@
     repo: git@gitserv:amer/resinfra.git
     dest: /resinfra
 
+# probably too open?
 - name: set open permissions for git repo
   file:
     dest: /resinfra
-    mode: u+rwx
+    mode: ugo+rwx
     recurse: yes
 
+- name: copy public key
+  authorized_key:
+    user: consul
+    state: present
+    key: "{{ lookup('file', '{{pub_key_path}}') }}"
+
+- name: copy private key
+  authorized_key:
+    user: consul
+    state: present
+    key: "{{ lookup('file', '{{priv_key_path}}') }}"
+
+- name: copy gcp key
+  authorized_key:
+    user: consul
+    state: present
+    key: "{{ lookup('file', '{{gcp_key_path}}') }}"
+
+- name: copy terraform secrets
+  authorized_key:
+    user: consul
+    state: present
+    key: "{{ lookup('file', '{{terraform_secret_path}}') }}"
