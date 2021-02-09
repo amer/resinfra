@@ -67,5 +67,5 @@
 - name: install pip docker module to control docker
   pip:
     name:
-      - setuptools
       - docker
+    executable: /usr/bin/python3

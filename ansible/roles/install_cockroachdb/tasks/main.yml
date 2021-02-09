@@ -4,6 +4,11 @@
     source: pull
   become: yes
 
+- name: Create directory
+  file:
+    path: /home/resinfra
+    state: directory
+
 - name: create the command
   template:
     src: cockroach_start.sh.j2
