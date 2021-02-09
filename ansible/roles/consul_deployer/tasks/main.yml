@@ -78,28 +78,28 @@
 
 - name: copy public key to consul user
   copy:
-    src: "{{ lookup('file', '{{pub_key_path}}') }}"
+    src: "{{pub_key_path}}"
     dest: /home/consul/.ssh/ri_key.pub
     mode: 644
     owner: consul
 
 - name: copy private key to consul user
   copy:
-    src: "{{ lookup('file', '{{priv_key_path}}') }}"
+    src: "{{priv_key_path}}"
     dest: /home/consul/.ssh/ri_key
     mode: 600
     owner: consul
 
 - name: copy gcp key to consul user
   copy:
-    src: "{{ lookup('file', '{{gcp_key_path}}') }}"
+    src: "{{gcp_key_path}}"
     dest: /home/consul/.ssh/gcp.json
     mode: 644
     owner: consul
 
 - name: copy terraform secrets
   copy:
-    src: "{{ lookup('file', '{{terraform_secret_path}}') }}"
+    src: "{{terraform_secret_path}}"
     dest: /resinfra/terraform/terraform.tfvars
     mode: 644
     owner: consul
