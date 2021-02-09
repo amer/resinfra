@@ -76,31 +76,40 @@
     enabled: yes
     name: consul
 
+
+- name: ensure consuls .ssh directory exists
+  file:
+    dest: /home/consul/.ssh
+    state: directory
+    mode: '700'
+    owner: consul
+
+
 - name: copy public key to consul user
   copy:
     src: "{{pub_key_path}}"
     dest: /home/consul/.ssh/ri_key.pub
-    mode: 644
+    mode: '644'
     owner: consul
 
 - name: copy private key to consul user
   copy:
     src: "{{priv_key_path}}"
     dest: /home/consul/.ssh/ri_key
-    mode: 600
+    mode: '600'
     owner: consul
 
 - name: copy gcp key to consul user
   copy:
     src: "{{gcp_key_path}}"
     dest: /home/consul/.ssh/gcp.json
-    mode: 644
+    mode: '644'
     owner: consul
 
 - name: copy terraform secrets
   copy:
     src: "{{terraform_secret_path}}"
     dest: /resinfra/terraform/terraform.tfvars
-    mode: 644
+    mode: '644'
     owner: consul
 
