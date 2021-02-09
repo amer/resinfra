@@ -144,7 +144,7 @@ resource "null_resource" "copy_ipsec_files" {
 
   connection {
     type        = "ssh"
-    user        = "root"
+    user        = "resinfra"
     private_key = file(var.path_private_key)
     host        = local.gateway_public_ipv4_address
   }
