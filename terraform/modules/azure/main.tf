@@ -111,7 +111,7 @@ resource "azurerm_network_interface_security_group_association" "main" {
 
 # Create public IP for Gateway
 resource "azurerm_public_ip" "gateway" {
-  count               = 2 #length(var.gcp_ha_gateway_interfaces)
+  count               = var.ha_vpn_tunnel_count
   name                = "${var.prefix}-public-gateway-ip-${count.index}-${random_id.id.hex}"
   location            = var.location
   resource_group_name = var.resource_group
@@ -139,19 +139,18 @@ resource "azurerm_local_network_gateway" "proxmox" {
   address_space   = [var.proxmox_vm_subnet_cidr]
 }
 
-# The tunnel to GCP uses BGP, and is highly available
+# The tunnel to GCP uses BGP, and some things have been prepared to make it highly available. For details, see PR#45.
 resource "azurerm_local_network_gateway" "gcp" {
-  count = 2 #length(var.gcp_ha_gateway_interfaces)
+  count = var.ha_vpn_tunnel_count
 
   name                = "gcp-${count.index}"
   location            = var.location
   resource_group_name = var.resource_group
 
-  # Just use the first address until we can establish redundant connections
   gateway_address = var.gcp_ha_gateway_interfaces[count.index].ip_address
-  # We only add the address of the BGP peer to the route table.
-  # The rest of the routes will be discovered through BGP.
-  address_space = ["${var.gcp_bgp_peer_address[count.index]}/32"]
+  # We add no addresses here, because all routes will be discovered through BGP, with one exception: The route to the
+  # BGP peer is added by Azure automatically and not visible. See also https://docs.microsoft.com/en-us/azure/vpn-gateway/vpn-gateway-bgp-overview#what-should-i-specify-as-my-address-prefixes-for-the-local-network-gateway-when-i-use-bgp
+  address_space = []
 
   bgp_settings {
     asn = var.gcp_asn
@@ -168,7 +167,7 @@ resource "azurerm_virtual_network_gateway" "main" {
   type     = "Vpn"
   vpn_type = "RouteBased"
 
-  active_active = true
+  active_active = false # For High Availability: Set to true if you want load balancing instead of failover
   enable_bgp    = true
   sku           = "HighPerformance"
 
@@ -178,12 +177,13 @@ resource "azurerm_virtual_network_gateway" "main" {
     private_ip_address_allocation = "Dynamic"
     subnet_id                     = azurerm_subnet.gateway.id
   }
-  ip_configuration {
-    name                          = "${var.prefix}-vnetGatewayConfig-1"
-    public_ip_address_id          = azurerm_public_ip.gateway[1].id
-    private_ip_address_allocation = "Dynamic"
-    subnet_id                     = azurerm_subnet.gateway.id
-  }
+//  For High Availability: uncomment if you need more interfaces.
+//  ip_configuration {
+//    name                          = "${var.prefix}-vnetGatewayConfig-1"
+//    public_ip_address_id          = azurerm_public_ip.gateway[1].id
+//    private_ip_address_allocation = "Dynamic"
+//    subnet_id                     = azurerm_subnet.gateway.id
+//  }
 
   bgp_settings {
     asn = var.azure_asn
@@ -221,7 +221,7 @@ resource "azurerm_virtual_network_gateway_connection" "hetzner_onpremise" {
 }
 
 resource "azurerm_virtual_network_gateway_connection" "gcp" {
-  count = 2 #length(var.gcp_ha_gateway_interfaces)
+  count = var.ha_vpn_tunnel_count
 
   name                = "gcp-connection-${count.index}"
   location            = var.location

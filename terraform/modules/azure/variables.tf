@@ -27,6 +27,7 @@ variable "gcp_bgp_peer_address" {}
 variable "azure_bgp_peer_address" {}
 
 variable "gcp_ha_gateway_interfaces" {}
+variable "ha_vpn_tunnel_count" {}
 
 variable "shared_key" {}
 

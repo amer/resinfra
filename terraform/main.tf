@@ -36,6 +36,12 @@ locals {
   azure_bgp_peer_address = ["169.254.22.1", "169.254.22.5"]
   gcp_bgp_peer_address   = ["169.254.22.2", "169.254.22.6"]
 
+  # The number of redundant tunnels to open between two BGP-enabled gateways.
+  # At the moment, only '1' is supported. More information on why this is can be found in PR#45.
+  # If a value >1 is to be used, some code changes need to be made in the Azure and GCP modules. There are comments
+  # marking them as 'For High Availability'. Sensible values are {1,2,4}.
+  ha_vpn_tunnel_count = 1
+
   path_private_key = "~/.ssh/ri_key"
   path_public_key  = "~/.ssh/ri_key.pub"
 
@@ -89,6 +95,7 @@ module "azure" {
   hcloud_vm_subnet_cidr        = local.hetzner_vm_subnet_cidr
   proxmox_gateway_ipv4_address = module.proxmox.gateway_ipv4_address
   proxmox_vm_subnet_cidr       = local.proxmox_vm_subnet_cidr
+  ha_vpn_tunnel_count          = local.ha_vpn_tunnel_count
   shared_key                   = var.shared_key
   prefix                       = var.prefix
   instances                    = var.instances
@@ -98,7 +105,7 @@ module "azure" {
 
 module "gcp" {
   source                       = "./modules/gcp"
-  azure_gateway_ipv4_address   = module.azure.azure_gateway_ipv4_address
+  azure_gateway_ipv4_addresses = module.azure.azure_ha_gateway_ipv4_addresses
   azure_subnet_cidr            = local.azure_vm_subnet_cidr
   azure_asn                    = local.azure_asn
   azure_bgp_peer_address       = local.azure_bgp_peer_address
@@ -112,6 +119,7 @@ module "gcp" {
   hetzner_subnet_cidr          = local.hetzner_vm_subnet_cidr
   proxmox_gateway_ipv4_address = module.proxmox.gateway_ipv4_address
   proxmox_subnet_cidr          = local.proxmox_vm_subnet_cidr
+  ha_vpn_tunnel_count          = local.ha_vpn_tunnel_count
   prefix                       = var.prefix
   shared_key                   = var.shared_key
   path_public_key              = local.path_public_key
