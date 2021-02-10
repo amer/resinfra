@@ -169,7 +169,7 @@ resource "azurerm_virtual_network_gateway" "main" {
 
   active_active = false # For High Availability: Set to true if you want load balancing instead of failover
   enable_bgp    = true
-  sku           = "HighPerformance"
+  sku           = "HighPerformance" # Needed for active/active, can also be "Standard" otherwise
 
   ip_configuration {
     name                          = "${var.prefix}-vnetGatewayConfig-0"
