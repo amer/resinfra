@@ -1,0 +1,13 @@
+[Unit]
+Description=Consul service
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=consul
+ExecStart=consul agent -config-dir=/etc/consul.d  -bind '{{ '{{' }} GetPrivateInterfaces | include "network" "{{ resinfra_vpc_cidr }}" | attr "address" {{ '}}' }}'
+
+[Install]
+WantedBy=multi-user.target

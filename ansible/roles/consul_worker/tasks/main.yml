@@ -13,10 +13,11 @@
     repo: deb [arch=amd64] https://apt.releases.hashicorp.com {{ os_release.stdout }} main
     state: present
 
-- name: install Consul
+- name: install Consul and Miller (Data processing tool)
   apt:
     name:
       - consul
+      - miller
     state: present
     update_cache: yes
 
@@ -30,6 +31,11 @@
     src: files/nodeexporter_service.json
     dest: /etc/consul.d/nodeexporter_service.json
 
+# - name: copy the cockroachdb service file
+#   copy:
+#    src: files/service_cockroachdb.json
+#     dest: /etc/consul.d/
+
 - name: add a consul user
   user:
     name: consul
@@ -42,7 +48,5 @@
 
 - name: start the consul service
   systemd:
-    state: started
     enabled: yes
-    daemon_reload: yes
     name: consul
