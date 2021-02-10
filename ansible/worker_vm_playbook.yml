@@ -3,5 +3,5 @@
   become: true
   roles:
     - resinfra_user
-    - consul
+    - consul_worker
     - nodeexporter

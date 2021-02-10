@@ -1,0 +1,64 @@
+- name: Add Consul GPG apt Key
+  apt_key:
+    url: https://apt.releases.hashicorp.com/gpg
+    state: present
+
+- name: Get release name
+  command: lsb_release -cs
+  register: os_release
+  changed_when: false
+
+- name: Add consul repository
+  apt_repository:
+    repo: deb [arch=amd64] https://apt.releases.hashicorp.com {{ os_release.stdout }} main
+    state: present
+
+- name: install Consul and Miller (Data processing tool)
+  apt:
+    name:
+      - consul
+      - miller
+    state: present
+    update_cache: yes
+
+- name: template the config file
+  template:
+    src: config.hcl.j2
+    dest: /etc/consul.d/consul.hcl
+
+- name: copy the node exporter service file
+  template:
+    src: files/nodeexporter_service.json
+    dest: /etc/consul.d/nodeexporter_service.json
+
+- name: add a consul user
+  user:
+    name: consul
+    state: present
+
+- name: copy over the service file
+  template:
+    src: consul.service.j2
+    dest: /etc/systemd/system/consul.service
+
+- name: copy over the service configuration
+  copy:
+    src: files/service_monitoring.json
+    dest: /etc/consul.d/
+
+- name: copy over the service configuration
+  copy:
+    src: files/watch_critical_services_sendslack.json
+    dest: /etc/consul.d/
+
+- name: copy over sendslack script
+  copy:
+    src: files/sendslack.sh
+    dest: /home/consul/
+    mode: a+x
+    owner: consul
+
+- name: start the consul service
+  systemd:
+    enabled: yes
+    name: consul

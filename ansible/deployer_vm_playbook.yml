@@ -4,7 +4,7 @@
   roles:
     - resinfra_user
     - clone_repo
-    - consul
+    - consul_deployer
 
 - hosts: all
   roles:
