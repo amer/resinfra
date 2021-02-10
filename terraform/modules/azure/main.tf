@@ -154,7 +154,7 @@ resource "azurerm_local_network_gateway" "gcp" {
 
   bgp_settings {
     asn = var.gcp_asn
-    bgp_peering_address = var.gcp_bgp_peer_address[count.index]
+    bgp_peering_address = var.gcp_bgp_peer_addresses[count.index]
   }
 }
 
@@ -198,8 +198,8 @@ resource "azurerm_virtual_network_gateway" "main" {
       URL='https://management.azure.com/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group}/providers/Microsoft.Network/virtualNetworkGateways/${azurerm_virtual_network_gateway.main.name}?api-version=2020-07-01'
       AUTH_HEADER="Authorization: Bearer $(az account get-access-token | jq -r '.accessToken')"
       curl -H "$AUTH_HEADER" $URL | \
-        jq -M '.properties.bgpSettings.bgpPeeringAddresses[0].customBgpIpAddresses = ["${var.azure_bgp_peer_address[0]}"] |
-               .properties.bgpSettings.bgpPeeringAddresses[1].customBgpIpAddresses = ["${var.azure_bgp_peer_address[1]}"]' | \
+        jq -M '.properties.bgpSettings.bgpPeeringAddresses[0].customBgpIpAddresses = ["${var.azure_bgp_peer_addresses[0]}"] |
+               .properties.bgpSettings.bgpPeeringAddresses[1].customBgpIpAddresses = ["${var.azure_bgp_peer_addresses[1]}"]' | \
         curl -XPUT -H "$AUTH_HEADER" -H 'Content-Type: application/json' --data @- $URL
     EOF
   }
