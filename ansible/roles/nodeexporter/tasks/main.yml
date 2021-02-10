@@ -3,8 +3,7 @@
     docker_container:
       name: nodeexporter
       image: prom/node-exporter:latest
-      ports:
-        - 9100:9100
+      network_mode: host
       container_default_behavior: compatibility
       state: started
       restart_policy: always
