@@ -33,8 +33,8 @@ locals {
   # In the case of Azure, it can be any address, but if it is an APIPA address,
   # it must be 169.254.21/24 or 169.254.22/24. (https://docs.microsoft.com/en-us/azure/vpn-gateway/bgp-howto)
   # FIXME this structure won't make sense any more when we activate BGP for more providers.
-  azure_bgp_peer_address = ["169.254.22.1", "169.254.22.5"]
-  gcp_bgp_peer_address   = ["169.254.22.2", "169.254.22.6"]
+  azure_bgp_peer_addresses = ["169.254.22.1", "169.254.22.5"]
+  gcp_bgp_peer_addresses   = ["169.254.22.2", "169.254.22.6"]
 
   # The number of redundant tunnels to open between two BGP-enabled gateways.
   # At the moment, only '1' is supported. More information on why this is can be found in PR#45.
@@ -85,11 +85,11 @@ module "azure" {
   azure_vm_subnet_cidr         = local.azure_vm_subnet_cidr
   azure_vpc_cidr               = local.azure_cidr
   azure_asn                    = local.azure_asn
-  azure_bgp_peer_address       = local.azure_bgp_peer_address
+  azure_bgp_peer_addresses     = local.azure_bgp_peer_addresses
   gcp_gateway_ipv4_address     = module.gcp.gcp_gateway_ipv4_address
   gcp_vm_subnet_cidr           = local.gcp_vm_subnet_cidr
   gcp_asn                      = local.gcp_asn
-  gcp_bgp_peer_address         = local.gcp_bgp_peer_address
+  gcp_bgp_peer_addresses       = local.gcp_bgp_peer_addresses
   gcp_ha_gateway_interfaces    = module.gcp.gcp_ha_gateway_interfaces
   hcloud_gateway_ipv4_address  = module.hetzner.gateway_ipv4_address
   hcloud_vm_subnet_cidr        = local.hetzner_vm_subnet_cidr
@@ -108,13 +108,13 @@ module "gcp" {
   azure_gateway_ipv4_addresses = module.azure.azure_ha_gateway_ipv4_addresses
   azure_subnet_cidr            = local.azure_vm_subnet_cidr
   azure_asn                    = local.azure_asn
-  azure_bgp_peer_address       = local.azure_bgp_peer_address
+  azure_bgp_peer_address       = local.azure_bgp_peer_addresses
   gcp_project_id               = var.gcp_project_id
   gcp_region                   = var.gcp_region
   gcp_service_account_path     = var.gcp_service_account_path
   gcp_subnet_cidr              = local.gcp_vm_subnet_cidr
   gcp_asn                      = local.gcp_asn
-  gcp_bgp_peer_address         = local.gcp_bgp_peer_address
+  gcp_bgp_peer_address         = local.gcp_bgp_peer_addresses
   hetzner_gateway_ipv4_address = module.hetzner.gateway_ipv4_address
   hetzner_subnet_cidr          = local.hetzner_vm_subnet_cidr
   proxmox_gateway_ipv4_address = module.proxmox.gateway_ipv4_address
