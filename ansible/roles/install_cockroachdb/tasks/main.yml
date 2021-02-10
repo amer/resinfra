@@ -1,8 +1,8 @@
-- name: pull cockroachdb image
-  docker_image:
-    name: cockroachdb/cockroach:v20.2.3 
-    source: pull
-  become: yes
+#- name: pull cockroachdb image
+#  docker_image:
+#    name: cockroachdb/cockroach:v20.2.3
+#    source: pull
+#  become: yes
 
 - name: Create directory
   file:
