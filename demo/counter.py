@@ -1,4 +1,5 @@
 import time
+import os
 import psycopg2
 from psycopg2.errors import SerializationFailure
 
@@ -23,22 +24,21 @@ def insert_value(value, conn):
 
 
 def main():
-    conn = psycopg2.connect("postgresql://root@127.0.0.1:26257/postgres?sslmode=disable")
-    conn2 = psycopg2.connect("postgresql://root@127.0.0.1:26258/postgres?sslmode=disable")
+    hetznerdb = psycopg2.connect(os.environ['HETZNERDB'])
+    gcpdb = psycopg2.connect(os.environ['GCPDB'])
 
-    create_counter(conn)
-    reset_table(conn)
+    create_counter(hetznerdb)
+    reset_table(hetznerdb)
 
     for x in range(1000):
         if x % 2 == 0:
-            print(x, "even")
-            insert_value(x, conn)
+            print(f"Insert {x} into hetzner")
+            insert_value(x, hetznerdb)
             time.sleep(1)
         else:
-            print(x, "odd")
-            insert_value(x, conn2)
+            print(f"Insert {x} into gcp")
+            insert_value(x, gcpdb)
             time.sleep(1)
 
 if __name__ == "__main__":
     main()
-
