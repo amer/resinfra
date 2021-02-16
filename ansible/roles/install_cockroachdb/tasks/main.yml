@@ -1,8 +1,13 @@
-- name: pull cockroachdb image
-  docker_image:
-    name: cockroachdb/cockroach:v20.2.3 
-    source: pull
-  become: yes
+#- name: pull cockroachdb image
+#  docker_image:
+#    name: cockroachdb/cockroach:v20.2.3
+#    source: pull
+#  become: yes
+
+- name: Create directory
+  file:
+    path: /home/resinfra
+    state: directory
 
 - name: create the command
   template:
@@ -19,7 +24,7 @@
   docker_container:
     name: cockroachdb
     image: cockroachdb/cockroach:v20.2.3
-    container_default_behavior: compatibility
+    # container_default_behavior: compatibility
     ports: 
       - 8080:8080
       - 26257:26257
