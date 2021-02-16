@@ -4,7 +4,7 @@
   roles:
     - setup_docker
 
-- hosts: all
+- hosts: cockroach_main_servers
   roles:
     - install_cockroachdb
 
