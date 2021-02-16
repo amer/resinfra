@@ -18,6 +18,14 @@ Inside the `terraform` directory, run
 terraform apply -target=module.gcp -target=module.hetzner
 ```
 
+SSH into the deployer machine on hetzner. 
+
+```
+cd /resinfra/
+git pull
+git checkout benchmarking
+```
+
 Run ansible playbook with
 ```
 ansible-playbook cockroach_playbook.yml -i ~/cockroach_host.ini \
@@ -25,7 +33,6 @@ ansible-playbook cockroach_playbook.yml -i ~/cockroach_host.ini \
                 --private-key ~/.ssh/vm_key \
                 --extra-vars 'priv_ip_list='10.3.0.1,10.3.0.2' ansible_python_interpreter=/usr/bin/python3'
 ```
-no setup tools in docker!
 
 Copy second key
 ```
@@ -35,4 +42,3 @@ scp -i ~/.ssh/ri_key /home/tim/.ssh/ri_key root@157.90.123.202:/root/.ssh/ri_key
 Private IP addresses
 * GCP: 10.2.0.2, 10.2.0.3
 * Hetzner: 10.3.0.1, 10.3.0.2
-
