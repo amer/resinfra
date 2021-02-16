@@ -23,21 +23,25 @@ SSH into the deployer machine on hetzner.
 ```
 cd /resinfra/
 git pull
-git checkout benchmarking
+git checkout demonstration
+cd ansible
+```
+
+Change or add to `cockroach_hosts.ini`
+```
+ansible_ssh_private_key_file=/root/.ssh/ri_key2 ansible_ssh_user=resinfra
 ```
 
 Run ansible playbook with
 ```
-ansible-playbook cockroach_playbook.yml -i ~/cockroach_host.ini \
-                -u root --ssh-common-args='-o StrictHostKeyChecking=no' \
-                --private-key ~/.ssh/vm_key \
-                --extra-vars 'priv_ip_list='10.3.0.1,10.3.0.2' ansible_python_interpreter=/usr/bin/python3'
+ansible-playbook cockroach_playbook.yml -i cockroach_hosts.ini -u root --ssh-common-args='-o StrictHostKeyChecking=no' --private-key ~/.ssh/ri_key --extra-vars 'priv_ip_list=10.2.0.2,10.2.0.3,10.3.0.1,10.3.0.2  ansible_python_interpreter=/usr/bin/python3'   
 ```
 
-Copy second key
+If your key is not there or you have different keys for different providers, copy it
 ```
 scp -i ~/.ssh/ri_key /home/tim/.ssh/ri_key root@157.90.123.202:/root/.ssh/ri_key2
 ```
+
 
 Private IP addresses
 * GCP: 10.2.0.2, 10.2.0.3
