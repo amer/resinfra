@@ -114,9 +114,15 @@ resource "azurerm_public_ip" "gateway" {
   name                = "${var.prefix}-public-gateway-ip-${random_id.id.hex}"
   location            = var.location
   resource_group_name = var.resource_group
-  allocation_method   = "Static"
+  allocation_method   = "Dynamic"
 }
 
+resource "azurerm_public_ip" "gateway-non-bgp" {
+  name                = "${var.prefix}-public-gateway-non-bpg-ip-${random_id.id.hex}"
+  location            = var.location
+  resource_group_name = var.resource_group
+  allocation_method   = "Dynamic"
+}
 # Create local network gateway
 #   This is the place where we will store the IP Adresse range of the other network
 #   as well as the ip address of the other gateway.
@@ -145,15 +151,9 @@ resource "azurerm_local_network_gateway" "gcp" {
   resource_group_name = var.resource_group
 
   # Just use the first address until we can establish redundant connections
-  gateway_address = var.gcp_ha_gateway_interfaces[0].ip_address
-  # We only add the address of the BGP peer to the route table.
-  # The rest of the routes will be discovered through BGP.
-  address_space = ["${var.gcp_bgp_peer_address}/32"]
+  gateway_address = var.gcp_gateway_ipv4_address
+  address_space = [var.gcp_vm_subnet_cidr]
 
-  bgp_settings {
-    asn = var.gcp_asn
-    bgp_peering_address = var.gcp_bgp_peer_address
-  }
 }
 
 # Create virtual network gateway
@@ -166,7 +166,7 @@ resource "azurerm_virtual_network_gateway" "main" {
   vpn_type = "RouteBased"
 
   active_active = false
-  enable_bgp    = true
+  enable_bgp    = false
   sku           = "Standard"
 
   ip_configuration {
@@ -176,23 +176,9 @@ resource "azurerm_virtual_network_gateway" "main" {
     subnet_id                     = azurerm_subnet.gateway.id
   }
 
-  bgp_settings {
-    asn = var.azure_asn
-  }
 
-  # Setting the BGP peer address to an APIPA address is not supported as of 02/2021, see
-  # https://github.com/terraform-providers/terraform-provider-azurerm/issues/10262
-  # Instead, we set it through the Azure REST API here.
-  provisioner "local-exec" {
-    command = <<EOF
-      URL='https://management.azure.com/subscriptions/${data.azurerm_subscription.current.subscription_id}/resourceGroups/${var.resource_group}/providers/Microsoft.Network/virtualNetworkGateways/${azurerm_virtual_network_gateway.main.name}?api-version=2020-07-01'
-      AUTH_HEADER="Authorization: Bearer $(az account get-access-token | jq -r '.accessToken')"
-      curl -H "$AUTH_HEADER" $URL | \
-        jq -M '.properties.bgpSettings.bgpPeeringAddresses[0].customBgpIpAddresses += ["${var.azure_bgp_peer_address}"]' | \
-        curl -XPUT -H "$AUTH_HEADER" -H 'Content-Type: application/json' --data @- $URL
-    EOF
-  }
 }
+
 
 # Create the connection between the gateways.
 #   Internally, this is realized by connecting the virtual network gateway with
@@ -217,7 +203,6 @@ resource "azurerm_virtual_network_gateway_connection" "gcp" {
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
   local_network_gateway_id   = azurerm_local_network_gateway.gcp.id
-  enable_bgp                 = true
 
   shared_key = var.shared_key
 }
@@ -264,5 +249,6 @@ resource "azurerm_linux_virtual_machine" "worker_vm" {
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
+    disk_size_gb         = 50
   }
 }
