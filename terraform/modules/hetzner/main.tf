@@ -162,7 +162,7 @@ resource "hcloud_network_route" "proxmox_via_gateway" {
 */
 
 resource "hcloud_server" "worker-vm" {
-  count = var.instances
+  count = 3
   name = "${var.prefix}-hetzner-vm-${count.index + 1}-${random_id.id.hex}"
   image = data.hcloud_image.worker-image.id
   server_type = var.server_type
@@ -173,7 +173,7 @@ resource "hcloud_server" "worker-vm" {
 
 # Put the VMs into the subnet
 resource "hcloud_server_network" "worker-vms-into-subnet" {
-  count = var.instances
+  count = 3
   server_id = hcloud_server.worker-vm[count.index].id
   subnet_id = hcloud_network_subnet.main.id
 }
