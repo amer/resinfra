@@ -4,6 +4,33 @@ For in depth data, see the [data directory](data).
 
 Performed on 8 nodes, 2 on each provider, with 2 vCPUs each.
 
+## Import
+
+Executed from a machine outside the cluster, and limited to only 8 parallel connections instead of 16 to improve stability.
+
+`./workload init tpcc --warehouses 100 --drop --init-conns 8 "postgres://root@159.69.84.172:26257?sslmode=disable"`
+
+### Durations
+
+```
+I210220 11:13:06.293201 1 workload/workloadsql/dataload.go:146  [-] 1  imported warehouse (2s, 100 rows)
+I210220 11:13:06.669586 1 workload/workloadsql/dataload.go:146  [-] 2  imported district (0s, 1000 rows)
+I210220 11:35:43.247276 1 workload/workloadsql/dataload.go:146  [-] 3  imported customer (22m37s, 3000000 rows)
+I210220 11:37:47.337529 1 workload/workloadsql/dataload.go:146  [-] 4  imported history (2m4s, 3000000 rows)
+I210220 11:41:56.850559 1 workload/workloadsql/dataload.go:146  [-] 5  imported order (4m10s, 3000000 rows)
+I210220 11:42:12.983979 1 workload/workloadsql/dataload.go:146  [-] 6  imported new_order (16s, 900000 rows)
+I210220 11:42:16.301766 1 workload/workloadsql/dataload.go:146  [-] 7  imported item (3s, 100000 rows)
+I210220 11:54:01.685382 1 workload/workloadsql/dataload.go:146  [-] 8  imported stock (11m45s, 10000000 rows)
+I210220 12:12:54.479516 1 workload/workloadsql/dataload.go:146  [-] 9  imported order_line (18m53s, 30005985 rows)
+```
+
+### system metrics
+![](media/init/network.png)
+
+![](media/init/cpu.png)
+
+![](media/init/mem.png)
+
 ## Benchmark
 
 ### Summary
