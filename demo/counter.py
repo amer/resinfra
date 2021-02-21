@@ -13,7 +13,7 @@ def print_exception(err):
 def create_counter(conn):
     with conn.cursor() as cur:
         cur.execute(
-            "CREATE TABLE IF NOT EXISTS counter (id SERIAL PRIMARY KEY, value INT, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())"
+            "CREATE TABLE IF NOT EXISTS counter (id SERIAL PRIMARY KEY, value TEXT, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())"
             )
     conn.commit()
 
@@ -54,9 +54,11 @@ def main():
 
     if (provider == "hetzner"):
         create_counter(db)
-        reset_table(db)
+        # reset_table(db)
 
     provider_id = 0 if provider == "hetzner" else 1
+    # insert_symbol = "H" if provider == "hetzner" else "G"
+    insert_symbol = u"\U0001F9A7" if provider == "hetzner" else u"\U0001F34C"
 
     for x in range(provider_id, 1000, 2):
 
@@ -67,19 +69,21 @@ def main():
 
         # we are sure to have a connection here
         try: 
-            insert_value(x, db)
-            print(f"Inserted {x} into {provider}")
+            insert_value(insert_symbol, db)
+            print(f"Inserted {insert_symbol} into {provider}")
             time.sleep(1)
         except psycopg2.OperationalError as err:
             # print_exception(err)
-            print(f"FAILED to insert {x} into {provider}")
+            print(f"FAILED to insert {insert_symbol} into {provider}")
             print(f"operational error {err}")
             db = get_connection(connection_string)
         except AttributeError as err:
-            print(f"FAILED to insert {x} into {provider}")
+            print(f"FAILED to insert {insert_symbol} into {provider}")
             db = get_connection(connection_string)
         except Exception as err:
             print(f"Generic exception {err}")
+
+    db.close()
                 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ import time
 import sys
 import os
 import psycopg2
+import emoji
 
 
 def get_connection(conn_str):
@@ -54,7 +55,7 @@ def main():
 
 
         print(f"Hetzner:{hetzner}")
-        print(f"GCP:{gcp}")
+        print(f'{"GCP:": <7} {gcp}')
         time.sleep(1)
 
 if __name__ == "__main__":
