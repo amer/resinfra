@@ -1,0 +1,9 @@
+[cockroach_cluster_initializer]
+10.3.0.2
+
+[cockroach_main_servers]
+10.3.0.2
+10.3.0.3
+10.3.0.4
+10.2.0.2 ansible_ssh_private_key_file=/root/.ssh/ri_key2 ansible_ssh_user=resinfra
+10.2.0.3 ansible_ssh_private_key_file=/root/.ssh/ri_key2 ansible_ssh_user=resinfra

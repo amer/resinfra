@@ -32,4 +32,5 @@
       - "~/cockroach-data:/cockroach/cockroach-data"
     command: "{{ slurpfile['content'] | b64decode }}"
     state: started
+    restart_policy: always
   become: yes

@@ -26,6 +26,7 @@ def insert_value(value, conn):
     try:
         with conn.cursor() as cur:
             cur.execute("INSERT INTO counter (value) VALUES (%s)", (value,))
+        conn.commit()
     except AttributeError as err:
         raise
 
@@ -71,6 +72,7 @@ def main():
             time.sleep(1)
         except psycopg2.OperationalError as err:
             # print_exception(err)
+            print(f"FAILED to insert {x} into {provider}")
             print(f"operational error {err}")
             db = get_connection(connection_string)
         except AttributeError as err:
