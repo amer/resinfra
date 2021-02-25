@@ -32,8 +32,11 @@ conn to-gcp
     leftsubnet=${local_cidr}
     right=${gcp_remote_gateway_ip}
     rightsubnet=${gcp_remote_cidr}
+    # If we didn't change the esp default calue, re-keying would fail because the default value does not propose a DH curve.
+    # See issue #48.
+    esp=aes128-sha1-modp1024
 
-conn to-proxmox-or-hetzner-depending-on-what-this-is
+conn to-proxmox
     left=${public_gateway_ip}
     leftsubnet=${local_cidr}
     right=${other_strongswan_gateway_ip}
