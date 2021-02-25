@@ -1,0 +1,81 @@
+\addchap{Annex}
+
+\begin{appendix}
+
+\lstset{language=,caption=Sourcecode Listing,captionpos=b,
+label=yahoowidgetkon,showstringspaces=false,
+basicstyle={\fontfamily{pcr}\selectfont\footnotesize}}
+\begin{lstlisting}
+<?xml version="1.0" encoding="UTF-8"?>
+<widget>
+	 <debug>off</debug>
+	 <window name="myWindow" title="Hello Widget" visible="true">
+		 <height>120</height>
+		 <width>320</width>
+		 <image src="Resources/orangebg.png">
+			<name>orangebg</name>
+			<hOffset>0</hOffset>
+			<vOffset>0</vOffset>
+		</image>
+		 <text>
+			 <name>myText</name>
+			 <data>Hello Widget</data>
+			 <color>#000000</color>
+			 <size>20</size>
+			 <vOffset>50</vOffset>
+			 <hOffset>120</hOffset>
+		 </text>
+	</window>
+</widget>
+\end{lstlisting}
+
+\newpage
+
+
+\lstset{caption=SIP request and response packet\cite{SIPBook},
+captionpos=b,label=sippacket,showstringspaces=false,
+basicstyle={\fontfamily{pcr}\selectfont\footnotesize}}
+\begin{lstlisting}
+INVITE sip:bob@network.org SIP/2.0
+Via: SIP/2.0/UDP 100.101.102.103:5060;branch=z9hG4bKmp17a
+Max-Forwards: 70
+To: Bob <sip:bob@network.org>
+From: Alice <sip:alice@ims-network.org>;tag=42
+Call-ID: 10@100.101.102.103
+CSeq: 1 INVITE
+Subject: How are you?
+Contact: <sip:xyz@network.org>
+Content-Type: application/sdp
+Content-Length: 159
+v=0
+o=alice 2890844526 2890844526 IN IP4 100.101.102.103
+s=Phone Call
+t=0 0
+c=IN IP4 100.101.102.103
+m=audio 49170 RTP/AVP 0
+a=rtpmap:0 PCMU/8000
+
+SIP/2.0 200 OK
+Via: SIP/2.0/UDP proxy.network.org:5060;branch=z9hG4bK83842.1
+;received=100.101.102.105
+Via: SIP/2.0/UDP 100.101.102.103:5060;branch=z9hG4bKmp17a
+To: Bob <sip:bob@network.org>;tag=314159
+From: Alice <sip:alice@network.org>;tag=42
+Call-ID: 10@100.101.102.103
+CSeq: 1 INVITE
+Contact: <sip:foo@network.org>
+Content-Type: application/sdp
+Content-Length: 159
+v=0
+o=bob 2890844526 2890844526 IN IP4 200.201.202.203
+s=Phone Call
+c=IN IP4 200.201.202.203
+t=0 0
+m=audio 49172 RTP/AVP 0
+a=rtpmap:0 PCMU/8000
+\end{lstlisting}
+
+
+\end{appendix}
+
+\endinput
