@@ -3,7 +3,10 @@ This is our root directory for [terraform modules](https://www.terraform.io/docs
 We define one module per cloud provider, with each possibly having more submodules.  
 
 ## Prerequisites
-Make sure, that the necessary images exist on the specific cloud providers:
+
+### VM images
+
+Make sure that the necessary images exist on the specific cloud providers:
 - gateway image:
   - Hetzner snapshot with ``hetzner-gateway-vm`` label
   - Proxmox clone named ``proxmox-gateway-vm``   
@@ -21,6 +24,11 @@ If not, use the [packer scripts](../packer) to build the necessary images.
 consul clients installed in the images. If you want to change the address of the leader node, either start the consul 
 clients with a different ``retry_join`` configuration or change that parameter when building the images with packer.**
 This is important as this is the central piece of information required to connect all nodes within consul.
+
+### Networking
+
+You need to be logged in to the Azure CLI with an account that is authorized to change resources through the Azure REST
+API.
 
 ## Usage
 ### TL;DR
