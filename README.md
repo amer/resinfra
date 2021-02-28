@@ -35,8 +35,13 @@ For each provider, generate the required credentials and put them in
 [`terraform/terraform.tfvars`](terraform/terraform.tfvars) and [`packer/packer-vars.json`](packer/packer-vars.json). 
 There are guides available on how to generate credentials for 
 [Azure](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/azure_cli), 
-[GCP](https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/getting_started), and 
-[Hetzner](https://docs.hetzner.cloud/).
+[GCP](https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/getting_started#adding-credentials), and 
+[Hetzner](https://docs.hetzner.cloud/). For GCP, instead of setting an environment variable to the path of the 
+service account JSON, add the path to the following three configuration files:
+
+- [`terraform/terraform.tfvars`](terraform/terraform.tfvars)
+- [`terraform/main.tf`](terraform/main.tf)  
+- [`packer/packer-vars.json`](packer/packer-vars.json)
 
 ### Building images
 

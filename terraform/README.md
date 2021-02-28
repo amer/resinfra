@@ -35,7 +35,8 @@ API.
 ## Usage
 ### TL;DR
 Create and populate a ``terraform.tfvars`` file in this directory. Use 
-[terraform.tfvars.example](terraform.tfvars.example) as a template. 
+[terraform.tfvars.example](terraform.tfvars.example) as a template. Set the path to the GCP service account JSON file in 
+[main.tf](main.tf).
 
 To build the entire infrastructure:
 ```
