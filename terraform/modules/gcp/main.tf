@@ -222,6 +222,7 @@ resource "google_compute_route" "hetzner-route" {
   name       = "${var.prefix}-hetzner-route-${random_id.id.hex}"
   network    = google_compute_network.main.self_link
   dest_range = var.hetzner_subnet_cidr
+  priority   = 0
 
   next_hop_vpn_tunnel = google_compute_vpn_tunnel.hetzner_tunnel.self_link
 }
@@ -244,9 +245,10 @@ resource "google_compute_vpn_tunnel" "proxmox_tunnel" {
   ]
 }
 resource "google_compute_route" "proxmox-route" {
-  name       = "${var.prefix}-proxmos-route-${random_id.id.hex}"
+  name       = "${var.prefix}-proxmox-route-${random_id.id.hex}"
   network    = google_compute_network.main.self_link
   dest_range = var.proxmox_subnet_cidr
+  priority   = 0
 
   next_hop_vpn_tunnel = google_compute_vpn_tunnel.proxmox_tunnel.self_link
 }
