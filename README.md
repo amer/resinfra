@@ -5,7 +5,7 @@ part of the module "Advanced Distributed System Prototyping" at the Technical Un
 2020/2021.
 
 The main goal of this project is to build a more resilient infrastructure by spanning clouds. To achieve this goal, we 
-deploy virtual machines across different cloud providers and connect them together. Afterwards, we deploy monitoring 
+deploy virtual machines across different cloud providers and span a single network over all of them. Afterwards, we deploy monitoring 
 solutions and create watchdogs that ensure that failed infrastructure is re-created.
 
 ## How does it work?
