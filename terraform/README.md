@@ -25,6 +25,8 @@ consul clients installed in the images. If you want to change the address of the
 clients with a different ``retry_join`` configuration or change that parameter when building the images with packer.**
 This is important as this is the central piece of information required to connect all nodes within consul.
 
+For Azure: The images need to exist in the `westeurope` region.
+
 ### Networking
 
 You need to be logged in to the Azure CLI with an account that is authorized to change resources through the Azure REST
