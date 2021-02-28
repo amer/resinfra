@@ -2,6 +2,7 @@ variable "hcloud_token" {}
 variable "client_id" {}
 variable "client_secret" {}
 variable "subscription_id" {}
+variable "azure_resource_group" {}
 variable "gcp_project_id" {}
 variable "gcp_region" {}
 variable "gcp_service_account_path" {}

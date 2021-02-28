@@ -35,9 +35,6 @@ API.
 Create and populate a ``terraform.tfvars`` file in this directory. Use 
 [terraform.tfvars.example](terraform.tfvars.example) as a template. 
 
-*For Azure:* make sure that the ressource group ``ri-multi-cloud-rg`` exists in the region `westeurope` and 
-set the id for the worker vm image in the top-level ``main.tf`` script if necessary.
-
 To build the entire infrastructure:
 ```
 terraform apply

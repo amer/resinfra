@@ -28,9 +28,7 @@ First, install the following software on your machine:
 
 We support Azure, GCP, Hetzner Cloud, and Proxmox. 
 
-- On Azure, create a subscription and a resource group. The resource group should be used exclusively for by tool.
-  Set the `azure_resource_group` variable in [`terraform/main.tf`](terraform/main.tf) to the resource group name you 
-  chose.
+- On Azure, create a subscription (or re-use an existing one) and a resource group.
 - On GCP and Hetzner Cloud, create a project.
 
 For each provider, generate the required credentials and put them in 
