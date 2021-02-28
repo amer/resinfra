@@ -23,6 +23,7 @@ First, install the following software on your machine:
 - [Hashicorp](https://www.hashicorp.com/) Terraform and Packer
 - [Ansible](https://docs.ansible.com/ansible/2.5/installation_guide/intro_installation.html)
 - [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+- (optional) [Google Cloud CLI] (https://cloud.google.com/sdk/docs/quickstart)
 
 ### Setting up projects on each provider
 
