@@ -71,4 +71,4 @@ $ terraform apply
 ### Accessing the deployed application
 
 The application is now deployed on several worker VMs spread across different cloud providers. You should be able to 
-access it through any of their public IP addresses.
+access it through any of their public IP addresses. The IP addresses are displayed at the end of `terraform apply`.
