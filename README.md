@@ -10,7 +10,7 @@ solutions and create watchdogs that ensure that failed infrastructure is re-crea
 
 ## How does it work?
 
-For the automatic deployment of the infrastructure we use a tool called [Terraform](https://www.terraform.io/).
+For the automatic deployment of the infrastructure we use a tool called [Terraform](https://www.terraform.io/). We build the infrastructure based on custom linux images that we build with [Packer](https://www.packer.io/).
 After we deployed the infrastructure, we use [Ansible](https://www.ansible.com/) to deploy the application on top
 of the infrastructure.
 
