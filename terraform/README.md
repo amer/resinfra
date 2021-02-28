@@ -11,7 +11,7 @@ Make sure that the necessary images exist on the specific cloud providers:
   - Hetzner snapshot with ``hetzner-gateway-vm`` label
   - Proxmox clone named ``proxmox-gateway-vm``   
 - deployer / resinfra image:
-  - Hetzner snapshot with ``hetzner-deployer`` lablel
+  - Hetzner snapshot with ``hetzner-deployer`` label
 - worker vm image:
   - Azure image
   - GCP image with name ``gcp-worker-vm``
