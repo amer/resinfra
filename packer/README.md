@@ -22,7 +22,7 @@ The following images can be built:
   - Hetzner snapshot with ``hetzner-worker-vm`` label
   - Proxmox clone named ``proxmox-worker-vm``
   
-Images are build according to the respective packer files found in this folder. For all system components, we use Debian
+Images are built according to the respective packer files found in this folder. For all system components, we use Debian
 10 as the base image. All images are built so that new 
 machines seamlessly integrate into the final product. The central tool is Consul, which collects all nodes and publishes
 their information to other services and tools used (such as prometheus).
