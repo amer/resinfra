@@ -45,3 +45,5 @@ variable "path_private_key" {}
 variable "path_public_key" {}
 
 variable "consul_leader_ip" {}
+
+variable "machine_type" {}

@@ -18,7 +18,7 @@ data "hcloud_image" "worker-image" {
 }
 
 data "hcloud_image" "deployer-snapshot" {
-  with_selector = "hetzner-deployer"
+  with_selector = "hetzner-benchmark"
   most_recent = true
 }
 
@@ -79,7 +79,7 @@ resource "hcloud_server_network" "deployer-vm" {
 resource "hcloud_server" "gateway" {
   name = "${var.prefix}-hetzner-gateway-vm-${random_id.id.hex}"
   image = data.hcloud_image.gateway-snapshot.id
-  server_type = "cx11"
+  server_type = var.machine_type
   location = "nbg1"
   ssh_keys = [
     hcloud_ssh_key.default.id]
