@@ -46,7 +46,7 @@ service account JSON, add the path to the following three configuration files:
 
 ### Setting up remote terraform state storage
 
-By default, the terraform state is stored in a bucket on GCP. This is required to make use of our system's self-healing capabilities, and a best practice for production deployments using terraform. For most development tasks, it is ok to delete the `backend` block in [`terraform/main.tf`](terraform/main.tf). For other use cases, follow the instructions:
+By default, the terraform state is stored in a bucket on GCP. This is required to make use of our system's self-healing capabilities, and a best practice for production deployments using terraform. For most development tasks, it is ok to delete the `backend` block in [`terraform/main.tf`](terraform/main.tf). For other use cases, follow the instructions (the bucket needs to exist before you run `terraform init`):
 
 1. [Create a bucket](https://console.cloud.google.com/storage/create-bucket) in your GCP project. 
 2. Make sure that your GCP service account has read / write permission for it. 
