@@ -190,7 +190,7 @@ resource "null_resource" "cockroach_ansible" {
       <<EOF
         ansible-playbook cockroach_playbook.yml \
                 -i ~/cockroach_host.ini \
-                -u root \
+                -u resinfra \
                 --ssh-common-args='-o StrictHostKeyChecking=no' \
                 --private-key ~/.ssh/vm_key \
                 --extra-vars 'priv_ip_list='${join(",", module.azure.azure_private_ip_addresses, module.gcp.gcp_private_ip_addresses, module.hetzner.hcloud_private_ip_addresses, module.proxmox.proxmox_private_ip_addresses)}' ansible_python_interpreter=/usr/bin/python3'
