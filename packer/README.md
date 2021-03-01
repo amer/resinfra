@@ -17,7 +17,7 @@ The following images can be built:
   - Hetzner snapshot with ``hetzner-deployer`` label
   - Hetzner snapshot with `hetzner-benchmark` label. Similar to ``hetzner-deployer`` but based on Ubuntu 20.04 LTS
 - worker vm images:
-  - Azure image in the respective ressource group
+  - Azure image ``azure-worker-vm`` in the respective resource group
   - GCP image with name ``gcp-worker-vm``
   - Hetzner snapshot with ``hetzner-worker-vm`` label
   - Proxmox clone named ``proxmox-worker-vm``
