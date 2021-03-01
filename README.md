@@ -76,7 +76,7 @@ $ terraform apply
 ```
 
 `terraform init` is usually only needed before deploying for the very first time. For more information refer to the 
-[infrastructure README](terraform/README.md). 
+[infrastructure README](terraform/README.md).
 
 ### Accessing the deployed application
 
