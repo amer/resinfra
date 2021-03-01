@@ -112,7 +112,7 @@ These are defined in the top-level ``main.tf`` file.
 The network between the internal networks is created by creating site-to-site IPsec tunnels. These tunnels are created 
 between gateways that then forward requests to the specific machine within their network. As a result, all machines can 
 reach each other from the set of private subnet cidrs (`10.1.0.0/24, 10.2.0.0/24, 10.3.0.0/24, 10.4.0.0/24`). 
-![network](../docs/networking/img/network.png)
+![network](../.deprecated/networking/img/network.png)
 For Azure and GCP, managed gateway services are used while a gateway machine is manually created and set up for hetzner 
 using [StrongSwan](https://wiki.strongswan.org/projects/strongswan) and for Proxmox using [Libreswan](https://libreswan.org/).
 
