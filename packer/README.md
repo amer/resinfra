@@ -9,19 +9,21 @@ All machines are preconfigured to the largest extent, allowing for a more sleek 
 You can set these values in the ``packer-vars.json``.
 
 ## Available images
-The following images should be available:
+The following images can be built:
 - gateway images:
   - Hetzner snapshot with ``hetzner-gateway-vm`` label
   - Proxmox clone named ``proxmox-gateway-vm``   
 - deployer / resinfra images:
-  - Hetzner snapshot with ``hetzner-deployer`` lablel
+  - Hetzner snapshot with ``hetzner-deployer`` label
+  - Hetzner snapshot with `hetzner-benchmark` label. Similar to ``hetzner-deployer`` but based on Ubuntu 20.04 LTS
 - worker vm images:
-  - Azure image
+  - Azure image in the respective ressource group
   - GCP image with name ``gcp-worker-vm``
   - Hetzner snapshot with ``hetzner-worker-vm`` label
   - Proxmox clone named ``proxmox-worker-vm``
   
-Images are build according to the respective packer files found in this folder. All images are built so that new 
+Images are build according to the respective packer files found in this folder. For all system components, we use Debian
+10 as the base image. All images are built so that new 
 machines seamlessly integrate into the final product. The central tool is Consul, which collects all nodes and publishes
 their information to other services and tools used (such as prometheus).
 
