@@ -2,10 +2,12 @@ from proxmoxer import ProxmoxAPI
 from argparse import ArgumentParser
 
 parser = ArgumentParser(description='Delete protected VMs from all Proxmox nodes on one server.')
-parser.add_argument('-p', '--password', help='proxmox root password', required=True)
+parser.add_argument('-h', '--host', required=True, help='Address of the Proxmox host')
+parser.add_argument('-u', '--username', required=True, help='Proxmox PAM user, i.e. "root@pam"')
+parser.add_argument('-p', '--password', required=True)
 args = parser.parse_args()
 
-proxmox = ProxmoxAPI('92.204.175.162', user='root@pam', password=args.password, verify_ssl=False)
+proxmox = ProxmoxAPI(args.host, user=args.username, password=args.password, verify_ssl=False)
 
 def should_delete_vm(vm: dict):
 	return vm['name'].startswith('ri-proxmox-vm')
