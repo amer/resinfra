@@ -44,6 +44,16 @@ service account JSON, add the path to the following three configuration files:
 - [`terraform/main.tf`](terraform/main.tf)  
 - [`packer/packer-vars.json`](packer/packer-vars.json)
 
+### Setting up remote terraform state storage
+
+By default, the terraform state is stored in a bucket on GCP. This is required to make use of our system's self-healing capabilities, and a best practice for production deployments using terraform. For most development tasks, it is ok to delete the `backend` block in [`terraform/main.tf`](terraform/main.tf). For other use cases, follow the instructions (the bucket needs to exist before you run `terraform init`):
+
+1. [Create a bucket](https://console.cloud.google.com/storage/create-bucket) in your GCP project. 
+2. Make sure that your GCP service account has read / write permission for it. 
+3. Edit the bucket name in [`terraform/main.tf`](terraform/main.tf), commit and push.
+
+Keep in mind that bucket names are globally unique – if you want to collaborate with others, you have two options. For produciton, we recommend to let everyone's service accounts access the same bucket. For development and testing, everyone can create their own buckets, edit the [`terraform/main.tf`](terraform/main.tf), but not commit the changes.
+
 ### Building images
 
 Ensure all images are built and ready. In short,
