@@ -4,6 +4,8 @@
     dest: /root/.ssh/ri_key
     mode: 0600
 
+# use a custom ssh config to use custom key when ssh to github.com
+# CAUTION: overwriting existing ssh config
 - name: copy over the ssh config
   copy:
     src:  ssh_config

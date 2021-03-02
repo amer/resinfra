@@ -1,3 +1,5 @@
+# command to initialize a cockroachdb cluster. Only needs to be run once on a cluster.
+# for more see: https://www.cockroachlabs.com/docs/v20.2/cockroach-init.html
 - name: initialize cockroachdb cluster
   command: docker exec -it cockroachdb ./cockroach init --insecure
   become: yes

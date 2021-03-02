@@ -1,10 +1,10 @@
----
-  - name: start nodeexporter container
-    docker_container:
-      name: nodeexporter
-      image: prom/node-exporter:latest
-      network_mode: host
-      container_default_behavior: compatibility
-      state: started
-      restart_policy: always
-    become: yes
+# using host network to collect networking metrics from the host system instead from the docker network
+- name: start nodeexporter container
+  docker_container:
+    name: nodeexporter
+    image: prom/node-exporter:latest
+    network_mode: host
+    container_default_behavior: compatibility
+    state: started
+    restart_policy: always
+  become: yes
