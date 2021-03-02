@@ -15,11 +15,13 @@ for node in proxmox.nodes.get():
 	for vm in proxmox.nodes(node['node']).qemu.get():
 		if should_delete_vm(vm):
 			worklist.append((vm, proxmox.nodes(node['node']).qemu(vm['vmid'])))
-			
+
+# First, remove protection and stop the VM. Stopping is asynchronous, so the program continues before the VM is actually stopped.
 for _, vm_api in worklist:
 	vm_api.config.set(protection=0)
 	vm_api.status.stop.post()
-			
+
+# Then, delete the VMs without checking if they are stopped. Usually, iterating over all VMs gives Proxmox enough time to stop the VM.
 for vm_data, vm_api in worklist:
 	vm_api.delete()
 	print('✔ ' + vm_data['name'])
