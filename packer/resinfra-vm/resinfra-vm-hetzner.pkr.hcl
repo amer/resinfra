@@ -34,7 +34,6 @@ build {
   /*
   install resinfra VM tooling. For further information about the single components, refer to the ansible playbook file.
   extra vars reference:
-    - server: flag passed to the consul playbook to start consul in server mode
     - pub_key_path: path to public key that will be added to resinfra user
     - priv_key_path: path to private key (matching public key above!) that will be used to connect to the single worker
           vms.
@@ -45,6 +44,6 @@ build {
     playbook_file = "../ansible/deployer_vm_playbook.yml"
     extra_arguments = [
       "--extra-vars",
-      "server='true' resinfra_vpc_cidr=${var.resinfra_vpc_cidr} priv_key_path=${var.path_private_key} pub_key_path=${var.path_pub_key} ansible_python_interpreter=/usr/bin/python3"]
+      "resinfra_vpc_cidr=${var.resinfra_vpc_cidr} priv_key_path=${var.path_private_key} pub_key_path=${var.path_pub_key} ansible_python_interpreter=/usr/bin/python3"]
   }
 }
