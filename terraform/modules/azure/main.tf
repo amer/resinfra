@@ -113,7 +113,7 @@ resource "azurerm_public_ip" "gateway" {
   name                = "${var.prefix}-public-gateway-ip-${random_id.id.hex}"
   location            = var.location
   resource_group_name = var.resource_group
-  allocation_method   = "Static"
+  allocation_method   = "Dynamic"
 }
 
 # Create local network gateway
@@ -263,5 +263,6 @@ resource "azurerm_linux_virtual_machine" "worker_vm" {
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
+    disk_size_gb         = 50
   }
 }

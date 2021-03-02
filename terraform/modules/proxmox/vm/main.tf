@@ -16,10 +16,10 @@ resource "proxmox_vm_qemu" "proxmox_vm" {
   clone       = "proxmox-worker-vm-image"
   full_clone  = true
   os_type     = "cloud-init"
-  cores       = 2
+  cores       = var.num_cores
   sockets     = "1"
   cpu         = "host"
-  memory      = 2048
+  memory      = var.memory
   scsihw      = "virtio-scsi-pci"
   #  bootdisk          = "ide1"
   /*

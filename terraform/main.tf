@@ -46,8 +46,7 @@ locals {
   path_private_key = "~/.ssh/ri_key"
   path_public_key  = "~/.ssh/ri_key.pub"
 
-  azure_resource_group     = "ri-multi-cloud-rg"
-  azure_worker_vm_image_id = "/subscriptions/${var.subscription_id}/resourceGroups/${local.azure_resource_group}/providers/Microsoft.Compute/images/azure-worker-vm"
+  azure_worker_vm_image_id = "/subscriptions/${var.subscription_id}/resourceGroups/${var.azure_resource_group}/providers/Microsoft.Compute/images/azure-worker-vm"
 
   consul_leader_ip = "10.3.0.254"
 }
@@ -69,6 +68,7 @@ module "hetzner" {
   prefix                       = var.prefix
   instances                    = var.instances
   consul_leader_ip             = local.consul_leader_ip
+  machine_type                 = "cx11"
 }
 
 module "azure" {
@@ -100,7 +100,7 @@ module "azure" {
   prefix                       = var.prefix
   instances                    = var.instances
   azure_worker_vm_image_id     = local.azure_worker_vm_image_id
-  resource_group               = local.azure_resource_group
+  resource_group               = var.azure_resource_group
 }
 
 module "gcp" {
@@ -123,6 +123,7 @@ module "gcp" {
   shared_key                   = var.shared_key
   path_public_key              = local.path_public_key
   instances                    = var.instances
+  gcp_machine_type             = "e2-micro"
 }
 
 module "proxmox" {
@@ -147,4 +148,6 @@ module "proxmox" {
   vm_username                     = var.vm_username
   instances                       = var.instances
   shared_key                      = var.shared_key
+  memory                          = 2048
+  num_cores                       = 2
 }

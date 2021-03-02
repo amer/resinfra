@@ -21,6 +21,7 @@ build {
     "source.hcloud.hcloud"
   ]
 
+  # install some utilities
   provisioner "shell" {
     inline = [
       "sudo apt-get update",
@@ -30,6 +31,15 @@ build {
       "sudo apt-get update && sudo apt-get install -y terraform"
     ]
 
+  /*
+  install resinfra VM tooling. For further information about the single components, refer to the ansible playbook file.
+  extra vars reference:
+    - server: flag passed to the consul playbook to start consul in server mode
+    - pub_key_path: path to public key that will be added to resinfra user
+    - priv_key_path: path to private key (matching public key above!) that will be used to connect to the single worker
+          vms.
+    - ansible_python_interpreter: on debian10, python2 is still the default python.
+  */
   }
   provisioner "ansible" {
     playbook_file = "../ansible/deployer_vm_playbook.yml"

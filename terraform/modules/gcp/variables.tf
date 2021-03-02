@@ -22,5 +22,5 @@ variable "gcp_bgp_peer_address" {}
 variable "azure_bgp_peer_address" {}
 
 variable "shared_key" {}
-
+variable "gcp_machine_type" {}
 variable "path_public_key" {}
