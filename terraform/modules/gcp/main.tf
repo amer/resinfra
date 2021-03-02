@@ -1,7 +1,7 @@
 provider "google" {
   credentials = file(var.gcp_service_account_path)
-  project     = var.gcp_project_id
-  region      = var.gcp_region
+  project = var.gcp_project_id
+  region = var.gcp_region
 }
 
 resource "random_id" "id" {
@@ -17,71 +17,79 @@ resource "random_id" "id" {
 
 # Create a virtual network
 resource "google_compute_network" "main" {
-  name                    = "${var.prefix}-network-${random_id.id.hex}"
+  name = "${var.prefix}-network-${random_id.id.hex}"
   auto_create_subnetworks = false
-  routing_mode            = "GLOBAL" # as seen in https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_ha_vpn_gateway
+  routing_mode = "GLOBAL"
+  # as seen in https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_ha_vpn_gateway
 }
 
 # Create a subnet
 #   This subnet will be used to place the machines
 resource "google_compute_subnetwork" "vms" {
-  name          = "${var.prefix}-internal-${random_id.id.hex}"
+  name = "${var.prefix}-internal-${random_id.id.hex}"
   ip_cidr_range = var.gcp_subnet_cidr
-  region        = var.gcp_region
-  network       = google_compute_network.main.self_link
+  region = var.gcp_region
+  network = google_compute_network.main.self_link
 }
 
 # create firewall rule for port 22 (ssh)
 resource "google_compute_firewall" "allow_ssh" {
-  name    = "${var.prefix}-network-internal-allow-ssh-${random_id.id.hex}"
+  name = "${var.prefix}-network-internal-allow-ssh-${random_id.id.hex}"
   network = google_compute_network.main.self_link
 
 
   allow {
     protocol = "tcp"
-    ports    = ["22"]
+    ports = [
+      "22"]
   }
-  source_ranges = ["0.0.0.0/0"]
+  source_ranges = [
+    "0.0.0.0/0"]
 
 }
 
 # create firewall rule for port 80,443 (ssh)
 resource "google_compute_firewall" "allow_internet" {
-  name    = "${var.prefix}-network-internal-allow-internet-${random_id.id.hex}"
+  name = "${var.prefix}-network-internal-allow-internet-${random_id.id.hex}"
   network = google_compute_network.main.self_link
 
 
   allow {
     protocol = "tcp"
-    ports    = ["80", "443"]
+    ports = [
+      "80",
+      "443"]
   }
-  source_ranges = ["0.0.0.0/0"]
+  source_ranges = [
+    "0.0.0.0/0"]
 
 }
 
 # allow all internal traffic (10.0.0.0/8)
 resource "google_compute_firewall" "allow_internal" {
-  name    = "${var.prefix}-network-internal-allow-internal-${random_id.id.hex}"
+  name = "${var.prefix}-network-internal-allow-internal-${random_id.id.hex}"
   network = google_compute_network.main.self_link
 
 
   allow {
     protocol = "tcp"
   }
-  source_ranges = ["10.0.0.0/8"]
+  source_ranges = [
+    "10.0.0.0/8"]
 
 }
 
 # allow icmp
 resource "google_compute_firewall" "allow_icmp" {
-  name    = "${var.prefix}-network-internal-allow-icmp-${random_id.id.hex}"
+  name = "${var.prefix}-network-internal-allow-icmp-${random_id.id.hex}"
   network = google_compute_network.main.self_link
 
 
   allow {
     protocol = "icmp"
   }
-  source_ranges = ["0.0.0.0/0"]
+  source_ranges = [
+    "0.0.0.0/0"]
 
 }
 
@@ -233,23 +241,26 @@ resource "google_compute_vpn_tunnel" "hetzner_tunnel" {
   ]
 }
 resource "google_compute_route" "hetzner-route" {
-  name       = "${var.prefix}-hetzner-route-${random_id.id.hex}"
-  network    = google_compute_network.main.self_link
+  name = "${var.prefix}-hetzner-route-${random_id.id.hex}"
+  network = google_compute_network.main.self_link
   dest_range = var.hetzner_subnet_cidr
-
   next_hop_vpn_tunnel = google_compute_vpn_tunnel.hetzner_tunnel.self_link
+  priority = 0
+
 }
 
 # Create the tunnel & route trafic to remote networks through tunnel
 #   for proxmox
 resource "google_compute_vpn_tunnel" "proxmox_tunnel" {
-  name          = "${var.prefix}-proxmox-tunnel-${random_id.id.hex}"
-  peer_ip       = var.proxmox_gateway_ipv4_address
+  name = "${var.prefix}-proxmox-tunnel-${random_id.id.hex}"
+  peer_ip = var.proxmox_gateway_ipv4_address
   shared_secret = var.shared_key
 
-  target_vpn_gateway      = google_compute_vpn_gateway.main.self_link
-  local_traffic_selector  = [var.gcp_subnet_cidr]
-  remote_traffic_selector = [var.proxmox_subnet_cidr]
+  target_vpn_gateway = google_compute_vpn_gateway.main.self_link
+  local_traffic_selector = [
+    var.gcp_subnet_cidr]
+  remote_traffic_selector = [
+    var.proxmox_subnet_cidr]
 
   depends_on = [
     google_compute_forwarding_rule.fr_esp,
@@ -258,10 +269,10 @@ resource "google_compute_vpn_tunnel" "proxmox_tunnel" {
   ]
 }
 resource "google_compute_route" "proxmox-route" {
-  name       = "${var.prefix}-proxmos-route-${random_id.id.hex}"
+  name       = "${var.prefix}-proxmox-route-${random_id.id.hex}"
   network    = google_compute_network.main.self_link
   dest_range = var.proxmox_subnet_cidr
-
+  priority   = 0
   next_hop_vpn_tunnel = google_compute_vpn_tunnel.proxmox_tunnel.self_link
 }
 
@@ -279,13 +290,14 @@ resource "google_compute_address" "static" {
 
 resource "google_compute_instance" "worker_vm" {
   count = var.instances
-  name         = "${var.prefix}-gcp-vm-${count.index + 1}-${random_id.id.hex}"
-  machine_type = "e2-micro"
-  zone         = "${var.gcp_region}-b"
+  name = "${var.prefix}-gcp-vm-${count.index + 1}-${random_id.id.hex}"
+  machine_type = var.gcp_machine_type
+  zone = "${var.gcp_region}-b"
 
   boot_disk {
     initialize_params {
       image = "gcp-worker-vm"
+      size = 50
     }
   }
 
@@ -298,6 +310,6 @@ resource "google_compute_instance" "worker_vm" {
   }
 
   metadata = {
-        ssh-keys = "resinfra:${file(var.path_public_key)}"
+    ssh-keys = "resinfra:${file(var.path_public_key)}"
   }
 }

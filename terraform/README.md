@@ -3,12 +3,15 @@ This is our root directory for [terraform modules](https://www.terraform.io/docs
 We define one module per cloud provider, with each possibly having more submodules.  
 
 ## Prerequisites
-Make sure, that the necessary images exist on the specific cloud providers:
+
+### VM images
+
+Make sure that the necessary images exist on the specific cloud providers:
 - gateway image:
   - Hetzner snapshot with ``hetzner-gateway-vm`` label
   - Proxmox clone named ``proxmox-gateway-vm``   
 - deployer / resinfra image:
-  - Hetzner snapshot with ``hetzner-deployer`` lablel
+  - Hetzner snapshot with ``hetzner-deployer`` label
 - worker vm image:
   - Azure image
   - GCP image with name ``gcp-worker-vm``
@@ -22,13 +25,18 @@ consul clients installed in the images. If you want to change the address of the
 clients with a different ``retry_join`` configuration or change that parameter when building the images with packer.**
 This is important as this is the central piece of information required to connect all nodes within consul.
 
+For Azure: The images need to exist in the `westeurope` region.
+
+### Networking
+
+You need to be logged in to the Azure CLI with an account that is authorized to change resources through the Azure REST
+API.
+
 ## Usage
 ### TL;DR
 Create and populate a ``terraform.tfvars`` file in this directory. Use 
-[terraform.tfvars.example](terraform.tfvars.example) as a template. 
-
-*For Azure:* make sure that the ressource group ``ri-multi-cloud-rg`` exists in the region `westeurope` and 
-set the id for the worker vm image in the top-level ``main.tf`` script if necessary.
+[terraform.tfvars.example](terraform.tfvars.example) as a template. Set the path to the GCP service account JSON file in 
+[main.tf](main.tf).
 
 To build the entire infrastructure:
 ```
@@ -104,7 +112,7 @@ These are defined in the top-level ``main.tf`` file.
 The network between the internal networks is created by creating site-to-site IPsec tunnels. These tunnels are created 
 between gateways that then forward requests to the specific machine within their network. As a result, all machines can 
 reach each other from the set of private subnet cidrs (`10.1.0.0/24, 10.2.0.0/24, 10.3.0.0/24, 10.4.0.0/24`). 
-![network](../docs/networking/img/network.png)
+![network](../.deprecated/networking/img/network.png)
 For Azure and GCP, managed gateway services are used while a gateway machine is manually created and set up for hetzner 
 using [StrongSwan](https://wiki.strongswan.org/projects/strongswan) and for Proxmox using [Libreswan](https://libreswan.org/).
 

@@ -1,6 +1,6 @@
 ---
 - hosts: all
-  become: true # FIXME change to common user once this is merged with the unified multi-cloud deployment
+  become: true
   roles:
     - resinfra_user
     - nodeexporter

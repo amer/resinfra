@@ -16,3 +16,7 @@ output "hcloud_private_ip_addresses"{
 output "hcloud_subnet_id" {
   value = hcloud_network_subnet.main.id
 }
+
+output "hcloud_deployer_public_ip" {
+  value = hcloud_server.deployer.ipv4_address
+}

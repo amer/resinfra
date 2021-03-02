@@ -52,25 +52,24 @@ resource "azurerm_subnet" "gateway" {
   address_prefixes     = [var.azure_gateway_subnet_cidr]
 }
 
-
-//# Create public IPs
-//resource "azurerm_public_ip" "main" {
-//  name                = "${var.prefix}-public-ip-${random_id.id.hex}"
-//  location            = azurerm_resource_group.main.location
-//  resource_group_name = var.resource_group
-//  allocation_method   = "Dynamic"
-//}
+resource "azurerm_public_ip" "main" {
+  count               = var.instances
+  name                = "${var.prefix}-public-ip-${count.index}-${random_id.id.hex}"
+  location            = var.location
+  resource_group_name = var.resource_group
+  allocation_method   = "Dynamic"
+}
 
 resource "azurerm_network_interface" "main" {
   count               = var.instances
-  name                = "${var.prefix}-nic-${count.index + 1}-${random_id.id.hex}"
+  name                = "${var.prefix}-nic-${count.index}-${random_id.id.hex}"
   location            = var.location
   resource_group_name = var.resource_group
 
   ip_configuration {
-    name      = "${var.prefix}-NicConfiguration-${random_id.id.hex}"
-    subnet_id = azurerm_subnet.vms.id
-    # public_ip_address_id          = azurerm_public_ip.main.id
+    name                          = "${var.prefix}-NicConfiguration-${random_id.id.hex}"
+    subnet_id                     = azurerm_subnet.vms.id
+    public_ip_address_id          = azurerm_public_ip.main[count.index].id
     private_ip_address_allocation = "Dynamic"
   }
 }
@@ -277,5 +276,6 @@ resource "azurerm_linux_virtual_machine" "worker_vm" {
   os_disk {
     caching              = "ReadWrite"
     storage_account_type = "Standard_LRS"
+    disk_size_gb         = 50
   }
 }

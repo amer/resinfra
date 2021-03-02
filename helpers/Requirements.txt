@@ -1,0 +1,3 @@
+proxmoxer
+argparse
+requests

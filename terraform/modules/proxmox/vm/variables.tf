@@ -22,4 +22,7 @@ variable "hetzner_vm_subnet_cidr" {}
 variable "azure_gateway_ipv4_address" {}
 variable "azure_vm_subnet_cidr" {}
 variable "gcp_gateway_ipv4_address" {}    
-variable "gcp_vm_subnet_cidr" {}          
+variable "gcp_vm_subnet_cidr" {}
+
+variable "num_cores" {}
+variable "memory" {}
