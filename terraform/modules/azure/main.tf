@@ -105,6 +105,10 @@ resource "azurerm_public_ip" "gateway" {
   name                = "${var.prefix}-public-gateway-ip-${random_id.id.hex}"
   location            = var.location
   resource_group_name = var.resource_group
+  # The public IP address of a virtual network gateway can only be dynamic. Dynamic IP addresses are only "materialized"
+  # when they are assigned to an actually existing resource. Unfortunately, this means that the address will not be part
+  # of the output of the `terraform apply` run in which the gateway is created. Re-run `terraform apply` to get the
+  # IP address and correctly setup VPN connections.
   allocation_method   = "Dynamic"
 }
 
