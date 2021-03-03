@@ -1,10 +1,3 @@
-terraform {
-  backend "gcs" {
-    bucket  = "resinfra-tf-state"
-    credentials = ""
-  }
-}
-
 locals {
   azure_cidr = cidrsubnet(var.vpc_cidr, 8, 1)
   # 10.1.0.0/16 (Azure does not allow to add overlapping subnets when creating vpn routes)
