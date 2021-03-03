@@ -1,6 +1,7 @@
 global:
   scrape_interval: 15s
 
+# the consul_sd_configs config will look for services called node_exporter in the consul cluster
 scrape_configs:
 - job_name: 'worker_vms'
   scrape_interval: 5s

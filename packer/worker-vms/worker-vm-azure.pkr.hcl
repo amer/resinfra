@@ -42,7 +42,6 @@ build {
   extra vars reference:
     - resinfra_vpc_cidr: the overall cidr of the resinfra net.
           Required to setup consul workers to use the correct network interface.
-    - server: if `false`, start consul in agent mode
     - pub_key_path: path to public key that will be added to resinfra user
     - leader_node: private ip of the consul leader node. Consul agents will use that ip to register themselves to the
           consul cluster.
@@ -52,6 +51,6 @@ build {
     playbook_file = "../ansible/worker_vm_playbook.yml"
     extra_arguments = [
       "--extra-vars",
-      "resinfra_vpc_cidr=${var.resinfra_vpc_cidr} server=false pub_key_path=${var.path_pub_key} leader_node=${var.consul_leader_node} ansible_python_interpreter=/usr/bin/python3"]
+      "resinfra_vpc_cidr=${var.resinfra_vpc_cidr} pub_key_path=${var.path_pub_key} leader_node=${var.consul_leader_node} ansible_python_interpreter=/usr/bin/python3"]
   }
 }

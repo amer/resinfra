@@ -23,7 +23,7 @@
 
 - name: template the config file
   template:
-    src: config.hcl.j2
+    src: config.hcl
     dest: /etc/consul.d/consul.hcl
 
 - name: copy the node exporter service file
@@ -36,11 +36,14 @@
 #    src: files/service_cockroachdb.json
 #     dest: /etc/consul.d/
 
-- name: add a consul user
+- name: add a consul user for the systemd service
   user:
     name: consul
     state: present
 
+# we create a systemd service for consul
+# we use the -bind option to ensure that we are publishing the internal ip address of the node
+# for more see: https://www.consul.io/docs/agent/options#_bind
 - name: copy over the service file
   template:
     src: consul.service.j2
