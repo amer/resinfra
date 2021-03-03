@@ -7,6 +7,6 @@ output "azure_private_ip_addresses" {
 }
 
 output "public_ip_addresses" {
-  value = [for ip_config in azurerm_public_ip.main : ip_config.ip_address]
+  value = [for ip_config in azurerm_public_ip.worker_vm : ip_config.ip_address]
 }
 
