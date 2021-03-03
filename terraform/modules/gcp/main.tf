@@ -74,7 +74,7 @@ resource "google_compute_firewall" "allow_icmp" {
 
 /*
 ----------------------------
-    EXTERNAL NETWORK
+    SITE-TO-SITE NETWORK
 ----------------------------
 */
 

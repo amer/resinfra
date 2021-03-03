@@ -67,7 +67,7 @@ resource "hcloud_server_network" "deployer" {
 
 /*
 ----------------------------
-    EXTERNAL NETWORK
+    SITE-TO-SITE NETWORK
 ----------------------------
 */
 
