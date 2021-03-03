@@ -183,42 +183,21 @@ resource "azurerm_virtual_network_gateway" "main" {
   }
 }
 
-# Create the connection between the gateways.
-#   Internally, this is realized by connecting the virtual network gateway with
-#   the local network gateway
-resource "azurerm_virtual_network_gateway_connection" "hetzner_onpremise" {
-  name                = "hetzner-onpremise-connection"
+resource "azurerm_virtual_network_gateway_connection" "main" {
+  for_each = {
+    "hetzner" = { "id" = azurerm_local_network_gateway.hetzner.id, "bgp" = false },
+    "gcp"     = { "id" = azurerm_local_network_gateway.gcp.id, "bgp" = true },
+    "proxmox" = { "id" = azurerm_local_network_gateway.proxmox.id, "bgp" = false }
+  }
+
+  name                = "${each.key}-connection"
   location            = var.location
   resource_group_name = var.resource_group
 
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
-  local_network_gateway_id   = azurerm_local_network_gateway.hetzner_onpremise.id
-
-  shared_key = var.shared_key
-}
-
-resource "azurerm_virtual_network_gateway_connection" "gcp" {
-  name                = "gcp-connection"
-  location            = var.location
-  resource_group_name = var.resource_group
-
-  type                       = "IPsec"
-  virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
-  local_network_gateway_id   = azurerm_local_network_gateway.gcp.id
-  enable_bgp                 = true
-
-  shared_key = var.shared_key
-}
-
-resource "azurerm_virtual_network_gateway_connection" "proxmox" {
-  name                = "proxmox-connection"
-  location            = var.location
-  resource_group_name = var.resource_group
-
-  type                       = "IPsec"
-  virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
-  local_network_gateway_id   = azurerm_local_network_gateway.proxmox.id
+  local_network_gateway_id   = each.value["id"]
+  enable_bgp                 = each.value["bgp"]
 
   shared_key = var.shared_key
 }
