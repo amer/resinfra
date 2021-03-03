@@ -138,7 +138,7 @@ locals {
   private_ip_range_num_fixed_bits = split("/", var.proxmox_vm_subnet_cidr)[1]
 }
 
-# copy over the secrets and IPSec config file to the gateway vm
+# Configure all VPN connections on the gateway by uploading secrets and IPSec config file
 resource "null_resource" "copy_ipsec_files" {
   depends_on = [proxmox_vm_qemu.gateway]
 

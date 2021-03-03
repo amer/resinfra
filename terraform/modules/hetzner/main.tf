@@ -85,7 +85,7 @@ resource "hcloud_server_network" "gateway" {
   subnet_id = hcloud_network_subnet.main.id
 }
 
-# Copy the secrets and IPSec config file to the gateway vm
+# Configure all VPN connections on the gateway by uploading secrets and IPSec config file
 resource "null_resource" "copy_ipsec_files" {
   connection {
     type = "ssh"
