@@ -14,17 +14,14 @@ resource "random_id" "id" {
 ------------------------
 */
 
-
-# Create a virtual network
 resource "google_compute_network" "main" {
   name = "${var.prefix}-network-${random_id.id.hex}"
   auto_create_subnetworks = false
+  # For details on global vs. regional routing, see https://cloud.google.com/network-connectivity/docs/router/concepts/overview#dynamic-routing-mode
   routing_mode = "GLOBAL"
-  # as seen in https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_ha_vpn_gateway
 }
 
-# Create a subnet
-#   This subnet will be used to place the machines
+# This subnet will be used for all VMs
 resource "google_compute_subnetwork" "vms" {
   name = "${var.prefix}-internal-${random_id.id.hex}"
   ip_cidr_range = var.gcp_subnet_cidr
@@ -32,65 +29,46 @@ resource "google_compute_subnetwork" "vms" {
   network = google_compute_network.main.self_link
 }
 
-# create firewall rule for port 22 (ssh)
 resource "google_compute_firewall" "allow_ssh" {
   name = "${var.prefix}-network-internal-allow-ssh-${random_id.id.hex}"
   network = google_compute_network.main.self_link
 
-
   allow {
     protocol = "tcp"
-    ports = [
-      "22"]
+    ports = ["22"]
   }
-  source_ranges = [
-    "0.0.0.0/0"]
-
+  source_ranges = ["0.0.0.0/0"]
 }
 
-# create firewall rule for port 80,443 (ssh)
 resource "google_compute_firewall" "allow_internet" {
   name = "${var.prefix}-network-internal-allow-internet-${random_id.id.hex}"
   network = google_compute_network.main.self_link
 
-
   allow {
     protocol = "tcp"
-    ports = [
-      "80",
-      "443"]
+    ports = ["80", "443"]
   }
-  source_ranges = [
-    "0.0.0.0/0"]
-
+  source_ranges = ["0.0.0.0/0"]
 }
 
-# allow all internal traffic (10.0.0.0/8)
 resource "google_compute_firewall" "allow_internal" {
   name = "${var.prefix}-network-internal-allow-internal-${random_id.id.hex}"
   network = google_compute_network.main.self_link
 
-
   allow {
     protocol = "tcp"
   }
-  source_ranges = [
-    "10.0.0.0/8"]
-
+  source_ranges = ["10.0.0.0/8"]
 }
 
-# allow icmp
 resource "google_compute_firewall" "allow_icmp" {
   name = "${var.prefix}-network-internal-allow-icmp-${random_id.id.hex}"
   network = google_compute_network.main.self_link
 
-
   allow {
     protocol = "icmp"
   }
-  source_ranges = [
-    "0.0.0.0/0"]
-
+  source_ranges = ["0.0.0.0/0"]
 }
 
 
@@ -101,28 +79,27 @@ resource "google_compute_firewall" "allow_icmp" {
 */
 
 # Create public IPs
-#   public ip for the virtual network gateway
-resource "google_compute_address" "gateway_ip_address" {
+resource "google_compute_address" "gateway" {
   name = "${var.prefix}-vpn-gateway-address-${random_id.id.hex}"
 }
 
-#   public IP of the HA virtual network gateway
-resource "google_compute_address" "ha_gateway_ip_address" {
+resource "google_compute_address" "ha_gateway" {
   name = "${var.prefix}-vpn-ha-gateway-address-${random_id.id.hex}"
 }
 
-# Create classic VPN
+# Classic, not highly available or redundant VPN
 resource "google_compute_vpn_gateway" "main" {
   name    = "${var.prefix}-vpn"
   network = google_compute_network.main.self_link
 }
 
-# Create HA VPN for use with BGP
+# HA VPN for use with BGP
 resource "google_compute_ha_vpn_gateway" "main" {
   name    = "${var.prefix}-vpn-ha"
   network = google_compute_network.main.self_link
 }
 
+# Cloud Router is responsible for programming dynamic IP routes -> needed for BGP
 resource "google_compute_router" "main" {
   name = "${var.prefix}-vpn-ha-router"
   network = google_compute_network.main.self_link
@@ -138,10 +115,11 @@ resource "google_compute_router" "main" {
 #   - UDP/500: the port used by IKE, the Internet Key Exchange protocol, i.e., required for establishing the security
 #              association between the two participants of the tunnel
 #   - UDP/4500: fallback in case 500 is blocked -> probably not needed?
+# TODO since the HA VPN seems to work ok-ish without these forwarding rules, (in which cases) are they even necessary?
 resource "google_compute_forwarding_rule" "fr_esp" {
   name        = "fr-esp"
   ip_protocol = "ESP"
-  ip_address  = google_compute_address.gateway_ip_address.address
+  ip_address  = google_compute_address.gateway.address
   target      = google_compute_vpn_gateway.main.self_link
 }
 
@@ -149,7 +127,7 @@ resource "google_compute_forwarding_rule" "fr_udp500" {
   name        = "fr-ike"
   ip_protocol = "UDP"
   port_range  = "500"
-  ip_address  = google_compute_address.gateway_ip_address.address
+  ip_address  = google_compute_address.gateway.address
   target      = google_compute_vpn_gateway.main.self_link
 }
 
@@ -157,12 +135,10 @@ resource "google_compute_forwarding_rule" "fr_udp4500" {
   name        = "fr-ike-fallback"
   ip_protocol = "UDP"
   port_range  = "4500"
-  ip_address  = google_compute_address.gateway_ip_address.address
+  ip_address  = google_compute_address.gateway.address
   target      = google_compute_vpn_gateway.main.self_link
 }
 
-# Create the tunnel & route trafic to remote networks through tunnel
-#   for azure
 resource "google_compute_vpn_tunnel" "azure_tunnel" {
   name          = "${var.prefix}-azure-tunnel-${random_id.id.hex}"
   shared_secret = var.shared_key
@@ -209,8 +185,6 @@ resource "google_compute_router_peer" "azure0" {
   interface = google_compute_router_interface.azure0.name
 }
 
-# Create the tunnel & route trafic to remote networks through tunnel
-#   for hetzner
 resource "google_compute_vpn_tunnel" "hetzner_tunnel" {
   name          = "${var.prefix}-hetzner-tunnel-${random_id.id.hex}"
   peer_ip       = var.hetzner_gateway_ipv4_address
@@ -231,22 +205,17 @@ resource "google_compute_route" "hetzner-route" {
   network = google_compute_network.main.self_link
   dest_range = var.hetzner_subnet_cidr
   next_hop_vpn_tunnel = google_compute_vpn_tunnel.hetzner_tunnel.self_link
-  priority = 0
-
+  priority = local.custom_route_priority
 }
 
-# Create the tunnel & route trafic to remote networks through tunnel
-#   for proxmox
 resource "google_compute_vpn_tunnel" "proxmox_tunnel" {
   name = "${var.prefix}-proxmox-tunnel-${random_id.id.hex}"
   peer_ip = var.proxmox_gateway_ipv4_address
   shared_secret = var.shared_key
 
   target_vpn_gateway = google_compute_vpn_gateway.main.self_link
-  local_traffic_selector = [
-    var.gcp_subnet_cidr]
-  remote_traffic_selector = [
-    var.proxmox_subnet_cidr]
+  local_traffic_selector = [var.gcp_subnet_cidr]
+  remote_traffic_selector = [var.proxmox_subnet_cidr]
 
   depends_on = [
     google_compute_forwarding_rule.fr_esp,
@@ -254,12 +223,18 @@ resource "google_compute_vpn_tunnel" "proxmox_tunnel" {
     google_compute_forwarding_rule.fr_udp4500,
   ]
 }
+
 resource "google_compute_route" "proxmox-route" {
   name       = "${var.prefix}-proxmox-route-${random_id.id.hex}"
   network    = google_compute_network.main.self_link
   dest_range = var.proxmox_subnet_cidr
-  priority   = 0
+  priority   = local.custom_route_priority
   next_hop_vpn_tunnel = google_compute_vpn_tunnel.proxmox_tunnel.self_link
+}
+
+locals {
+  # Prevent custom route being overruled by routes learned through BGP.
+  custom_route_priority = 0
 }
 
 /*
@@ -269,7 +244,7 @@ resource "google_compute_route" "proxmox-route" {
 */
 
 
-resource "google_compute_address" "static" {
+resource "google_compute_address" "worker_vm" {
   count = var.instances
   name = "${var.prefix}-ipv4-address-${count.index + 1}-${random_id.id.hex}"
 }
@@ -291,7 +266,7 @@ resource "google_compute_instance" "worker_vm" {
     network = google_compute_network.main.self_link
     subnetwork = google_compute_subnetwork.vms.self_link
     access_config {
-      nat_ip = google_compute_address.static[count.index].address
+      nat_ip = google_compute_address.worker_vm[count.index].address
     }
   }
 
