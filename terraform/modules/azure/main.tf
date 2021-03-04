@@ -24,8 +24,6 @@ data "azurerm_subscription" "current" {}
 ------------------------
 */
 
-
-# Create a virtual network
 resource "azurerm_virtual_network" "main" {
   name                = "${var.prefix}-network"
   address_space       = [var.azure_vpc_cidr]
@@ -33,8 +31,7 @@ resource "azurerm_virtual_network" "main" {
   resource_group_name = var.resource_group
 }
 
-# Create a subnet
-#   This subnet will be used to place the machines
+# This subnet will be used for all VMs
 resource "azurerm_subnet" "vms" {
   name                 = "internal"
   resource_group_name  = var.resource_group
@@ -42,9 +39,7 @@ resource "azurerm_subnet" "vms" {
   address_prefixes     = [var.azure_vm_subnet_cidr]
 }
 
-
-# Create a second subnet as GatewaySubnet
-#   This subnet will be used for the gateways
+# This subnet will be used for the virtual network gateway only
 resource "azurerm_subnet" "gateway" {
   name                 = "GatewaySubnet"
   resource_group_name  = var.resource_group
@@ -52,7 +47,7 @@ resource "azurerm_subnet" "gateway" {
   address_prefixes     = [var.azure_gateway_subnet_cidr]
 }
 
-resource "azurerm_public_ip" "main" {
+resource "azurerm_public_ip" "worker_vm" {
   count               = var.instances
   name                = "${var.prefix}-public-ip-${count.index}-${random_id.id.hex}"
   location            = var.location
@@ -60,7 +55,7 @@ resource "azurerm_public_ip" "main" {
   allocation_method   = "Dynamic"
 }
 
-resource "azurerm_network_interface" "main" {
+resource "azurerm_network_interface" "worker_vm" {
   count               = var.instances
   name                = "${var.prefix}-nic-${count.index}-${random_id.id.hex}"
   location            = var.location
@@ -69,12 +64,11 @@ resource "azurerm_network_interface" "main" {
   ip_configuration {
     name                          = "${var.prefix}-NicConfiguration-${random_id.id.hex}"
     subnet_id                     = azurerm_subnet.vms.id
-    public_ip_address_id          = azurerm_public_ip.main[count.index].id
+    public_ip_address_id          = azurerm_public_ip.worker_vm[count.index].id
     private_ip_address_allocation = "Dynamic"
   }
 }
 
-# Create Network Security Group and rule
 resource "azurerm_network_security_group" "main" {
   name                = "${var.prefix}-security-group-${random_id.id.hex}"
   location            = var.location
@@ -96,30 +90,30 @@ resource "azurerm_network_security_group" "main" {
 # Connect the security group to the network interface
 resource "azurerm_network_interface_security_group_association" "main" {
   count                     = var.instances
-  network_interface_id      = azurerm_network_interface.main[count.index].id
+  network_interface_id      = azurerm_network_interface.worker_vm[count.index].id
   network_security_group_id = azurerm_network_security_group.main.id
 }
 
 
 /*
 ----------------------------
-    EXTERNAL NETWORK
+    SITE-TO-SITE NETWORK
 ----------------------------
 */
 
-
-# Create public IP for Gateway
 resource "azurerm_public_ip" "gateway" {
   name                = "${var.prefix}-public-gateway-ip-${random_id.id.hex}"
   location            = var.location
   resource_group_name = var.resource_group
+  # The public IP address of a virtual network gateway can only be dynamic. Dynamic IP addresses are only "materialized"
+  # when they are assigned to an actually existing resource. Unfortunately, this means that the address will not be part
+  # of the output of the `terraform apply` run in which the gateway is created. Re-run `terraform apply` to get the
+  # IP address and correctly setup VPN connections.
   allocation_method   = "Dynamic"
 }
 
-# Create local network gateway
-#   This is the place where we will store the IP Adresse range of the other network
-#   as well as the ip address of the other gateway.
-resource "azurerm_local_network_gateway" "hetzner_onpremise" {
+# Local network gateway models the remote HCloud / Proxmox VPN gateway and does not actually deploy anything.
+resource "azurerm_local_network_gateway" "hetzner" {
   name                = "hetzner-onpremise"
   location            = var.location
   resource_group_name = var.resource_group
@@ -150,12 +144,12 @@ resource "azurerm_local_network_gateway" "gcp" {
   address_space = ["${var.gcp_bgp_peer_address}/32"]
 
   bgp_settings {
-    asn = var.gcp_asn
+    asn                 = var.gcp_asn
     bgp_peering_address = var.gcp_bgp_peer_address
   }
 }
 
-# Create virtual network gateway
+# The virtual network gateway is the VPN gateway on the Azure side.
 resource "azurerm_virtual_network_gateway" "main" {
   name                = "${var.prefix}-network-gateway"
   location            = var.location
@@ -193,42 +187,21 @@ resource "azurerm_virtual_network_gateway" "main" {
   }
 }
 
-# Create the connection between the gateways.
-#   Internally, this is realized by connecting the virtual network gateway with
-#   the local network gateway
-resource "azurerm_virtual_network_gateway_connection" "hetzner_onpremise" {
-  name                = "hetzner-onpremise-connection"
+resource "azurerm_virtual_network_gateway_connection" "main" {
+  for_each = {
+    "hetzner" = { "id" = azurerm_local_network_gateway.hetzner.id, "bgp" = false },
+    "gcp"     = { "id" = azurerm_local_network_gateway.gcp.id, "bgp" = true },
+    "proxmox" = { "id" = azurerm_local_network_gateway.proxmox.id, "bgp" = false }
+  }
+
+  name                = "${each.key}-connection"
   location            = var.location
   resource_group_name = var.resource_group
 
   type                       = "IPsec"
   virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
-  local_network_gateway_id   = azurerm_local_network_gateway.hetzner_onpremise.id
-
-  shared_key = var.shared_key
-}
-
-resource "azurerm_virtual_network_gateway_connection" "gcp" {
-  name                = "gcp-connection"
-  location            = var.location
-  resource_group_name = var.resource_group
-
-  type                       = "IPsec"
-  virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
-  local_network_gateway_id   = azurerm_local_network_gateway.gcp.id
-  enable_bgp                 = true
-
-  shared_key = var.shared_key
-}
-
-resource "azurerm_virtual_network_gateway_connection" "proxmox" {
-  name                = "proxmox-connection"
-  location            = var.location
-  resource_group_name = var.resource_group
-
-  type                       = "IPsec"
-  virtual_network_gateway_id = azurerm_virtual_network_gateway.main.id
-  local_network_gateway_id   = azurerm_local_network_gateway.proxmox.id
+  local_network_gateway_id   = each.value["id"]
+  enable_bgp                 = each.value["bgp"]
 
   shared_key = var.shared_key
 }
@@ -240,8 +213,6 @@ resource "azurerm_virtual_network_gateway_connection" "proxmox" {
 -------------------------------
 */
 
-
-# Create a virtual machine
 resource "azurerm_linux_virtual_machine" "worker_vm" {
   count               = var.instances
   name                = "${var.prefix}-azure-vm-${count.index + 1}-${random_id.id.hex}"
@@ -250,7 +221,7 @@ resource "azurerm_linux_virtual_machine" "worker_vm" {
   size                = var.vm_size
   admin_username      = "adminuser"
   network_interface_ids = [
-    azurerm_network_interface.main[count.index].id,
+    azurerm_network_interface.worker_vm[count.index].id,
   ]
 
   source_image_id = var.azure_worker_vm_image_id

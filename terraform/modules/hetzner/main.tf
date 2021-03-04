@@ -1,4 +1,3 @@
-# Configure the Hetzner Cloud Provider
 provider "hcloud" {
   token = var.hcloud_token
 }
@@ -33,13 +32,12 @@ data "hcloud_image" "gateway-snapshot" {
 ------------------------
 */
 
-# Create a virtual network
 resource "hcloud_network" "main" {
   name     = "${var.prefix}-network-${random_id.id.hex}"
   ip_range = var.hetzner_vpc_cidr
 }
 
-# Create a subnet for both the gateway and the vms
+# Everything will be placed in this subnet, Gateway + other VMs
 resource "hcloud_network_subnet" "main" {
   network_id   = hcloud_network.main.id
   type         = "cloud"
@@ -53,17 +51,15 @@ resource "hcloud_network_subnet" "main" {
 -------------------------------
 */
 
-// initial deployer machine
 resource "hcloud_server" "deployer" {
   name = "${var.prefix}-hetzner-deployer-${random_id.id.hex}"
   image = data.hcloud_image.deployer-snapshot.id
   server_type = "cpx31"
-  ssh_keys = [
-    hcloud_ssh_key.default.id]
+  ssh_keys = [hcloud_ssh_key.default.id]
   location = var.location
 }
 
-resource "hcloud_server_network" "deployer-vm" {
+resource "hcloud_server_network" "deployer" {
   server_id = hcloud_server.deployer.id
   subnet_id = hcloud_network_subnet.main.id
   ip = var.consul_leader_ip
@@ -71,29 +67,25 @@ resource "hcloud_server_network" "deployer-vm" {
 
 /*
 ----------------------------
-    EXTERNAL NETWORK
+    SITE-TO-SITE NETWORK
 ----------------------------
 */
 
-# Create VM that will be the gateway
+# There is no managed VPN service on Hetzner. Use a normal VM and later provision it as a gateway.
 resource "hcloud_server" "gateway" {
   name = "${var.prefix}-hetzner-gateway-vm-${random_id.id.hex}"
   image = data.hcloud_image.gateway-snapshot.id
   server_type = var.machine_type
   location = "nbg1"
-  ssh_keys = [
-    hcloud_ssh_key.default.id]
+  ssh_keys = [hcloud_ssh_key.default.id]
 }
 
-# Put the Gateway VM into the subnet and run ansible to configure it
-resource "hcloud_server_network" "internal" {
+resource "hcloud_server_network" "gateway" {
   server_id = hcloud_server.gateway.id
   subnet_id = hcloud_network_subnet.main.id
 }
 
-
-
-# copy over the secrets and config file to the gateway vm
+# Configure all VPN connections on the gateway by uploading secrets and IPSec config file
 resource "null_resource" "copy_ipsec_files" {
   connection {
     type = "ssh"
@@ -135,24 +127,22 @@ resource "null_resource" "copy_ipsec_files" {
   }
 }
 
-# create a route in the Hetzner Network for Azure, GCP, and Proxmox traffic
-
 resource "hcloud_network_route" "azure_via_gateway" {
   network_id = hcloud_network.main.id
   destination = var.azure_vm_subnet_cidr
-  gateway = hcloud_server_network.internal.ip
+  gateway = hcloud_server_network.gateway.ip
 }
 
 resource "hcloud_network_route" "gcp_via_gateway" {
   network_id = hcloud_network.main.id
   destination = var.gcp_vm_subnet_cidr
-  gateway = hcloud_server_network.internal.ip
+  gateway = hcloud_server_network.gateway.ip
 }
 
 resource "hcloud_network_route" "proxmox_via_gateway" {
   network_id = hcloud_network.main.id
   destination = var.proxmox_vm_subnet_cidr
-  gateway = hcloud_server_network.internal.ip
+  gateway = hcloud_server_network.gateway.ip
 }
 
 /*
@@ -167,14 +157,11 @@ resource "hcloud_server" "worker-vm" {
   image = data.hcloud_image.worker-image.id
   server_type = var.server_type
   location = var.location
-  ssh_keys = [
-    hcloud_ssh_key.default.id]
+  ssh_keys = [hcloud_ssh_key.default.id]
 }
 
-# Put the VMs into the subnet
-resource "hcloud_server_network" "worker-vms-into-subnet" {
+resource "hcloud_server_network" "worker-vm" {
   count = var.instances
   server_id = hcloud_server.worker-vm[count.index].id
   subnet_id = hcloud_network_subnet.main.id
 }
-

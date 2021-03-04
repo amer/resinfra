@@ -21,16 +21,7 @@ resource "proxmox_vm_qemu" "proxmox_vm" {
   cpu         = "host"
   memory      = var.memory
   scsihw      = "virtio-scsi-pci"
-  #  bootdisk          = "ide1"
-  /*
-  disk {
-#    id              = 0
-    size            = "10G"
-    type            = "scsi"
-    storage         = "local-lvm"
-    iothread        = true
-  }
-  */
+
   # private network
   network {
     model  = "virtio"
@@ -38,6 +29,7 @@ resource "proxmox_vm_qemu" "proxmox_vm" {
     // When not setting the macaddress manual it will be the same as the second interface and nothing will work
     macaddr = "00:${format("%02X", count.index + 1)}:00:00:00:AA"
   }
+
   # public network
   network {
     model  = "virtio"
@@ -45,21 +37,23 @@ resource "proxmox_vm_qemu" "proxmox_vm" {
     // When not setting the macaddress manual it will be the same as the second interface and nothing will work
     macaddr = "00:${format("%02X", count.index + 1)}:00:00:00:AB"
   }
+
   # Terraform does strange things on re-apply when we don't ignore changes here
   lifecycle {
     ignore_changes = [
       disk, network,
     ]
   }
+
   # Cloud Init Settings
   # count.index + 1 - skip blocked ip by proxmox gateway .1
   # count.index + 2 - skip blocked ip by local gateway  .2
   # count.index + 3 - start from here .3
-  ipconfig0 = "ip=${cidrhost(var.proxmox_vm_subnet_cidr, count.index + 3)}/24,gw=${var.proxmox_private_gateway_address}"
-  # count.index + 1 - skip blocked ip by proxmox gateway  .33
+  ipconfig0 = "ip=${cidrhost(var.proxmox_vm_subnet_cidr, count.index + 3)}/${local.private_ip_range_num_fixed_bits},gw=${var.proxmox_private_gateway_address}"
+  # count.index + 1 - skip blocked ip by proxmox gateway  .33 (for a public IP cidr starting at .32)
   # count.index + 2 - skip blocked ip by local gateway  .34
   # count.index + 3 - start from here .35
-  ipconfig1 = "ip=${cidrhost(var.proxmox_public_ip_cidr, count.index + 3)}/29,gw=${var.proxmox_server_address}"
+  ipconfig1 = "ip=${cidrhost(var.proxmox_public_ip_cidr, count.index + 3)}/${local.public_ip_range_num_fixed_bits},gw=${var.proxmox_server_address}"
   sshkeys   = file(var.path_public_key)
   ciuser    = var.vm_username
 
@@ -75,9 +69,15 @@ resource "proxmox_vm_qemu" "proxmox_vm" {
           This gets enforced by executing "sudo ip route replace default via 10.4.0.1 dev eth0 onlink"
   */
   provisioner "remote-exec" {
-    inline = ["echo 'SSH is now ready!'", "echo 'Wait 30 sec to ensure init phase is finished'", "sleep 30",
-      "echo 'Install pytho3-apt dependency'", "sudo apt install python3-apt -y",
-    "echo 'Setting default gateway to 10.4.0.1'", "sudo ip route replace default via 10.4.0.1 dev eth0 onlink"]
+    inline = [
+      "echo 'SSH is now ready!'",
+      "echo 'Wait 30 sec to ensure init phase is finished'",
+      "sleep 30",
+      "echo 'Install pytho3-apt dependency'",
+      "sudo apt install python3-apt -y",
+      "echo 'Setting default gateway to 10.4.0.1'",
+      "sudo ip route replace default via 10.4.0.1 dev eth0 onlink"
+    ]
 
     connection {
       type        = "ssh"
@@ -100,55 +100,45 @@ resource "proxmox_vm_qemu" "gateway" {
   cpu         = "host"
   memory      = 2048
   scsihw      = "virtio-scsi-pci"
-  #  bootdisk          = "ide1"
-  /*
-  disk {
-#    id              = 0
-    size            = "10G"
-    type            = "scsi"
-    storage         = "local-lvm"
-    iothread        = true
-  }
-  */
+
   # private network
   network {
-    #   id              = 0
     model  = "virtio"
     bridge = "vmbr1"
     // When not setting the macaddress manual it will be the same as the second interface and nothing will work
     macaddr = "00:00:00:00:00:AA"
   }
+
   # public network
   network {
-    #   id              = 1
     model  = "virtio"
     bridge = "vmbr2"
     // When not setting the macaddress manual it will be the same as the second interface and nothing will work
     macaddr = "00:00:00:00:00:AB"
   }
+
   # Terraform does strange things on re-apply when we don't ignore changes here
   lifecycle {
     ignore_changes = [
       disk, network,
     ]
   }
+
   # Cloud Init Settings
-  # Give gateway vm ip .2 in private network
-  ipconfig0 = "ip=${cidrhost(var.proxmox_vm_subnet_cidr, 2)}/24,gw=${var.proxmox_private_gateway_address}"
-  # Give gateway vm ip .33 in public network
-  ipconfig1 = "ip=${cidrhost(var.proxmox_public_ip_cidr, 2)}/29,gw=${var.proxmox_server_address}"
+  ipconfig0 = "ip=${cidrhost(var.proxmox_vm_subnet_cidr, 2)}/${local.private_ip_range_num_fixed_bits},gw=${var.proxmox_private_gateway_address}"
+  ipconfig1 = "ip=${cidrhost(var.proxmox_public_ip_cidr, 2)}/${local.public_ip_range_num_fixed_bits},gw=${var.proxmox_server_address}"
   sshkeys   = file(var.path_public_key)
   ciuser    = var.vm_username
-
-
 }
 
 locals {
   gateway_public_ipv4_address  = regex("\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b", proxmox_vm_qemu.gateway.ipconfig1)
   gateway_private_ipv4_address = regex("\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b", proxmox_vm_qemu.gateway.ipconfig0)
+  public_ip_range_num_fixed_bits  = split("/", var.proxmox_public_ip_cidr)[1]
+  private_ip_range_num_fixed_bits = split("/", var.proxmox_vm_subnet_cidr)[1]
 }
 
-# copy over the secrets and config file to the gateway vm
+# Configure all VPN connections on the gateway by uploading secrets and IPSec config file
 resource "null_resource" "copy_ipsec_files" {
   depends_on = [proxmox_vm_qemu.gateway]
 
