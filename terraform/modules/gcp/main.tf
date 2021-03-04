@@ -8,6 +8,11 @@ resource "random_id" "id" {
   byte_length = 4
 }
 
+locals {
+  # Prevent custom route being overruled by routes learned through BGP.
+  custom_route_priority = 0
+}
+
 /*
 ------------------------
     INTERNAL NETWORK
@@ -230,11 +235,6 @@ resource "google_compute_route" "proxmox-route" {
   dest_range = var.proxmox_subnet_cidr
   priority   = local.custom_route_priority
   next_hop_vpn_tunnel = google_compute_vpn_tunnel.proxmox_tunnel.self_link
-}
-
-locals {
-  # Prevent custom route being overruled by routes learned through BGP.
-  custom_route_priority = 0
 }
 
 /*
