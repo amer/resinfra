@@ -2,7 +2,7 @@ from proxmoxer import ProxmoxAPI
 from argparse import ArgumentParser
 
 parser = ArgumentParser(description='Delete protected VMs from all Proxmox nodes on one server.')
-parser.add_argument('-h', '--host', required=True, help='Address of the Proxmox host')
+parser.add_argument('-H', '--host', required=True, help='Address of the Proxmox host')
 parser.add_argument('-u', '--username', required=True, help='Proxmox PAM user, i.e. "root@pam"')
 parser.add_argument('-p', '--password', required=True)
 args = parser.parse_args()
