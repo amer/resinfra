@@ -13,17 +13,18 @@
     repo: deb [arch=amd64] https://apt.releases.hashicorp.com {{ os_release.stdout }} main
     state: present
 
-- name: install Consul and Miller (Data processing tool)
+- name: install Consul, Miller (Data processing tool) and jq (JSON query tool)
   apt:
     name:
       - consul
       - miller
+      - jq
     state: present
     update_cache: yes
 
 - name: template the config file
-  copy:
-    src: files/config.hcl
+  template:
+    src: template/config.hcl.j2
     dest: /etc/consul.d/consul.hcl
 
 # we ues consul to publish nodeexporters to prometheus. Prometheus can query consul for a certain service and
@@ -59,11 +60,56 @@
 - name: copy over sendslack script
   copy:
     src: files/sendslack.sh
-    dest: /home/consul/
+    dest: /resinfra/terraform/
     mode: a+x
     owner: consul
 
-- name: start the consul service
+- name: copy over handle_watcher script
+  copy:
+    src: files/handle_watcher.sh
+    dest: /resinfra/terraform/
+    mode: a+x
+    owner: consul
+
+- name: set the consul service for auto start
   systemd:
     enabled: yes
     name: consul
+
+
+- name: ensure consuls .ssh directory exists
+  file:
+    dest: /home/consul/.ssh
+    state: directory
+    mode: '700'
+    owner: consul
+
+
+- name: copy public key to consul user
+  copy:
+    src: "{{pub_key_path}}"
+    dest: /home/consul/.ssh/ri_key.pub
+    mode: '644'
+    owner: consul
+
+- name: copy private key to consul user
+  copy:
+    src: "{{priv_key_path}}"
+    dest: /home/consul/.ssh/ri_key
+    mode: '600'
+    owner: consul
+
+- name: copy gcp key to consul user
+  copy:
+    src: "{{gcp_key_path}}"
+    dest: /home/consul/.ssh/gcp.json
+    mode: '644'
+    owner: consul
+
+- name: copy terraform secrets
+  copy:
+    src: "{{terraform_secret_path}}"
+    dest: /resinfra/terraform/terraform.tfvars
+    mode: '644'
+    owner: consul
+

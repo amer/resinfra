@@ -19,4 +19,6 @@
   "proxmox_pw" :"",
   "proxmox_url": "https://92.204.175.162:8006/api2/json",
   "proxmox_user" : ""
+
+  "terraform_tfvars_path" : "/path/to/terraform.tfvars"
 }

@@ -1,13 +1,15 @@
 #!/bin/bash
 
 # get the json object
-consul_json=$(cat /dev/stdin)
+consul_json="$1"
+
+#echo $consul_json
 
 # parse the json and get the node name and service names of the critical services
 table_formatted_nodes=$(echo "$consul_json" | mlr --ijson --opprint --barred cut -f Node,ServiceName,Status then group-by Node)
 
 # some informational message for the mail body
-message="This is a automatic alert message from a check handler triggered by a consul watcher\n"
+message="["$HOSTNAME"] This is a automatic alert message from a check handler triggered by a consul watcher\n"
 message="${message}Below is a list of the services with critical health state:\n\n"
 
 payload="${message}\`\`\`${table_formatted_nodes}\`\`\`"

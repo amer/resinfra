@@ -2,6 +2,8 @@ variable "hcloud_token" {}
 variable "path_private_key" {}
 variable "path_pub_key" {}
 variable "resinfra_vpc_cidr" {}
+variable "gcp_service_account_path" {}
+variable "terraform_tfvars_path" {}
 
 source "hcloud" "hcloud" {
   token = var.hcloud_token
@@ -44,6 +46,6 @@ build {
     playbook_file = "../ansible/deployer_vm_playbook.yml"
     extra_arguments = [
       "--extra-vars",
-      "resinfra_vpc_cidr=${var.resinfra_vpc_cidr} priv_key_path=${var.path_private_key} pub_key_path=${var.path_pub_key} ansible_python_interpreter=/usr/bin/python3"]
+      "resinfra_vpc_cidr=${var.resinfra_vpc_cidr} priv_key_path=${var.path_private_key} pub_key_path=${var.path_pub_key} gcp_key_path=${var.gcp_service_account_path} terraform_secret_path=${var.terraform_tfvars_path} ansible_python_interpreter=/usr/bin/python3"]
   }
 }
