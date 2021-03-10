@@ -17,7 +17,7 @@ data "hcloud_image" "worker-image" {
 }
 
 data "hcloud_image" "deployer-snapshot" {
-  with_selector = "hetzner-benchmark"
+  with_selector = "hetzner-deployer"
   most_recent = true
 }
 
