@@ -1,9 +1,5 @@
 data_dir= "/home/consul/consul-data"
 datacenter= "resnet"
-{% if server == 'true' %}
 server=true
 bootstrap_expect=1
 ui=true
-{% else %}
-retry_join= ["{{ leader_node }}"]
-{% endif %}

@@ -22,20 +22,25 @@
     update_cache: yes
 
 - name: template the config file
-  template:
-    src: config.hcl.j2
+  copy:
+    src: files/config.hcl
     dest: /etc/consul.d/consul.hcl
 
+# we ues consul to publish nodeexporters to prometheus. Prometheus can query consul for a certain service and
+# automatically add all nodes to that service name. See also the prometheus role.
 - name: copy the node exporter service file
-  template:
+  copy:
     src: files/nodeexporter_service.json
     dest: /etc/consul.d/nodeexporter_service.json
 
-- name: add a consul user
+- name: add a consul user for the systemd service
   user:
     name: consul
     state: present
 
+# we create a systemd service for consul
+# we use the -bind option to ensure that we are publishing the internal ip address of the node
+# for more see: https://www.consul.io/docs/agent/options#_bind
 - name: copy over the service file
   template:
     src: consul.service.j2

@@ -1,10 +1,3 @@
-terraform {
-  backend "gcs" {
-    bucket  = "resinfra-tf-state"
-    credentials = ""
-  }
-}
-
 locals {
   azure_cidr = cidrsubnet(var.vpc_cidr, 8, 1)
   # 10.1.0.0/16 (Azure does not allow to add overlapping subnets when creating vpn routes)
@@ -78,14 +71,13 @@ module "hetzner" {
 }
 
 module "azure" {
-  source          = "./modules/azure"
-  subscription_id = var.subscription_id
-  client_id       = var.client_id
-  client_secret   = var.client_secret
-  tenant_id       = var.tenant_id
-  location        = "westeurope"
-  vm_size         = "Standard_D2s_v3"
-  # Standard_D2s_v3, Standard_B2s | For more info https://azureprice.net/
+  source                       = "./modules/azure"
+  subscription_id              = var.subscription_id
+  client_id                    = var.client_id
+  client_secret                = var.client_secret
+  tenant_id                    = var.tenant_id
+  location                     = "westeurope"
+  vm_size                      = "Standard_D2s_v3" # For more info https://azureprice.net/
   path_private_key             = local.path_private_key
   path_public_key              = local.path_public_key
   azure_gateway_subnet_cidr    = local.azure_gateway_subnet_cidr

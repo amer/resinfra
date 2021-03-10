@@ -10,7 +10,7 @@ output "gateway_ipv4_address" {
 }
 
 output "hcloud_private_ip_addresses"{
-  value = hcloud_server_network.worker-vms-into-subnet.*.ip
+  value = hcloud_server_network.worker-vm.*.ip
 }
 
 output "hcloud_subnet_id" {
