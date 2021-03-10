@@ -1,6 +1,9 @@
 # Benchmarking
 Following the benchmark from the [cockroachdb docs](https://www.cockroachlabs.com/docs/v20.2/performance-benchmarking-with-tpcc-small).
 
+## Deploy cluster
+Deploy the cluster using the terraform scripts in the [code directory](code). This will deploy the resinfra cluster 
+and install a cockroachdb service on the worker VMs.
 ## Running the benchmark
 On the benchmark VM, run the following:
 
