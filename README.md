@@ -79,9 +79,12 @@ Deploy _everything_:
 $ cd terraform
 $ terraform init
 $ terraform apply
+$ terraform taint module.hetzner.null_resource.copy_ipsec_files
+$ terraform taint module.proxmox.null_resource.copy_ipsec_files
+$ terraform apply
 ```
 
-`terraform init` is usually only needed before deploying for the very first time. For more information refer to the 
+`terraform init` is usually only needed before deploying for the very first time. The last three commands are a workaround to force proper configuration of the VPN connections between Azure and Hetzner / Proxmox. For more information refer to the 
 [infrastructure README](terraform/README.md).
 
 ### Accessing the deployed application
