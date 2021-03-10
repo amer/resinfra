@@ -103,7 +103,7 @@ $ terraform apply
 
 ## Deploy a service 
 Once terraform has successfully terminated, the cluster is ready. You should be able to 
-access it through any of their public IP addresses. The IP addresses are displayed at the end of `terraform apply`.
+access it through any worker VM's public IP address. The IP addresses are displayed at the end of `terraform apply`.
 
 You are now ready to deploy any service on the cluster. One way would be to use an ansible script for that. You can find 
 an example playbook to deploy a [coackroachDB](https://www.cockroachlabs.com/) cluster [in the ansible directory](ansible)
