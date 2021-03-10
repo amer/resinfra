@@ -1,5 +1,5 @@
 # Building Resilient Infrastructure by Spanning Clouds
-***From cloudy to overcast.***
+***From cloudy to overcast***
 
 ## TOC
 1. [Introduction](#introduction)
@@ -125,4 +125,4 @@ providers.
 Second, **costs are strongly increasing** (by about 75% for the scenario above). Egress traffic can be very expensive depending
 on the chosen cloud providers and will become a relevant cost driver, especially for services that exchange large amounts of data.
 
-Detailed benchmarking results can be found in the [benchmarking directory](benchmarks)
+Detailed benchmarking results can be found in the [benchmarking directory](benchmarks).
