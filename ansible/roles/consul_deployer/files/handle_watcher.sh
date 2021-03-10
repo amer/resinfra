@@ -52,14 +52,10 @@ terraform_output_successfull=$(echo "$terraform_output" | grep 'Plan' | sed 's/\
 if [ -z "$terraform_output_successfull" ]
 then
         text="["$HOSTNAME"] This Event should have been covered by the automatic re-deployment agent but there was an error:\n \n"
-
         # the sed is used the remove color escape sequences
         payload="${text}\`\`\`"$(echo "$terraform_output" |  sed 's/\x1b\[[0-9;]*m//g')"\`\`\`"
 else
-        # send a message to the slack
         text="["$HOSTNAME"] This Event was covered by the automatic re-deployment agent. This was done:\n \n"
-
-        # the sed is used the remove color escape sequences
         payload="${text}\`\`\`"${terraform_output_successfull}"\`\`\`"
 fi
 
@@ -73,3 +69,6 @@ postdata="{\"text\":\"${escaped_payload}\"}"
 echo $(echo "$postdata" | less)
 
 curl -X POST -H 'Content-type: application/json' --data "$postdata" https://hooks.slack.com/services/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
+
+# Sleep for 180 seconds to block recreation of resources that are unavailable due to their startup  
+sleep 180
