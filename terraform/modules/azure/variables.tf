@@ -23,10 +23,11 @@ variable "azure_gateway_subnet_cidr" {}
 variable "gcp_asn" {}
 variable "azure_asn" {}
 
-variable "gcp_bgp_peer_address" {}
-variable "azure_bgp_peer_address" {}
+variable "gcp_bgp_peer_addresses" {}
+variable "azure_bgp_peer_addresses" {}
 
 variable "gcp_ha_gateway_interfaces" {}
+variable "ha_vpn_tunnel_count" {}
 
 variable "shared_key" {}
 

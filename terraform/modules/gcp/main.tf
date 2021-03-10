@@ -145,14 +145,16 @@ resource "google_compute_forwarding_rule" "fr_udp4500" {
 }
 
 resource "google_compute_vpn_tunnel" "azure_tunnel" {
-  name          = "${var.prefix}-azure-tunnel-${random_id.id.hex}"
+  count         = var.ha_vpn_tunnel_count
+  name          = "${var.prefix}-azure-tunnel-${count.index}-${random_id.id.hex}"
   shared_secret = var.shared_key
 
-  # Use 'vpn_gateway' for HA VPN, and 'target_vpn_gateway' for classic VPN, as [documented](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_vpn_tunnel#vpn_gateway).
+  # Use 'vpn_gateway' for HA VPN, and 'target_vpn_gateway' for classic VPN, as
+  # [documented](https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/compute_vpn_tunnel#vpn_gateway).
   vpn_gateway = google_compute_ha_vpn_gateway.main.self_link
-  vpn_gateway_interface = 0
+  vpn_gateway_interface = count.index
   peer_external_gateway = google_compute_external_vpn_gateway.azure_gateway.self_link
-  peer_external_gateway_interface = 0
+  peer_external_gateway_interface = count.index
   router = google_compute_router.main.name
 
   depends_on = [
@@ -164,30 +166,42 @@ resource "google_compute_vpn_tunnel" "azure_tunnel" {
 
 resource "google_compute_external_vpn_gateway" "azure_gateway" {
   name            = "${var.prefix}-azure-gateway-${random_id.id.hex}"
-  redundancy_type = "SINGLE_IP_INTERNALLY_REDUNDANT"
+  redundancy_type = {
+    1: "SINGLE_IP_INTERNALLY_REDUNDANT",
+    2: "TWO_IPS_REDUNDANCY",
+    4: "FOUR_IPS_REDUNDANCY"
+  }[var.ha_vpn_tunnel_count]
+
   interface {
     id         = 0
-    ip_address = var.azure_gateway_ipv4_address
+    ip_address = var.azure_gateway_ipv4_addresses[0]
   }
+//  For High Availability: uncomment
+//  interface {
+//    id         = 1
+//    ip_address = var.azure_gateway_ipv4_addresses[1]
+//  }
 }
 
-resource "google_compute_router_interface" "azure0" {
-  name = "${var.prefix}-azure-0-interface-${random_id.id.hex}"
+resource "google_compute_router_interface" "azure" {
+  count = var.ha_vpn_tunnel_count
+  name = "${var.prefix}-azure-${count.index}-interface-${random_id.id.hex}"
   # This is weird because we have e.g. 169.254.22.2/30 which is not a valid CIDR prefix (-> rfc4632), but
   # - is interpreted as 169.254.22.0/30
   # - assigns the router the address specified, i.e., 169.254.22.2
   # TODO maybe investigate if this is (1) reliable and (2) needed
-  ip_range = "${var.gcp_bgp_peer_address}/30"
+  ip_range = "${var.gcp_bgp_peer_address[count.index]}/30"
   router = google_compute_router.main.name
-  vpn_tunnel = google_compute_vpn_tunnel.azure_tunnel.self_link
+  vpn_tunnel = google_compute_vpn_tunnel.azure_tunnel[count.index].self_link
 }
 
-resource "google_compute_router_peer" "azure0" {
-  name = "${var.prefix}-azure-0-bgp-peer-${random_id.id.hex}"
+resource "google_compute_router_peer" "azure" {
+  count = var.ha_vpn_tunnel_count
+  name = "${var.prefix}-azure-${count.index}-bgp-peer-${random_id.id.hex}"
   router = google_compute_router.main.name
-  peer_ip_address = var.azure_bgp_peer_address
+  peer_ip_address = var.azure_bgp_peer_address[count.index]
   peer_asn = var.azure_asn
-  interface = google_compute_router_interface.azure0.name
+  interface = google_compute_router_interface.azure[count.index].name
 }
 
 resource "google_compute_vpn_tunnel" "hetzner_tunnel" {
