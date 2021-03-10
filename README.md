@@ -19,7 +19,7 @@ solutions and create watchdogs that ensure that failed infrastructure is re-crea
 
 ## How does it work?
 
-This project provides a cluster of nodes, spanned accross different cloud providers but accessible through one private network. We add additional tooling to harmonize monitoring, automate node discovery and configure health checks. Services can be installed on the cluster once deployed.  
+This project provides a cluster of nodes, spanned accross different cloud providers but connected through one private network. We add additional tooling to harmonize monitoring, automate node discovery and configure health checks. Services can be installed on the cluster once deployed.  
 For the automatic deployment of the infrastructure we use a tool called [Terraform](https://www.terraform.io/). We build the infrastructure based on custom linux images that we build with [Packer](https://www.packer.io/). We use [Ansible](https://www.ansible.com/) to for some post deployment actions.
 
 ## Deploy cluster
