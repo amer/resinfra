@@ -10,6 +10,8 @@ variable "shared_key" {}
 variable "proxmox_api_password" {}
 variable "proxmox_api_user" {}
 
+variable "azure_resource_group" { default = "ri-multi-cloud-rg"}
+
 variable "proxmox_server_port" { default = 8006 }
 variable "proxmox_server_address" { default = "92.204.175.162" }
 variable "proxmox_target_node" { default = "host1" }
