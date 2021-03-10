@@ -23,7 +23,7 @@
 
 - name: template the config file
   template:
-    src: config.hcl
+    src: config.hcl.j2
     dest: /etc/consul.d/consul.hcl
 
 - name: copy the node exporter service file

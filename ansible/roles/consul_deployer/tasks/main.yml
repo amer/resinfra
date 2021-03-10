@@ -23,8 +23,8 @@
     update_cache: yes
 
 - name: template the config file
-  copy:
-    src: files/config.hcl
+  template:
+    src: template/config.hcl.j2
     dest: /etc/consul.d/consul.hcl
 
 # we ues consul to publish nodeexporters to prometheus. Prometheus can query consul for a certain service and
