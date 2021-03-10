@@ -28,8 +28,8 @@ Once deployed, the cluster will look as follows:
 ![](.media/resinfra_overview.jpg)
 
 The example will deploy two "worker VMs" on every cloud provider as well as a gateway VM for Hetzner and Proxmox. 
-In addition, a "resinfra VM" is deployed to host the necessary tooling. *Note, that the serices running on the gateways 
-VMs as well as the "resinfra VM" should be distributed across multiple nodes. 
+In addition, a "resinfra VM" is deployed to host the necessary tooling. *Note, to achieve high availability, the services running on the gateway
+VMs as well as the "resinfra VM" need to be distributed across multiple nodes. This is not implemented yet.
 All services used for the tooling can be deployed as distributed services. For the gateways, a multi gateway setup 
 should be aimed for. 
 
