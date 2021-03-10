@@ -96,10 +96,14 @@ Deploy _everything_ (includes GCP, Hetzner Cloud, Proxmox and Azure):
 $ cd terraform
 $ terraform init
 $ terraform apply
+$ terraform taint module.hetzner.null_resource.copy_ipsec_files
+$ terraform taint module.proxmox.null_resource.copy_ipsec_files
+$ terraform apply
 ```
 
-`terraform init` is usually only needed before deploying for the very first time. To deploy only parts of the infrastructure, make according changes in the terraform files. For more information refer to the 
-[infrastructure README](terraform/README.md).
+`terraform init` is usually only needed before deploying for the very first time. The last three commands are a workaround to force proper 
+configuration of the VPN connections between Azure and Hetzner / Proxmox. To deploy only parts of the infrastructure, make according changes in 
+the terraform files. For more information refer to the [infrastructure README](terraform/README.md).
 
 ## Deploy a service 
 Once terraform has successfully terminated, the cluster is ready. You should be able to 
