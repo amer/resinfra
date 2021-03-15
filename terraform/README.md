@@ -150,27 +150,3 @@ After these steps the self healing feature should be successfully initialized. Y
 
 Strange start-up behaviour may occur, leading to redeployment of newly started nodes.
 This is mainly because of slow startup times of services that have therefore identified as failing or critical.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
