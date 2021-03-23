@@ -128,4 +128,25 @@ Monitoring is set up through the builder vm and ansible scripts. A docker contai
 machine a prometheus instance is installed to collect metrics from respective targets. Metrics are then 
 displayed in Grafana.
 
+## Enable Experimental Feature
 
+### Automatic redeployment of failing infrastructure
+Disclaimer: This is a highly experimental feature and was just implemented as a proof of concept. 
+This feature may destroy your infrastructure and all your data. 
+Only works in specific controlled environments and even there mostly not as intended.
+
+The self healing functionality is provided by the deployer machine. 
+This machine is running consul watches which check if a service or node is critical. 
+In case of failure the [handle_watcher.sh script](https://github.com/amer/resinfra/blob/main/ansible/roles/consul_deployer/files/handle_watcher.sh) is triggered and a `terraform apply` will be performed.
+Additionally, a message will be send to a slack channel with the help of a webhook containing essential information on the failing node and service.
+
+The default deployment comes with all needed components to enable this feature. There are a few steps to manually enable this feature.
+
+1. Configure the cloned github directory on the deployment machine accordingly to the local configurations. The cloned repository is in the `/resinfra/` directory.
+2. Perform the command `terraform init` in the `/reinsfra/terraform/` directory.
+3. Edit the [handle_watcher.sh script](https://github.com/amer/resinfra/blob/main/ansible/roles/consul_deployer/files/handle_watcher.sh) and replace the line `terraform plan` with `terraform apply` according to your need.
+
+After these steps the self healing feature should be successfully initialized. You can check this by deleting one worker node.
+
+Strange start-up behaviour may occur, leading to redeployment of newly started nodes.
+This is mainly because of slow startup times of services that have therefore identified as failing or critical.
